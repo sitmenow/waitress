@@ -1,10 +1,12 @@
 const customerErrors = require('./errors');
+const storeErrors = require('../../store/errors');
 
 
 class CreateTurn {
-  constructor(branchID, branchStore) {
+  constructor(customerID, branchID, turnStore) {
+    this.customerID = customerID;
     this.branchID = branchID;
-    this.branchStore = branchStore;
+    this.turnStore = turnStore;
 
     this._validate();
   }
@@ -13,21 +15,33 @@ class CreateTurn {
     let turn;
 
     try {
-      turn = this.branchStore.createTurn(this.branchID);
+      turn = this.turnStore.create(this.customerID, this.branchID);
     } catch(error) {
-      throw new customerErrors.BranchNotFound();
+      if (error instanceof storeErrors.CustomerNotFound) {
+        throw new customerErrors.UnableToCreateTurn();
+      }
+
+      if (error instanceof storeErrors.BranchNotFound) {
+        throw new customerErrors.UnableToCreateTurn();
+      }
+
+      throw new customerErrors.CustomerError();
     }
 
     return turn;
   }
 
   _validate() {
-    if (!this.branchStore) {
-      throw new customerErrors.BranchStoreNotPresent();
+    if (!this.turnStore) {
+      throw new customerErrors.TurnStoreNotPresent();
     }
 
     if (!this.branchID) {
       throw new customerErrors.BranchIDNotPresent();
+    }
+
+    if (!this.customerID) {
+      throw new customerErrors.CustomerIDNotPresent();
     }
   }
 }

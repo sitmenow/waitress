@@ -1,10 +1,11 @@
 const customerErrors = require('./errors');
+const storeErrors = require('../../store/errors');
 
 
 class ListTurns {
-  constructor(branchID, branchStore) {
+  constructor(branchID, turnStore) {
     this.branchID = branchID;
-    this.branchStore = branchStore;
+    this.turnStore = turnStore;
 
     this._validate();
   }
@@ -13,9 +14,13 @@ class ListTurns {
     let currentTurns;
 
     try {
-      currentTurns = this.branchStore.currentTurns(this.branchID);
+      currentTurns = this.turnStore.getCurrents(this.branchID);
     } catch(error) {
-      throw new customerErrors.BranchNotFound();
+      if (error instanceof storeErrors.BranchNotFound) {
+        throw new customerErrors.UnableToListTurns();
+      }
+
+      throw new customerErrors.CustomerError();
     }
 
     return currentTurns;
@@ -26,8 +31,8 @@ class ListTurns {
       throw new customerErrors.BranchIDNotPresent();
     }
 
-    if (!this.branchStore) {
-      throw new customerErrors.BranchStoreNotPresent();
+    if (!this.turnStore) {
+      throw new customerErrors.TurnStoreNotPresent();
     }
   }
 }
