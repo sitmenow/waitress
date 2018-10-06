@@ -2,7 +2,8 @@ const customerErrors = require('./errors');
 
 
 class ListTurns {
-  constructor(branchStore) {
+  constructor(branchID, branchStore) {
+    this.branchID = branchID;
     this.branchStore = branchStore;
 
     this._validate();
@@ -12,17 +13,21 @@ class ListTurns {
     let currentTurns;
 
     try {
-      currentTurns = this.branchStore.currentTurns();
+      currentTurns = this.branchStore.currentTurns(this.branchID);
     } catch(error) {
-      throw new customerErrors.TurnsNotFound();
+      throw new customerErrors.BranchNotFound();
     }
 
     return currentTurns;
   }
 
   _validate() {
+    if (!this.branchID) {
+      throw new customerErrors.BranchIDNotPresent();
+    }
+
     if (!this.branchStore) {
-      throw new Error('Restaurant Branch Store cannot be null');
+      throw new customerErrors.BranchStoreNotPresent();
     }
   }
 }

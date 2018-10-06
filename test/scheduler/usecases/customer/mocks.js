@@ -3,12 +3,17 @@ const Turn = require('../../../../scheduler/models/turn');
 
 
 class BranchStoreMock {
-  constructor(currentTurns) {
+  constructor({ currentTurns, createdTurn } = {}) {
     this.currentTurnsResponse = currentTurns;
+    this.createTurnResponse = createdTurn;
   }
 
-  currentTurns() {
+  currentTurns(branchID) {
     return this.currentTurnsResponse;
+  }
+
+  createTurn(branchID) {
+    return this.createTurnResponse;
   }
 }
 

@@ -1,7 +1,11 @@
 
 class CustomerError extends Error {}
-class TurnsNotFound extends CustomerError {}
+class BranchNotFound extends CustomerError {}
+class BranchIDNotPresent extends CustomerError {}
+class BranchStoreNotPresent extends CustomerError {}
 
 module.exports = {
-  TurnsNotFound,
+  BranchNotFound,
+  BranchIDNotPresent,
+  BranchStoreNotPresent,
 };
