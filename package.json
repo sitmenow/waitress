@@ -1,0 +1,26 @@
+{
+  "name": "waitress",
+  "version": "0.0.0",
+  "description": "Sit Me Now",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=develop node index.js",
+    "test": "./node_modules/mocha/bin/mocha --reporter spec -u tdd test/**/*_test.js"
+  },
+  "repository": "git@github.com:sitmenow/waitress.git",
+  "author": "hello@sitmenow.com",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "express": "^4.16.3",
+    "express-graphql": "^0.6.12",
+    "graphql": "^0.13.2",
+    "node-config": "^0.0.2",
+    "pg": "^7.4.3",
+    "typeorm": "^0.2.7"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
