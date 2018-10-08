@@ -1,66 +1,88 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-const { BranchStoreMock } = require('./mocks');
+const Turn = require('../../../../scheduler/models/turn');
+const Branch = require('../../../../scheduler/models/branch');
+const Customer = require('../../../../scheduler/models/customer');
 const customerErrors = require('../../../../scheduler/usecases/customer/errors');
+const storeErrors = require('../../../../scheduler/store/errors');
 const ListTurns = require('../../../../scheduler/usecases/customer/list-turns');
+const { TurnStoreMock } = require('./mocks');
 
 
 suite('Customer List Turns', () => {
 
-  suiteSetup(() => {});
+  const sandbox = sinon.createSandbox();
+  const branch = new Branch({
+    id: 'restaurant-branch-id',
+  });
+  const customer = new Customer({
+    id: 'customer-id',
+  });
+  const turn = new Turn({
+    id: 'turn-id',
+    datetime: new Date(),
+    active: true,
+    branch: branch,
+    customer: customer,
+  })
+  const currents = [turn, turn, turn];
+
+  suiteSetup(() => {
+  });
+
+  suiteTeardown(() => {
+    sandbox.restore();
+  });
 
   test('current turns in a restaurant branch', () => {
-    const currentTurns = [
-      { id: 1 },
-      { id: 2 },
-    ];
+    const turnStore = new TurnStoreMock();
+    const useCase = new ListTurns(branch.id, turnStore);
+    const stub = sandbox.stub(turnStore, 'getCurrents');
+    stub.returns(currents);
 
-    const branchID = 1;
-    const branchStore = new BranchStoreMock({ currentTurns });
-    const useCase = new ListTurns(branchID, branchStore);
-
-    assert.deepEqual(currentTurns, useCase.execute());
+    assert.deepEqual(currents, useCase.execute());
   });
 
-  test('BranchStore.currentTurns is called once with the branch id as the only parameter', () => {
-    const branchID = 1;
-    const branchStore = new BranchStoreMock();
-    const useCase = new ListTurns(branchID, branchStore);
-    sinon.spy(branchStore, 'currentTurns');
+  test('TurnStore.getCurrents is called once with branch id as the only parameter', () => {
+    const turnStore = new TurnStoreMock();
+    const useCase = new ListTurns(branch.id, turnStore);
+    const spy = sandbox.spy(turnStore, 'getCurrents');
 
     useCase.execute();
-    assert.isTrue(branchStore.currentTurns.withArgs(branchID).calledOnce);
+    assert.isTrue(spy.withArgs(branch.id).calledOnce);
   });
 
-  test('BranchStore.currentTurns throws a restaurant branch not found error', () => {
-    const branchID = 1;
-    const branchStore = new BranchStoreMock();
-    const useCase = new ListTurns(branchID, branchStore);
-    branchStore.currentTurns = () => { throw new customerErrors.BranchNotFound() };
+  test('TurnStore.getCurrents throws a restaurant branch not found error', () => {
+    const turnStore = new TurnStoreMock();
+    const useCase = new ListTurns(branch.id, turnStore);
+    const stub = sandbox.stub(turnStore, 'getCurrents');
+    stub.throws(new storeErrors.BranchNotFound());
 
-    assert.throws(
-      useCase.execute,
-      customerErrors.BranchNotFound
-    );
+    assert.throws(() => useCase.execute(), customerErrors.UnableToListTurns);
   });
 
-  test('invalid branch store while creating use case', () => {
-    const branchID = 1;
-    const branchStore = null;
+  test('TurnStore.getCurrents throws an unknown error', () => {
+    const turnStore = new TurnStoreMock();
+    const useCase = new ListTurns(branch.id, turnStore);
+    const stub = sandbox.stub(turnStore, 'getCurrents');
+    stub.throws(new Error());
 
+    assert.throws(() => useCase.execute(), customerErrors.CustomerError);
+  });
+
+  test('invalid turn store while creating use case', () => {
     assert.throws(
-      () => { new ListTurns(branchID, branchStore) },
-      customerErrors.BranchStoreNotPresent
+      () => new ListTurns(branch.id, null),
+      customerErrors.TurnStoreNotPresent
     );
   });
 
   test('invalid branch id while creating use case', () => {
-    const branchID = null;
-    const branchStore = new BranchStoreMock();
+    const turnStore = new TurnStoreMock();
 
     assert.throws(
-      () => { new ListTurns(branchID, branchStore) },
+      () => new ListTurns(null, turnStore),
       customerErrors.BranchIDNotPresent
     );
   });
