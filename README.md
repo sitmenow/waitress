@@ -22,6 +22,7 @@ $ yarn install
 ## Test
 ```bash
 $ npm test
+$ npm --silent run test-file path/to/file
 ```
 
 ## Run
