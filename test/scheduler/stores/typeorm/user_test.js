@@ -1,0 +1,18 @@
+const { expect, assert } = require('chai');
+
+
+suite('TypeORM UserStore', () => {
+  suite('#create()', () => {
+    test('First test', () => {
+      assert(true);
+    });
+  });
+
+  suite('#find()', () => {});
+
+  suite('#remove()', () => {});
+
+  suite('#update()', () => {});
+
+  suite('#detail()', () => {});
+});

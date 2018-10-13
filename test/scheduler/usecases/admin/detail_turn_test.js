@@ -5,10 +5,11 @@ const adminErrors = require('../../../../scheduler/usecases/admin/errors');
 const DetailTurn = require('../../../../scheduler/usecases/admin/detail-turn');
 
 
-suite('Admin Detail Turn', () => {
+suite('Use Case: Admin details turn', () => {
 
-  suiteSetup(() => {});
+  setup(() => {});
+
+  teardown(() => {});
 
   test('', () => {});
-
 });

@@ -1,14 +1,15 @@
 const { expect, assert } = require('chai');
 
-// const { BranchStoreMock } = require('./mocks');
 const hostessErrors = require('../../../../scheduler/usecases/hostess/errors');
 const ServeTurn = require('../../../../scheduler/usecases/hostess/serve-turn');
+// const { BranchStoreMock } = require('./mocks');
 
 
-suite('Hostess Serve Turn', () => {
+suite('Use Case: Hostess serves turn', () => {
 
-  suiteSetup(() => {});
+  setup(() => {});
+
+  teardown(() => {});
 
   test('', () => {});
-
 });

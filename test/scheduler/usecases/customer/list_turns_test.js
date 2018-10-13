@@ -1,89 +1,70 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-const Turn = require('../../../../scheduler/models/turn');
-const Branch = require('../../../../scheduler/models/branch');
-const Customer = require('../../../../scheduler/models/customer');
-const customerErrors = require('../../../../scheduler/usecases/customer/errors');
-const storeErrors = require('../../../../scheduler/store/errors');
-const ListTurns = require('../../../../scheduler/usecases/customer/list-turns');
-const { TurnStoreMock } = require('./mocks');
+const Turn = require('../../../../scheduler/turn');
+const Branch = require('../../../../scheduler/branch');
+const Customer = require('../../../../scheduler/customer');
+const customerUseCaseErrors = require('../../../../scheduler/usecases/customer/errors');
+const storeErrors = require('../../../../scheduler/stores/errors');
+const CustomerListTurns = require('../../../../scheduler/usecases/customer/list-turns');
+const { TurnStoreMock } = require('../mocks');
 
 
-suite('Customer List Turns', () => {
+suite('Use Case: Customer lists turns', () => {
 
-  const sandbox = sinon.createSandbox();
-  const branch = new Branch({
-    id: 'restaurant-branch-id',
+  setup(() => {
+    sandbox = sinon.createSandbox();
+    branch = new Branch({
+      id: 'restaurant-branch-id',
+    });
+    customer = new Customer({
+      id: 'customer-id',
+    });
+    turn = new Turn({
+      id: 'turn-id',
+      datetime: new Date(),
+      active: true,
+      branch: branch,
+      customer: customer,
+    })
+    currents = [turn, turn, turn];
   });
-  const customer = new Customer({
-    id: 'customer-id',
-  });
-  const turn = new Turn({
-    id: 'turn-id',
-    datetime: new Date(),
-    active: true,
-    branch: branch,
-    customer: customer,
-  })
-  const currents = [turn, turn, turn];
 
-  suiteSetup(() => {
-  });
-
-  suiteTeardown(() => {
+  teardown(() => {
     sandbox.restore();
   });
 
   test('current turns in a restaurant branch', () => {
+    /*
     const turnStore = new TurnStoreMock();
-    const useCase = new ListTurns(branch.id, turnStore);
-    const stub = sandbox.stub(turnStore, 'getCurrents');
-    stub.returns(currents);
+    const useCase = new CustomerListTurns(branch.id, turnStore);
+    sandbox.stub(turnStore, 'getCurrents')
+      .returns(currents);
 
     assert.deepEqual(currents, useCase.execute());
+    */
   });
 
   test('TurnStore.getCurrents is called once with branch id as the only parameter', () => {
+    /*
     const turnStore = new TurnStoreMock();
-    const useCase = new ListTurns(branch.id, turnStore);
-    const spy = sandbox.spy(turnStore, 'getCurrents');
+    const useCase = new CustomerListTurns(branch.id, turnStore);
+    sandbox.spy(turnStore, 'getCurrents');
 
     useCase.execute();
-    assert.isTrue(spy.withArgs(branch.id).calledOnce);
+    assert.isTrue(turnStore.getCurrents.withArgs(branch.id).calledOnce);
+    */
   });
 
   test('TurnStore.getCurrents throws a restaurant branch not found error', () => {
-    const turnStore = new TurnStoreMock();
-    const useCase = new ListTurns(branch.id, turnStore);
-    const stub = sandbox.stub(turnStore, 'getCurrents');
-    stub.throws(new storeErrors.BranchNotFound());
-
-    assert.throws(() => useCase.execute(), customerErrors.UnableToListTurns);
   });
 
   test('TurnStore.getCurrents throws an unknown error', () => {
-    const turnStore = new TurnStoreMock();
-    const useCase = new ListTurns(branch.id, turnStore);
-    const stub = sandbox.stub(turnStore, 'getCurrents');
-    stub.throws(new Error());
-
-    assert.throws(() => useCase.execute(), customerErrors.CustomerError);
   });
 
   test('invalid turn store while creating use case', () => {
-    assert.throws(
-      () => new ListTurns(branch.id, null),
-      customerErrors.TurnStoreNotPresent
-    );
   });
 
   test('invalid branch id while creating use case', () => {
-    const turnStore = new TurnStoreMock();
-
-    assert.throws(
-      () => new ListTurns(null, turnStore),
-      customerErrors.BranchIDNotPresent
-    );
   });
 });

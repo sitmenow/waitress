@@ -1,8 +1,9 @@
 
 class Turn {
-  constructor({ id, datetime, active, customer, branch }) {
+  constructor({ id, name, date, active, customer, branch }) {
     this.id = id;
-    this.datetime = datetime;
+    this.name = name;
+    this.date = date;
     this.active = active;
     this.customer = customer;
     this.branch = branch;
