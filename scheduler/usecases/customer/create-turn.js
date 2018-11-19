@@ -1,49 +1,62 @@
-const customerErrors = require('./errors');
-const storeErrors = require('../../store/errors');
+const customerUseCaseErrors = require('./errors');
+const storeErrors = require('../../stores/errors');
 
-
-class CreateTurn {
-  constructor(customerID, branchID, turnStore) {
-    this.customerID = customerID;
-    this.branchID = branchID;
+class CustomerCreateTurn {
+  constructor(customer, turn, branch, turnStore, customerStore, branchStore) {
+    this.turn = turn;
+    this.branch = branch;
+    this.customer = customer;
     this.turnStore = turnStore;
+    this.branchStore = branchStore;
+    this.customerStore = customerStore;
 
     this._validate();
   }
 
   execute() {
-    let turn;
+    const branch = this.branchStore.find(this.branch.id);
+    if (!branch) throw new customerUseCaseErrors.BranchNotFound();
 
-    try {
-      turn = this.turnStore.create(this.customerID, this.branchID);
-    } catch(error) {
-      if (error instanceof storeErrors.CustomerNotFound) {
-        throw new customerErrors.UnableToCreateTurn();
-      }
+    const customer = this.customerStore.find(this.customer.id);
+    if (!customer) throw new customerUseCaseErrors.CustomerNotFound();
 
-      if (error instanceof storeErrors.BranchNotFound) {
-        throw new customerErrors.UnableToCreateTurn();
-      }
-
-      throw new customerErrors.CustomerError();
+    if (!branch.opened(this.turn.date)) {
+      throw new customerUseCaseErrors.BranchIsNotOpen();
     }
+    this.turn.name = customer.name;
+    // TODO: Validate date
+    this.turn.date = this.turn.date || new Date();
+    this.turn.customer = customer;
+    this.turn.branch = branch;
 
-    return turn;
+    return this.turnStore.create(this.turn);
   }
 
   _validate() {
     if (!this.turnStore) {
-      throw new customerErrors.TurnStoreNotPresent();
+      throw new customerUseCaseErrors.TurnStoreNotPresent();
     }
 
-    if (!this.branchID) {
-      throw new customerErrors.BranchIDNotPresent();
+    if (!this.customerStore) {
+      throw new customerUseCaseErors.CustomerStoreNotPresent();
     }
 
-    if (!this.customerID) {
-      throw new customerErrors.CustomerIDNotPresent();
+    if (!this.branchStore) {
+      throw new customerUseCaseErrors.BranchStoreNotPresent();
+    }
+
+    if (!this.branch) {
+      throw new customerUseCaseErrors.BranchNotPresent();
+    }
+
+    if (!this.customer) {
+      throw new customerUseCaseErrors.CustomerNotPresent();
+    }
+
+    if (!this.turn) {
+      throw new customerUseCaseErrors.TurnNotPresent();
     }
   }
 }
 
-module.exports = CreateTurn;
+module.exports = CustomerCreateTurn;

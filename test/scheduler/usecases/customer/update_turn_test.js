@@ -5,10 +5,11 @@ const customerErrors = require('../../../../scheduler/usecases/customer/errors')
 const UpdateTurn = require('../../../../scheduler/usecases/customer/update-turn');
 
 
-suite('Customer Update Turn', () => {
+suite('Use Case: Customer updates turn', () => {
 
-  suiteSetup(() => {});
+  setup(() => {});
+
+  teardown(() => {});
 
   test('', () => {});
-
 });

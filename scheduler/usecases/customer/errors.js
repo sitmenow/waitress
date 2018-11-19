@@ -1,17 +1,22 @@
+class CustomerUseCaseError extends Error {}
 
-class CustomerError extends Error {}
-class BranchNotFound extends CustomerError {}
-class BranchIDNotPresent extends CustomerError {}
-class BranchStoreNotPresent extends CustomerError {}
-class CustomerIDNotPresent extends CustomerError {}
-class UnableToCreateTurn extends CustomerError {}
-class UnableToListTurns extends CustomerError {}
+class BranchNotFound extends CustomerUseCaseError {}
+class CustomerNotFound extends CustomerUseCaseError {}
+
+class BranchIDNotPresent extends CustomerUseCaseError {}
+class CustomerIDNotPresent extends CustomerUseCaseError {}
+class TurnIDNotPresent extends CustomerUseCaseError {}
+class BranchStoreNotPresent extends CustomerUseCaseError {}
+class CustomerStoreNotPresent extends CustomerUseCaseError {}
+
 
 module.exports = {
-  CustomerError,
+  CustomerUseCaseError,
+  BranchNotFound,
+  CustomerNotFound,
   BranchIDNotPresent,
-  BranchStoreNotPresent,
-  UnableToCreateTurn,
-  UnableToListTurns,
   CustomerIDNotPresent,
+  TurnIDNotPresent,
+  BranchStoreNotPresent,
+  CustomerStoreNotPresent,
 };

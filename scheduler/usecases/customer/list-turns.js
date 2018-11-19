@@ -1,40 +1,41 @@
-const customerErrors = require('./errors');
-const storeErrors = require('../../store/errors');
+const customerUseCaseErrors = require('./errors');
+const storeErrors = require('../../stores/errors');
 
 
-class ListTurns {
-  constructor(branchID, turnStore) {
-    this.branchID = branchID;
-    this.turnStore = turnStore;
+class CustomerListTurns {
+  constructor(customer, branch, index, branchStore) {
+    this.index = index;
+    this.branch = branch;
+    this.customer = customer;
+    this.branchStore = branchStore;
 
     this._validate();
   }
 
   execute() {
-    let currentTurns;
+    const branch = this.branchStore.find(this.branch.id);
+    if (!branch) throw new customerUseCaseErrors.BranchNotFound();
 
-    try {
-      currentTurns = this.turnStore.getCurrents(this.branchID);
-    } catch(error) {
-      if (error instanceof storeErrors.BranchNotFound) {
-        throw new customerErrors.UnableToListTurns();
-      }
-
-      throw new customerErrors.CustomerError();
+    if (!branch.opened()) {
+      throw new hostessUseCaseErrors.BranchIsNotOpen();
     }
 
-    return currentTurns;
+    return this.branchStore.getCurrentTurns(branch.id, this.index);
   }
 
   _validate() {
-    if (!this.branchID) {
-      throw new customerErrors.BranchIDNotPresent();
+    if (!this.branch) {
+      throw new customerUseCaseErrors.BranchNotPresent();
     }
 
-    if (!this.turnStore) {
-      throw new customerErrors.TurnStoreNotPresent();
+    if (!this.customer) {
+      throw new customerUseCaseErrors.CustomerNotPresent();
+    }
+
+    if (!this.branchStore) {
+      throw new customerUseCaseErrors.BranchStoreNotPresent();
     }
   }
 }
 
-module.exports = ListTurns;
+module.exports = CustomerListTurns;

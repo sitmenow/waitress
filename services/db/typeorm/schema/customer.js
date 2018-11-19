@@ -1,6 +1,6 @@
 const EntitySchema = require("typeorm").EntitySchema;
 
-const Turn = require('../model/customer');
+const Customer = require('../model/customer');
 
 
 module.exports = new EntitySchema({
@@ -10,7 +10,11 @@ module.exports = new EntitySchema({
     id: {
       primary: true,
       type: "uuid",
-      generated: true
+      generated: true,
     },
+    name {
+      type: "string",
+      nullable: false,
+    }
   },
 });

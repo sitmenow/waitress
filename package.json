@@ -5,20 +5,23 @@
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=develop node index.js",
-    "test": "./node_modules/mocha/bin/mocha --reporter spec -u tdd test/**/*_test.js",
-    "test-file": "./node_modules/mocha/bin/mocha --reporter spec -u tdd -- "
+    "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd test/**/*_test.js",
+    "test-path": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd -- "
   },
   "repository": "git@github.com:sitmenow/waitress.git",
   "author": "hello@sitmenow.com",
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "bson-ext": "^2.0.1",
+    "config": "^2.0.1",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
     "graphql": "^0.13.2",
-    "node-config": "^0.0.2",
-    "pg": "^7.4.3",
-    "typeorm": "^0.2.7"
+    "moment": "^2.22.2",
+    "mongodb": "^3.1.10",
+    "mongoose": "^5.3.12",
+    "timekeeper": "^2.1.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
