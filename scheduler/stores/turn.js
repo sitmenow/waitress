@@ -19,8 +19,8 @@ class TurnStore {
     return this.gateway.update(turn);
   }
 
-  detail(turn_id) {
-    return this.gateway.detail(turn_id);
+  findByBranch(branchId, start, index) {
+    return this.gateway.findByBranch(branchId, start, index);
   }
 }
 

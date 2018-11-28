@@ -26,7 +26,12 @@ class BranchStore {
     try {
       branch = new Branch({
         id: model.id,
+        name: model.name,
+        address: model.address,
         schedule: new Schedule(),
+        restaurant: new Restaurant({
+          id: model.restaurantId,
+        }),
       });
     } catch (error) {
       throw new BranchNotCreated();
@@ -39,12 +44,17 @@ class BranchStore {
     model = null;
 
     try {
-      model = new BranchModel({});
+      model = new BranchModel({
+        name: branch.name,
+        address: branch.address,
+        // schedule: branch.schedule,
+        restaurantId: branch.restaurant.id,
+      });
     } catch (error) {
       throw new BranchModelNotCreated();
     }
 
-    return model
+    return model;
   }
 }
 
