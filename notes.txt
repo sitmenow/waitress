@@ -1,0 +1,46 @@
+
+
+
+Lista de turnos
+ - Primer request me trae los que estan actualmente formados
+ - Se deben estar escuchando los nuevos turnos que van llegando a partir de cierto indice (id del ultimo que tienes)
+ - Los turnos deben ser del dia y su estado debe ser 'waiting'
+
+
+Estados de un turno:
+  - waiting: En espera de ser atendido
+  - on-hold: En espera del cliente
+  - canceled: Cancelado por el usuario
+  - served: Atendido por el hostess
+  - rejected: Cancelado por el hostess por no presentarse
+  - removed: Eliminado por el hostess mientras esperaba
+
+Turno:
+ - id
+ - customer_id
+ - branch_id
+ - name
+ - status
+ - requested_time / requested_at
+ - expected_serve_time
+
+Log de turno:
+ - Cambio de estado
+ - Cambio de nombre
+ - Cambio de tiempo de atencion $$$
+
+Usuarios premium:
+ - Introducir turno de acuerdo a prediccion
+   Ejemplo: si el usuario desea que dentro de X tiempo o a X hora el quiere estar entrando al restaurante
+   el sistema debe ser capaz de predecir en que momento crear su turno. Lo anterior no requiere o no
+   deberia requerir alterar el orden de la lista de turnos
+
+   SI Y SOLO SI EL TIEMPO SOLICITADO ES MAYOR O IGUAL AL TIEMPO ACTUAL DE ESPERA
+   WE WILL ALWAYS RESPECT THE TIME OF A REQUESTED TURN
+
+ - En caso de que el turno de atencion alcance al turno solicitado por prediccion,
+   se dejara que el turno permanezca vivo por el tiempo restante de la prediccion.
+   Se dejaran pasar los turnos siguientes, uno a uno, en lo que el cliente en cuestion
+   se presenta.
+
+
