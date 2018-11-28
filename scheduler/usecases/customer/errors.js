@@ -9,6 +9,12 @@ class TurnIDNotPresent extends CustomerUseCaseError {}
 class BranchStoreNotPresent extends CustomerUseCaseError {}
 class CustomerStoreNotPresent extends CustomerUseCaseError {}
 
+class CustomerNotPresent extends CustomerUseCaseError {}
+class BranchIsNotOpen extends CustomerUseCaseError {}
+class BranchNotCreated extends CustomerUseCaseError {}
+
+class TurnStoreNotPresent extends CustomerUseCaseError {}
+
 
 module.exports = {
   CustomerUseCaseError,
@@ -19,4 +25,8 @@ module.exports = {
   TurnIDNotPresent,
   BranchStoreNotPresent,
   CustomerStoreNotPresent,
+  BranchIsNotOpen,
+  CustomerNotPresent,
+  BranchNotCreated,
+  TurnStoreNotPresent,
 };
