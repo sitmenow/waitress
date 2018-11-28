@@ -1,10 +1,11 @@
-
 class Branch {
-  constructor({ id, restaurant, schedule, address } = {}) {
+  constructor({ id, name, restaurant, schedule, address } = {}) {
     this._id = id;
     this._restaurant = restaurant;
-    this._schedule = schedule;
-    this._address = address;
+
+    this.name = name;
+    this.schedule = schedule;
+    this.address = address;
   }
 
   static get days() {
@@ -21,17 +22,26 @@ class Branch {
     return this._restaurant;
   }
 
-  get address() {
-    return this._address;
-  }
-
   isOpen(moment) {
     moment = moment || new Date(); // This must be in UTC
     const day = Branch.days[moment.getDay()];
-    const intervals = this._schedule.week[day] || [];
+    const shifts = this.schedule.week[day] || [];
     const hour = moment.getUTCHours();
 
-    return intervals.some(([open, close]) => hour >= open && hour < close);
+    return shifts.some(([start, end]) => hour >= start && hour < end);
+  }
+
+  getCurrentShift() {
+    const now = new Date();
+    const day = Branch.days[now.getDay()];
+    const shifts = this.schedule.week[day] || [];
+    const currentHour = now.getUTCHours();
+
+    for ([start, end] in shifts) {
+      if (currentHours >= start && currentHours < end) {
+        return { start, end };
+      }
+    }
   }
 }
 

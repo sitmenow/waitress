@@ -1,8 +1,16 @@
-
 class Hostess {
   constructor({ id, branch }) {
-    this.id = id;
-    this.branch = branch;
+    this._id = id;
+    this._branch = branch;
+    this.name = name;
+  }
+
+  get id() {
+    return this._id;
+  }
+
+  get branch() {
+    return this._branch;
   }
 }
 

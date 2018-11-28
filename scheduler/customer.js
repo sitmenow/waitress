@@ -1,11 +1,11 @@
 class Customer {
-  constructor({ id, firstName, lastName }) {
-    this.id = id;
-    this.firstName = firstName;
-    this.lastName = lastName;
+  constructor({ id, name }) {
+    this._id = id;
+    this.name = name;
   }
 
-  fullName() {
+  get id() {
+    return this._id;
   }
 }
 

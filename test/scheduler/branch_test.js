@@ -49,4 +49,6 @@ suite('Branch', () => {
       assert.isFalse(branch.isOpen())
     });
   });
+
+  suite('#getCurrentShift()', () => {});
 });
