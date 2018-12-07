@@ -22,7 +22,7 @@ class CustomerListTurns {
   }
 
   _getBranchCurrentShiftTurns(branch) {
-    const shift = branch.getCurrentShift();
+    const shift = branch.getShift();
 
     if (!shift) {
       // throw new customerUseCaseErrors.BranchIsNotOpen();

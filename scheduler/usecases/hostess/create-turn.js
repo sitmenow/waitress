@@ -1,5 +1,6 @@
 const storeErrors = require('../../stores/errors');
 const hostessUseCaseErrors = require('./errors');
+const Turn = require('../../turn');
 
 class HostessCreateTurn {
   constructor(hostess, turn, hostessStore, turnStore, customerStore) {
@@ -27,11 +28,14 @@ class HostessCreateTurn {
       throw new hostessUseCaseErrors.MissingTurnName();
     }
 
-    this.turn.date = this.turn.date || new Date();
-    this.turn.branch = hostess.branch;
-    this.turn.customer = customer;
+    const turn = new Turn({
+      name: this.turn.name,
+      customer: customer,
+      branch: hostess.branch,
+      requested_time: this.turn.requested_time,
+    });
 
-    return this.turnStore.create(this.turn);
+    return this.turnStore.create(turn);
   }
 
   _validate() {

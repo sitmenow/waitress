@@ -1,6 +1,7 @@
 const Branch = require('../../branch');
+const Restaurant = require('../../restaurant');
 const BranchModel = require('../../../services/db/mongoose/models/branch');
-const { BranchNotFound } = require('../errors');
+const storeErrors = require('../errors');
 
 
 class BranchStore {
@@ -10,31 +11,31 @@ class BranchStore {
   }
 
   async find(branchId) {
-    model = BranchModel.findById(branchId);
+    const model = await BranchModel.findById(branchId)
 
-    if (!model) throw new BranchNotFound(branchId);
+    if (!model) throw new storeErrors.BranchNotFound(branchId);
 
-    return this._modelToObect(model);
+    return this._modelToObject(model);
   }
 
   async update(branch) {
   }
 
   _modelToObject(model) {
-    branch = null;
+    let branch = null;
 
     try {
       branch = new Branch({
         id: model.id,
         name: model.name,
-        address: model.address,
-        schedule: new Schedule(),
-        restaurant: new Restaurant({
-          id: model.restaurantId,
-        }),
+        // address: model.address,
+        // schedule: new Schedule(),
+        // restaurant: new Restaurant({
+        //  id: model.restaurantId,
+        //}),
       });
     } catch (error) {
-      throw new BranchNotCreated();
+      throw new storeErrors.BranchNotCreated();
     }
 
     return branch;
@@ -51,7 +52,7 @@ class BranchStore {
         restaurantId: branch.restaurant.id,
       });
     } catch (error) {
-      throw new BranchModelNotCreated();
+      throw new storeErrors.BranchModelNotCreated();
     }
 
     return model;

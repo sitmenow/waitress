@@ -1,11 +1,11 @@
 class Turn {
-  constructor({ id, name, status, requested_time, expected_service_time, customer, branch }) {
+  constructor({ id, name, status, requestedTime, expectedServiceTime, customer, branch }) {
     this._id = id;
     this._status = status || Turn.WAITING;
     this._customer = customer;
     this._branch = branch;
-    this._requested_time = requested_time;
-    this.expected_service_time = expected_service_time;
+    this._requestedTime = requestedTime || new Date();
+    this.expectedServiceTime = expectedServiceTime;
     this.name = name;
   }
 
@@ -25,8 +25,8 @@ class Turn {
     return this._branch;
   }
 
-  get requested_time() {
-    return this._requested_time;
+  get requestedTime() {
+    return this._requestedTime;
   }
 
   static get SERVED() {
@@ -78,7 +78,7 @@ class Turn {
   }
 
   remove() {
-    if (this._status != Turn.WAITING || !this._expected_service_time) {
+    if (this._status != Turn.WAITING || !this._expectedServiceTime) {
       throw new Error();
     }
 

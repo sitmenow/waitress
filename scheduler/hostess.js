@@ -1,5 +1,5 @@
 class Hostess {
-  constructor({ id, branch }) {
+  constructor({ id, branch, name }) {
     this._id = id;
     this._branch = branch;
     this.name = name;

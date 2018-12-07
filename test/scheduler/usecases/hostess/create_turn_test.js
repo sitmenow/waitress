@@ -16,8 +16,8 @@ suite('Use Case: Hostess creates turn', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
 
-    date = new Date();
-    turn = new Turn({ name: 'Customer',  date });
+    requested_time = new Date();
+    turn = new Turn({ name: 'Customer', requested_time });
     hostess = new Hostess({ id: 'hostess-id' });
 
     turnStore = new TurnStoreMock();
@@ -32,8 +32,10 @@ suite('Use Case: Hostess creates turn', () => {
     });
     expectedTurn = new Turn({
       id: 'turn-id',
-      date: date,
-      customer: expectedCustomer
+      name: 'Customer',
+      requested_time: requested_time,
+      customer: expectedCustomer,
+      branch: expectedBranch,
     });
   });
 
@@ -74,7 +76,7 @@ suite('Use Case: Hostess creates turn', () => {
 
     test('with the given date', () => {
       const createdTurn = useCase.execute()
-      assert.deepEqual(date, createdTurn.date);
+      assert.deepEqual(requested_time, createdTurn.requested_time);
     });
 
     test('with the hostess branch as the place', () => {
