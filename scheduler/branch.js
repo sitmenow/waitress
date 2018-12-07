@@ -31,16 +31,18 @@ class Branch {
     return shifts.some(([start, end]) => hour >= start && hour < end);
   }
 
-  getCurrentShift() {
-    const now = new Date();
-    const day = Branch.days[now.getDay()];
+  getShift(moment) {
+    moment = moment || new Date();
+    const day = Branch.days[moment.getDay()];
     const shifts = this.schedule.week[day] || [];
-    const currentHour = now.getUTCHours();
+    const currentHours = moment.getUTCHours();
 
-    for ([start, end] in shifts) {
-      if (currentHours >= start && currentHours < end) {
-        return { start, end };
-      }
+    const [start, end] = shifts.find(
+      ([start, end]) => currentHours >= start && currentHours < end
+    ) || [];
+
+    if (start && end) {
+      return { start, end };
     }
   }
 }

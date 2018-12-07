@@ -5,10 +5,10 @@ const Turn = require('../../../../scheduler/turn');
 const Branch = require('../../../../scheduler/branch');
 const Schedule = require('../../../../scheduler/schedule');
 const Customer = require('../../../../scheduler/customer');
-const customerUseCaseErrors = require('../../../../scheduler/usecases/customer/errors');
 const BranchStore = require('../../../../scheduler/stores/branch');
 const TurnStore = require('../../../../scheduler/stores/turn');
 const storeErrors = require('../../../../scheduler/stores/errors');
+const customerUseCaseErrors = require('../../../../scheduler/usecases/customer/errors');
 const CustomerListTurns = require('../../../../scheduler/usecases/customer/list-turns');
 
 
@@ -27,8 +27,7 @@ suite('Use Case: Customer lists turns', () => {
     });
     turn = new Turn({
       id: 'turn-id',
-      moment: new Date(),
-      isActive: true,
+      name: 'Test',
       branch: branch,
       customer: customer,
     })
@@ -48,7 +47,7 @@ suite('Use Case: Customer lists turns', () => {
       .returns(Promise.resolve(currentTurns));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(branch, 'getCurrentShift')
+    sandbox.stub(branch, 'getShift')
       .returns({ start: 9, end: 18 });
 
     const useCase = new CustomerListTurns(
@@ -65,7 +64,7 @@ suite('Use Case: Customer lists turns', () => {
       .returns(Promise.resolve(currentTurns));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(branch, 'getCurrentShift')
+    sandbox.stub(branch, 'getShift')
       .returns();
 
     const useCase = new CustomerListTurns(

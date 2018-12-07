@@ -34,6 +34,13 @@ $ npm test
 $ npm --silent run test-path path/to/file
 ```
 
+NOTE: Tests for stores need to be executed all at the same time. Otherwise,
+the command will fail.
+
+```bash
+$ npm --silent run test-pah test/scheduler/stores/mongoose/
+```
+
 ## Run
 ```bash
 $ npm run start

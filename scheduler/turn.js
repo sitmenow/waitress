@@ -1,11 +1,18 @@
+const SERVED ='served';
+const WAITING = 'waiting';
+const ON_HOLD = 'on_hold';
+const CANCELED = 'canceled';
+const REMOVED = 'removed';
+const REJECTED = 'rejected';
+
 class Turn {
-  constructor({ id, name, status, requested_time, expected_service_time, customer, branch }) {
+  constructor({ id, name, status, requestedTime, expectedServiceTime, customer, branch }) {
     this._id = id;
-    this._status = status || Turn.WAITING;
+    this._status = status || WAITING;
     this._customer = customer;
     this._branch = branch;
-    this._requested_time = requested_time;
-    this.expected_service_time = expected_service_time;
+    this._requestedTime = requestedTime || new Date();
+    this.expectedServiceTime = expectedServiceTime;
     this.name = name;
   }
 
@@ -25,92 +32,68 @@ class Turn {
     return this._branch;
   }
 
-  get requested_time() {
-    return this._requested_time;
-  }
-
-  static get SERVED() {
-    return 'served';
-  }
-
-  static get WAITING() {
-    return 'waiting';
-  }
-
-  static get ON_HOLD() {
-    return 'on_hold'
-  }
-
-  static get CANCELED() {
-    return 'canceled';
-  }
-
-  static get REMOVED() {
-    return 'removed';
-  }
-
-  static get REJECTED() {
-    return 'rejected';
+  get requestedTime() {
+    return this._requestedTime;
   }
 
   serve() {
-    if (this._status != Turn.WAITING || this._status != Turn.ON_HOLD) {
+    if (this._status != WAITING || this._status != ON_HOLD) {
       throw new Error();
     }
 
-    this._status = Turn.SERVED;
+    this._status = SERVED;
   }
 
   hold() {
-    if (this._status != Turn.WAITING) {
+    if (this._status != WAITING) {
       throw new Error();
     }
 
-    this._status = Turn.ON_HOLD;
+    this._status = ON_HOLD;
   }
 
   cancel() {
-    if (this._status != Turn.WAITING || this._status != Turn.ON_HOLD) {
+    if (this._status != WAITING || this._status != ON_HOLD) {
       throw new Error();
     }
 
-    this._status = Turn.CANCEL;
+    this._status = CANCEL;
   }
 
   remove() {
-    if (this._status != Turn.WAITING || !this._expected_service_time) {
+    if (this._status != WAITING || !this._expectedServiceTime) {
       throw new Error();
     }
 
-    this._status = Turn.REMOVED;
+    this._status = REMOVED;
   }
 
   reject() {
-    if (this._status != Turn.WAITING || this._status != Turn.ON_HOLD) {
+    if (this._status != WAITING || this._status != ON_HOLD) {
       throw new Error();
     }
 
-    this._status = Turn.REJECTED;
+    this._status = REJECTED;
   }
 
   isServed() {
-    return this._status == Turn.SERVED;
+    return this._status == SERVED;
   }
 
   isOnHold() {
-    return this._status == Turn.ON_HOLD;
+    return this._status == ON_HOLD;
   }
 
   isCanceled() {
-    return this._status == Turn.CANCELED;
+    return this._status == CANCELED;
   }
 
   isRemoved() {
-    return this._status == Turn.REMOVED;
+    return this._status == REMOVED;
   }
 
   isRejected() {
-    return this._status == Turn.REJECTED;
+    return this._status == REJECTED;
   }
 }
 
