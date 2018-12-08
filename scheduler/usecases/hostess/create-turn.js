@@ -1,27 +1,32 @@
+const Turn = require('../../turn');
 const storeErrors = require('../../stores/errors');
 const hostessUseCaseErrors = require('./errors');
-const Turn = require('../../turn');
 
 class HostessCreateTurn {
-  constructor(hostess, turn, hostessStore, turnStore, customerStore) {
+  constructor(hostess, turn, hostessStore, turnStore, customerStore, branchStore) {
     this.hostess = hostess;
     this.turn = turn;
     this.turnStore = turnStore;
     this.hostessStore = hostessStore;
     this.customerStore = customerStore;
+    this.branchStore = branchStore;
 
     this._validate();
   }
 
   execute() {
     const customer = this.customerStore.getDefaultCustomer();
-    if (!customer) throw new hostessUseCaseErrors.CustomerNotFound();
+    const branch = this.hostessStore.find(this.hostess.id)
+      .then(hostess => this.branchStore.find(hostess.id));
 
-    const hostess = this.hostessStore.find(this.hostess.id);
-    if (!hostess) throw new hostessUseCaseErrors.HostessNotFound();
+    return Promise.all([customer, branch])
+      .then(([customer, branch]) => this._createTurn(customer, turn))
+      .catch(error => this._manageError(error));
+  }
 
-    if (!hostess.branch) {
-      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
+  _createTurn(customer, turn) {
+    if (!branch.isOpen()) {
+      throw new hostessUseCaseErrors.BranchIsNotOpen();
     }
 
     if (!this.turn.name) {
@@ -31,11 +36,23 @@ class HostessCreateTurn {
     const turn = new Turn({
       name: this.turn.name,
       customer: customer,
-      branch: hostess.branch,
-      requested_time: this.turn.requested_time,
+      branch: branch,
     });
 
     return this.turnStore.create(turn);
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.BranchNotFound) {
+      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
+    } else if (error instanceof storeErrors.CustomerNotFound) {
+      throw new hostessUseCaseErrors.CustomerNotFound();
+    } else if (error instanceof storeErrors.HosstesNotFound) {
+      throw new hostessUseCaseErrors.HostessNotFound();
+    }
+
+    console.log(error);
+    throw error;
   }
 
   _validate() {
@@ -57,6 +74,10 @@ class HostessCreateTurn {
 
     if (!this.customerStore) {
       throw new hostessUseCaseErrors.CustomerStoreNotPresent();
+    }
+
+    if (!this.branchStore) {
+      throw new hostessUseCaseErrors.BranchStoreNotPresent();
     }
   }
 }

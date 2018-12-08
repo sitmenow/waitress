@@ -1,5 +1,7 @@
+const Turn = require('../../Turn');
 const customerUseCaseErrors = require('./errors');
 const storeErrors = require('../../stores/errors');
+
 
 class CustomerCreateTurn {
   constructor(customer, turn, branch, turnStore, customerStore, branchStore) {
@@ -14,22 +16,38 @@ class CustomerCreateTurn {
   }
 
   execute() {
-    const branch = this.branchStore.find(this.branch.id);
-    if (!branch) throw new customerUseCaseErrors.BranchNotFound();
-
     const customer = this.customerStore.find(this.customer.id);
-    if (!customer) throw new customerUseCaseErrors.CustomerNotFound();
+    const branch = this.branchStore.find(this.branch.id);
 
-    if (!branch.opened(this.turn.date)) {
+    return Promises.all([customer, branch])
+      .then(([customer, branch]) => this._createTurn(customer, branch))
+      // update sockets!
+      .catch(error => this._manageError(error));
+  }
+
+  _createTurn(customer, branch) {
+    if (!branch.isOpen()) {
       throw new customerUseCaseErrors.BranchIsNotOpen();
     }
-    this.turn.name = customer.name;
-    // TODO: Validate date
-    this.turn.date = this.turn.date || new Date();
-    this.turn.customer = customer;
-    this.turn.branch = branch;
 
-    return this.turnStore.create(this.turn);
+    const turn = new Turn({
+      name: this.turn.name || customer.name,
+      branch: branch,
+      customer: customer,
+    });
+
+    return this.turnStore.create(turn);
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.BranchNotFound) {
+      throw new customerUseCaseErrors.BranchNotFound();
+    } else if (error instanceof storeErrors.CustomerNotFound) {
+      throw new customerUseCaseErrors.CustomerNotFound();
+    }
+
+    console.log(error);
+    throw error;
   }
 
   _validate() {

@@ -14,17 +14,33 @@ class CustomerRemoveTurn {
 
   execute() {
     const customer = this.customerStore.find(this.customer.id);
-    if (!customer) throw new customerUseCaseErrors.CustomerNotFound();
-
     const turn = this.turnStore.find(this.turn.id);
-    if (!turn) throw new customerUseCaseErrors.TurnNotFound();
 
+    return Promise.all([customer, turn])
+      .then(([customer, turn]) => this._removeTurn(customer, turn))
+      // update sockets!!
+      .catch(error => this._manageError(error));
+  }
+
+  _removeTurn(customer, turn) {
     if (customer.id != turn.customer.id) {
       throw new customerUseCaseErrors.TurnDoesNotBelongToCustomer();
     }
 
+    // Allow removing even if branch is closed?
     turn.remove()
     return this.turnStore.update(turn);
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.CustomerNotFound) {
+      throw new customerUseCaseErrors.CustomerNotFound();
+    } else if (error instanceof storeErrors.TurnNotFound) {
+      throw new customerUseCaseErrors.TurnNotFound();
+    }
+
+    console.log(error);
+    throw error;
   }
 
   _validate() {

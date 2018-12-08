@@ -13,18 +13,29 @@ class HostessListTurns {
   }
 
   execute() {
-    const hostess = this.hostessStore.find(this.hostess.id);
-    if (!hostess) throw new hostessUseCaseErrors.HostessNotFound();
+    return this.hostessStore.find(this.hostess.id)
+      .then(hostess => this.branchStore.find(hostess.id))
+      .then(branch => this._checkBranch(branch))
+      .catch(error => this._manageError(error));
+  }
 
-    if (!hostess.branch) {
-      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
-    }
-
-    if (!hostess.branch.opened()) {
+  _checkBranch(branch) {
+    if (!branch.isOpen()) {
       throw new hostessUseCaseErrors.BranchIsNotOpen();
     }
 
-    return this.branchStore.getCurrentTurns(hostess.branch.id, this.index);
+    return this.branchStore.getCurrentTurns(branch.id, this.index);
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.HostessNotFound) {
+       throw new hostessUseCaseErrors.HostessNotFound();
+    } else if (error instanceof storeErrors.BranchNotFound) {
+      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
+    }
+
+    console.log(error);
+    throw error;
   }
 
   _validate() {
