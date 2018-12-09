@@ -6,4 +6,4 @@ const schema = new mongoose.Schema({
   restaurantid: mongoose.ObjectId,
 });
 
-module.exports = mongoose.model('Branch', schema);
+module.exports = mongoose.model('Customer', schema);

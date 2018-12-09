@@ -1,8 +1,9 @@
 const { assert } = require('chai');
 const tk = require('timekeeper');
 
-const Branch = require('../scheduler/branch');
-const Schedule = require('../scheduler/schedule');
+const Branch = require('../../scheduler/branch');
+const Turn = require('../../scheduler/turn');
+const Schedule = require('../../scheduler/schedule');
 
 
 suite('Branch', () => {
@@ -49,4 +50,6 @@ suite('Branch', () => {
       assert.isFalse(branch.isOpen())
     });
   });
+
+  suite('#getCurrentShift()', () => {});
 });

@@ -2,25 +2,47 @@ const customerUseCaseErrors = require('./errors');
 const storeErrors = require('../../stores/errors');
 
 
+// Hay N turnos en espera de ser atendidos. Deseas continuar?
+
 class CustomerListTurns {
-  constructor(customer, branch, index, branchStore) {
+  constructor(customer, branch, index, branchStore, turnStore) {
     this.index = index;
     this.branch = branch;
     this.customer = customer;
     this.branchStore = branchStore;
+    this.turnStore = turnStore;
 
     this._validate();
   }
 
   execute() {
-    const branch = this.branchStore.find(this.branch.id);
-    if (!branch) throw new customerUseCaseErrors.BranchNotFound();
+    return this.branchStore.find(this.branch.id)
+      .then(branch => this._getBranchCurrentShiftTurns(branch))
+      .catch(error => this._manageError(error));
+  }
 
-    if (!branch.opened()) {
-      throw new hostessUseCaseErrors.BranchIsNotOpen();
+  _getBranchCurrentShiftTurns(branch) {
+    const shift = branch.getShift();
+
+    if (!shift) {
+      // throw new customerUseCaseErrors.BranchIsNotOpen();
+      return [];
     }
 
-    return this.branchStore.getCurrentTurns(branch.id, this.index);
+    return this.turnStore.findByBranch(branch.id, shift.start, this.index);
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.BranchNotFound) {
+      throw new customerUseCaseErrors.BranchNotFound();
+    } else if (error instanceof storeErrors.BranchNotCreated) {
+      throw new customerUseCaseErrors.BranchNotCreated();
+    }
+    // else if(error instanceof customerUseCaseErrors.BranchIsNotOpen) {
+    //  return [];
+    // }
+
+    console.log(error)
   }
 
   _validate() {
@@ -34,6 +56,10 @@ class CustomerListTurns {
 
     if (!this.branchStore) {
       throw new customerUseCaseErrors.BranchStoreNotPresent();
+    }
+
+    if (!this.turnStore) {
+      throw new customerUseCaseErrors.TurnStoreNotPresent();
     }
   }
 }
