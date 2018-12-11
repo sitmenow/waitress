@@ -1,4 +1,5 @@
 const { assert, expect } = require('chai');
+const sinon = require('sinon');
 const mongoose = require('mongoose');
 
 const Branch = require('../../../../scheduler/branch');
@@ -8,6 +9,7 @@ const TurnStore = require('../../../../scheduler/stores/mongoose/turn');
 const TurnModel = require('../../../../services/db/mongoose/models/turn');
 const BranchModel = require('../../../../services/db/mongoose/models/branch');
 const CustomerModel = require('../../../../services/db/mongoose/models/customer');
+const turnStoreErrors = require('../../../../scheduler/stores/errors');
 
 
 suite('Mongoose TurnStore', () => {
@@ -33,6 +35,50 @@ suite('Mongoose TurnStore', () => {
     return Promise.all(
       [branchModel.delete(), customerModel.delete()]
     );
+  });
+
+  suite('#create()', () => {
+
+    suiteSetup(() => {
+      sandbox = sinon.createSandbox();
+      branch = new Branch({
+        id: branchModel.id,
+        name: branchModel.name,
+      });
+      customer = new Customer({
+        id: customerModel.id,
+        name: customerModel.name,
+      });
+    });
+
+    suiteTeardown(() => {
+      sandbox.restore();
+    });
+
+    setup(() => {
+      turn = new Turn({
+        name: 'Test',
+        branch: branch,
+        customer: customer,
+      });
+    });
+
+    test('creates turn in DB and returns its id', async () => {
+      const turnId = await turnStore.create(turn);
+
+      assert.isNotNull(turnId);
+    });
+
+    test('throws a turn model not created error', (done) => {
+      sandbox.stub(turnStore, '_objectToModel')
+        .throws(new turnStoreErrors.TurnModelNotCreated());
+
+      turnStore.create(turn)
+        .catch((error) => {
+          expect(error).to.be.instanceof(turnStoreErrors.TurnModelNotCreated);
+          done();
+        });
+    });
   });
 
   suite('#findByBranch()', () => {
