@@ -2,31 +2,50 @@ const storeErrors = require('../../stores/errors');
 const hostessUseCaseErrors = require('./errors');
 
 class HostessRejectTurn {
-  constructor(hostess, turn, turnStore) {
+  constructor(hostess, turn, turnStore, hostessStore, branchStore) {
     this.turn = turn;
     this.hostess = hostess;
     this.turnStore = turnStore;
+    this.hostessStore = hostessStore;
+    this.branchStore = branchStore;
 
     this._validate();
   }
 
   execute() {
     const turn = this.turnStore.find(this.turn.id);
-    if (!turn) throw new hostessUseCaseErrors.TurnNotFound();
+    const branch = this.hostessStore.find(this.hostess.id)
+      .then(hostess => this.branchStore.find(hostess.id));
 
-    const hostess = this.hostessStore.find(this.hostess.id);
-    if (!hostess) throw new hostessUseCaseErrors.HostessNotFound();
+    return Promise.all([turn, branch])
+      .then(([turn, branch]) => this._createTurn(turn, branch))
+      .catch(error => this._manageError(error));
+  }
 
-    if (!hostess.branch) {
-      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
+  _serveTurn(turn, branch) {
+    if (!branch.isOpen()) {
+      throw new hostessUseCaseErrors.BranchIsNotOpen();
     }
 
-    if (hostess.branch.id != turn.branch.id) {
+    if (branch.id != turn.branch.id) {
       throw new hostessUseCaseErrors.BranchMissMatch();
     }
 
-    turn.reject(hostess.id);
+    turn.reject();
     return this.turnStore.update(turn);
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.BranchNotFound) {
+      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
+    } else if (error instanceof storeErrors.TurnNotFound) {
+      throw new hostessUseCaseErrors.TurnNotFound();
+    } else if (error instanceof storeErrors.HosstesNotFound) {
+      throw new hostessUseCaseErrors.HostessNotFound();
+    }
+
+    console.log(error);
+    throw error;
   }
 
   _validate() {
@@ -40,6 +59,14 @@ class HostessRejectTurn {
 
     if (!this.turnStore) {
       throw new hostesUseCaseErrors.TurnStoreNotPresent();
+    }
+
+    if (!this.hostessStore) {
+      throw new hostesUseCaseErrors.HostessStoreNotPresent();
+    }
+
+    if (!this.branchStore) {
+      throw new hostesUseCaseErrors.BranchStoreNotPresent();
     }
   }
 }

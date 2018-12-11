@@ -7,20 +7,36 @@ class CustomerDetailTurn {
     this.customer = customer;
     this.turnStore = turnStore;
     this.customerStore = customerStore;
+
+    this._validate();
   }
 
   execute() {
     const customer = this.customerStore.find(this.customer.id);
-    if (!customer) throw new customerUseCaseErrors.CustomerNotFound();
-
     const turn = this.turnStore.find(this.turn.id);
-    if (!turn) throw new customerUseCaseErrors.TurnNotFound();
 
+    return Promise.all([customer, turn])
+      .then(([customer, turn]) => this._checkTurnOwnership(customer, turn))
+      .catch(error => this._manageError(error));
+  }
+
+  _checkTurnOwnership(customer, turn) {
     if (customer.id != turn.customer.id) {
       throw new customerUseCaseErrors.TurnDoesNotBelongToCustomer();
     }
 
     return turn;
+  }
+
+  _manageError(error) {
+    if (error instanceof storeErrors.TurnNotFound) {
+      throw new customerUseCaseErrors.TurnNotFound();
+    } else if (error instanceof storeErrors.CustomerNotFound) {
+      throw new customerUseCaseErrors.CustomerNotFound();
+    }
+
+    console.log(error);
+    throw error;
   }
 
   _validate() {
