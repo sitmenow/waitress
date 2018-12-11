@@ -33,18 +33,4 @@ suite('Use Case: Customer removes turn', () => {
     sandbox.restore();
   });
 
-  test('TurnStore.remove is called once with branch id as the only parameter', () => {
-  });
-
-  test('TurnStore.remove throws a turn not found error', () => {
-  });
-
-  test('TurnStore.getCurrents throws an unknown error', () => {
-  });
-
-  test('invalid turn store while creating use case', () => {
-  });
-
-  test('invalid turn id while creating use case', () => {
-  });
 });
