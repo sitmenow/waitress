@@ -30,7 +30,7 @@ suite('Use Case: Customer lists turns', () => {
       name: 'Test',
       branch: branch,
       customer: customer,
-    })
+    });
     currentTurns = [turn, turn, turn];
 
     branchStore = new BranchStore();
@@ -128,7 +128,7 @@ suite('Use Case: Customer lists turns', () => {
     );
   });
 
-  test('invalid branch id while creating use case', () => {
+  test('invalid branch while creating use case', () => {
     const index = null;
     const branch = null;
 
@@ -138,7 +138,7 @@ suite('Use Case: Customer lists turns', () => {
     );
   });
 
-  test('invalid customer id while creating use case', () => {
+  test('invalid customer while creating use case', () => {
     const index = null;
     const customer = null;
 

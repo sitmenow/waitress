@@ -38,11 +38,13 @@ class CustomerListTurns {
     } else if (error instanceof storeErrors.BranchNotCreated) {
       throw new customerUseCaseErrors.BranchNotCreated();
     }
+
     // else if(error instanceof customerUseCaseErrors.BranchIsNotOpen) {
     //  return [];
     // }
 
     console.log(error)
+    throw error;
   }
 
   _validate() {
