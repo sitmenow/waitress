@@ -1,4 +1,4 @@
-const SERVED ='served';
+const SERVED = 'served';
 const WAITING = 'waiting';
 const ON_HOLD = 'on_hold';
 const CANCELED = 'canceled';
@@ -6,7 +6,7 @@ const REMOVED = 'removed';
 const REJECTED = 'rejected';
 
 class Turn {
-  constructor({ id, name, status, requestedTime, expectedServiceTime, customer, branch }) {
+  constructor({ id, name, status, guests, requestedTime, expectedServiceTime, customer, branch }) {
     this._id = id;
     this._status = status || WAITING;
     this._customer = customer;
@@ -14,6 +14,7 @@ class Turn {
     this._requestedTime = requestedTime || new Date();
     this.expectedServiceTime = expectedServiceTime;
     this.name = name;
+    this.guests = guests || 1;
   }
 
   get id() {
