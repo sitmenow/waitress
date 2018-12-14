@@ -39,8 +39,8 @@ suite('Use Case: Hostess lists turns', () => {
     sandbox.restore();
   });
 
-  test('current turns in his/her restaurant branch', () => {
     /*
+  test('current turns in his/her restaurant branch', () => {
     const turnStore = new TurnStoreMock();
     const hostessStore = new HostessStoreMock();
     const useCase = new HostessListTurns(hostess.id, hostessStore, turnStore);
@@ -50,11 +50,9 @@ suite('Use Case: Hostess lists turns', () => {
       .returns(currentTurns);
 
     assert.deepEqual(currentTurns, useCase.execute());
-    */
   });
 
   test('TurnStore.getCurrents is called once with the hostess\' restaurant branch id as the only parameter', () => {
-    /*
     const turnStore = new TurnStoreMock();
     const hostessStore = new HostessStoreMock();
     const useCase = new HostessListTurns(hostess.id, hostessStore, turnStore);
@@ -64,7 +62,7 @@ suite('Use Case: Hostess lists turns', () => {
 
     useCase.execute();
     assert.isTrue(spy.withArgs(hostess.branch.id).calledOnce);
-    */
   });
+  */
 
 });

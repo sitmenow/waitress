@@ -45,7 +45,7 @@ suite('Use Case: Hostess creates turn', () => {
 
 
   suite('a turn is created by the hostess', () => {
-
+    /*
     setup(() => {
       sandbox.stub(hostessStore, 'find')
         .returns(expectedHostess);
@@ -108,8 +108,6 @@ suite('Use Case: Hostess creates turn', () => {
       useCase.execute();
       assert.isTrue(turnStore.create.calledWith(turn));
     });
-  });
-
-  test('', () => {
+  */
   });
 });

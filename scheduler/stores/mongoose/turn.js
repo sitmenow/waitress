@@ -8,20 +8,20 @@ const storeErrors = require('../errors');
 
 class TurnStore {
   async create(turn) {
-    model = this._objectToModel(branch);
+    const model = this._objectToModel(turn);
     await model.save();
-    return model;
+    return model.id;
   }
 
   async find(turnId) {
-    model = TurnModel.findById(turnId);
+    model = await TurnModel.findById(turnId);
 
     if (!model) throw new storeErrors.TurnNotFound(turnId);
 
     return this._modelToObect(model);
   }
 
-  async update(branch) {
+  async update(turn) {
   }
 
   // En teoria nunca deberian quedar turnos en espera de ser atendidos
@@ -64,11 +64,19 @@ class TurnStore {
   }
 
   _objectToModel(turn) {
-    model = null;
+    let model = null;
 
     try {
-      model = new TurnModel(turn);
+      model = new TurnModel({
+        name: turn.name,
+        status: turn.status,
+        requestedTime: turn.requestedTime,
+        expectedServiceTime: turn.expectedServiceTime,
+        branchId: branch.id,
+        customerId: customer.id,
+      });
     } catch (error) {
+      console.log(error);
       throw new storeErrors.TurnModelNotCreated();
     }
 
