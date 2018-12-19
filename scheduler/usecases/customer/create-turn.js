@@ -1,4 +1,4 @@
-const Turn = require('../../Turn');
+const Turn = require('../../turn');
 const customerUseCaseErrors = require('./errors');
 const storeErrors = require('../../stores/errors');
 
