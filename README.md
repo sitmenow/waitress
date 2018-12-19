@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/sitmenow/waitress/tree/master.svg?style=svg)](https://circleci.com/gh/sitmenow/waitress/tree/master)
+
 # Waitress
 Sit Me Now application service.
 
