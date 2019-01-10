@@ -48,7 +48,7 @@ suite('Use Case: Customer creates turn', () => {
     sandbox.stub(Branch.prototype, 'isOpen')
       .returns(true);
     sandbox.stub(turnStore, 'create')
-      .returns(Promise.resolve(turn));
+      .returns(Promise.resolve(turn)); // expected turn maybe?
 
     const requestedTime = new Date(Date.UTC(2018, 12, 9));
     const expectedTurn = new Turn({
@@ -67,6 +67,9 @@ suite('Use Case: Customer creates turn', () => {
     assert.isTrue(turnStore.create.calledWith(expectedTurn));
     assert.deepEqual(turn, output);
   });
+
+  // test customer creates turn with no guests
+  // test customer creates turn with no name
 
   test('when the given branch is not open throw a branch not open error', (done) => {
     sandbox.stub(branchStore, 'find')

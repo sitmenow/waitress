@@ -96,6 +96,10 @@ class Turn {
   isRejected() {
     return this._status == REJECTED;
   }
+
+  isWaiting() {
+    return this._status == WAITING;
+  }
 }
 
 module.exports = Turn;

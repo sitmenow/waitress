@@ -44,3 +44,5 @@ Usuarios premium:
    se presenta.
 
 
+EXTRAS:
+ - Cuando un branch cierra el dia, todos sus tickets actuales se van a rejected

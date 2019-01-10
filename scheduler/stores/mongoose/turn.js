@@ -14,14 +14,27 @@ class TurnStore {
   }
 
   async find(turnId) {
-    model = await TurnModel.findById(turnId);
+    const model = await TurnModel.findById(turnId);
 
     if (!model) throw new storeErrors.TurnNotFound(turnId);
 
-    return this._modelToObect(model);
+    return this._modelToObject(model);
   }
 
   async update(turn) {
+    const model = await TurnModel.findById(turn.id);
+
+    if (!model) throw new storeErrors.TurnNotFound(turn.id);
+
+    model.name = turn.name;
+    model.guests = turn.guests;
+    model.status = turn.status;
+    model.requestedTime = turn.requestedTime;
+    model.expectedServiceTime = turn.expectedServiceTime;
+    model.customerId = turn.customer.id;
+    model.branchId = turn.branch.id;
+
+    await model.save();
   }
 
   // En teoria nunca deberian quedar turnos en espera de ser atendidos
@@ -46,17 +59,12 @@ class TurnStore {
       turn = new Turn({
         id: model.id,
         name: model.name,
+        guests: model.guests,
         requestedTime: model.requestedTime,
-        branch: new Branch({
-          id: model.branchId.toString(),
-        }),
-        customer: new Customer({
-          id: model.customerId.toString(),
-        }),
-        schedule: new Schedule(),
+        branch: new Branch({ id: model.branchId.toString() }),
+        customer: new Customer({ id: model.customerId.toString() }),
       });
     } catch (error) {
-      console.log(error)
       throw new storeErrors.TurnNotCreated();
     }
 
@@ -70,13 +78,13 @@ class TurnStore {
       model = new TurnModel({
         name: turn.name,
         status: turn.status,
+        guests: turn.guests,
         requestedTime: turn.requestedTime,
         expectedServiceTime: turn.expectedServiceTime,
         branchId: branch.id,
         customerId: customer.id,
       });
     } catch (error) {
-      console.log(error);
       throw new storeErrors.TurnModelNotCreated();
     }
 
