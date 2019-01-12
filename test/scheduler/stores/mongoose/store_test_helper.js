@@ -1,5 +1,7 @@
 const database = require('../../../../database');
 
+require('../../test_helper')
+
 before(() => {
   mongoose = database()
     .catch(error => console.log(`Error while connecting to database: ${error}`));
