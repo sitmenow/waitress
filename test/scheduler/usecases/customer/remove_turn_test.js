@@ -6,7 +6,7 @@ const Branch = require('../../../../scheduler/branch');
 const Customer = require('../../../../scheduler/customer');
 const customerUseCaseErrors = require('../../../../scheduler/usecases/customer/errors');
 const storeErrors = require('../../../../scheduler/stores/errors');
-const CustomerRemoveTurn = require('../../../../scheduler/usecases/customer/remove-turn');
+const CustomerRemoveTurn = require('../../../../scheduler/usecases/customer/cancel-turn');
 const { TurnStoreMock } = require('../mocks');
 
 

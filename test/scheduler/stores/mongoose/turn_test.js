@@ -2,6 +2,8 @@ const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
 
+require('./store_test_helper');
+
 const Branch = require('../../../../scheduler/branch');
 const Customer = require('../../../../scheduler/customer');
 const Turn = require('../../../../scheduler/turn');
