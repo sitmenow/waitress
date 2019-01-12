@@ -1,113 +1,258 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
+const tk = require('timekeeper');
 
-const Turn = require('../../../../scheduler/turn');
+require('../../test_helper');
+
 const Branch = require('../../../../scheduler/branch');
-const Customer = require('../../../../scheduler/customer');
-const Hostess = require('../../../../scheduler/hostess');
 const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
 const storeErrors = require('../../../../scheduler/stores/errors');
 const HostessCreateTurn = require('../../../../scheduler/usecases/hostess/create-turn');
-const { HostessStoreMock, TurnStoreMock, CustomerStoreMock } = require('../mocks');
 
 
 suite('Use Case: Hostess creates turn', () => {
-
   setup(() => {
     sandbox = sinon.createSandbox();
 
-    requested_time = new Date();
-    turn = new Turn({ name: 'Customer', requested_time });
-    hostess = new Hostess({ id: 'hostess-id' });
+    customerStore = createCustomerStore();
+    branchStore = createBranchStore();
+    turnStore = createTurnStore();
+    hostessStore = createHostessStore();
 
-    turnStore = new TurnStoreMock();
-    hostessStore = new HostessStoreMock();
-    customerStore = new CustomerStoreMock();
-
-    expectedBranch = new Branch({ id: 'restaurant-branch-id' });
-    expectedCustomer = new Customer({ id: 'default-customer-id' });
-    expectedHostess = new Hostess({
-      id: 'hostess-id',
-      branch: expectedBranch,
-    });
-    expectedTurn = new Turn({
-      id: 'turn-id',
-      name: 'Customer',
-      requested_time: requested_time,
-      customer: expectedCustomer,
-      branch: expectedBranch,
-    });
+    hostessId = 'hostess-id';
+    turnName = 'Turn';
+    turnGuests = 6;
+    schedule = createSchedule();
+    restaurant = createRestaurant();
+    branch = createBranch({ restaurant, schedule });
+    hostess = createHostess({ hostessId, branch });
+    defaultCustomer = createCustomer();
   });
 
   teardown(() => {
     sandbox.restore();
+    tk.reset();
   });
 
+  test('hostess creates a turn', async() =>{
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(turnStore, 'create')
+      .returns(Promise.resolve(true));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
 
-  suite('a turn is created by the hostess', () => {
-    /*
-    setup(() => {
-      sandbox.stub(hostessStore, 'find')
-        .returns(expectedHostess);
-
-      sandbox.stub(customerStore, 'getDefaultCustomer')
-        .returns(expectedCustomer);
-
-      sandbox.stub(turnStore, 'create')
-        .returns(expectedTurn);
-
-      useCase = new HostessCreateTurn(
-        hostess,
-        turn,
-        hostessStore,
-        turnStore,
-        customerStore
-      )
+    const requestedTime = new Date();
+    const expectedTurn = createTurn({
+      turnName,
+      turnGuests,
+      branch,
+      requestedTime,
+      customer: defaultCustomer,
+    });
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    teardown(() => {
-      sandbox.restore();
+    tk.freeze(requestedTime);
+    const output = await useCase.execute();
+
+    assert.isTrue(turnStore.create.calledWith(expectedTurn));
+    assert.isTrue(output);  
+  });
+
+  test('hostess creates a turn when the branch is closed', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(false);
+
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('with a default customer as owner', () => {
-      const createdTurn = useCase.execute()
-      assert.deepEqual(expectedTurn.customer, createdTurn.customer);
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.BranchIsNotOpen);
+        done();
+      });
+  });
+
+  test('hostess creates a turn with null name', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
+
+    const turnName = null;
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('with the given date', () => {
-      const createdTurn = useCase.execute()
-      assert.deepEqual(requested_time, createdTurn.requested_time);
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.MissingTurnName);
+        done();
+      });
+  });
+
+  test('hostess creates a turn with empty name', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
+
+    const turnName = '';
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('with the hostess branch as the place', () => {
-      const createdTurn = useCase.execute()
-      assert.deepEqual(hostess.branch, createdTurn.branch);
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.MissingTurnName);
+        done();
+      });
+  });
+
+  test('hostess creates a turn but default customer is not found', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.reject(new storeErrors.CustomerNotFound()));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('calling HostessStore.find once', () => {
-      useCase.execute();
-      assert.isTrue(hostessStore.find.calledOnce);
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.DefaultCustomerNotFound);
+        done();
+      });
+  });
+
+  test('non-existent hostess creates turn', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.reject(new storeErrors.HostessNotFound()));
+
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('calling HostessStore.find with hostess branch id as the only parameter', () => {
-      useCase.execute();
-      assert.isTrue(hostessStore.find.calledWith(hostess.id));
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.HostessNotFound);
+        done();
+      });
+  });
+
+  test('hostess with no branch creates turn', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.reject(new storeErrors.BranchNotFound()));
+
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('calling CustomerStore.getDefaultCustomer once', () => {
-      useCase.execute();
-      assert.isTrue(customerStore.getDefaultCustomer.calledOnce);
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.HostessDoesNotBelongToAnyBranch);
+        done();
+      });
+  });
+
+  test('hostess creates a turn but store throws error while creating turn', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.resolve(defaultCustomer));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
+    sandbox.stub(turnStore, 'create')
+      .rejects(new storeErrors.TurnNotCreated());
+
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
     });
 
-    test('calling TurnStore.create once', () => {
-      useCase.execute();
-      assert.isTrue(turnStore.create.calledOnce);
-    });
-
-    test('calling TurnStore.create with a composed turn as the only parameter', () => {
-      useCase.execute();
-      assert.isTrue(turnStore.create.calledWith(turn));
-    });
-  */
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.TurnNotCreated);
+        done();
+      });
   });
 });

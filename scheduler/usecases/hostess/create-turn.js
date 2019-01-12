@@ -1,63 +1,69 @@
-const storeErrors = require('../../stores/errors');
-const hostessUseCaseErrors = require('./errors');
 const Turn = require('../../turn');
+const storeErrors = require('../../stores/errors');
+const errors = require('./errors');
 
 class HostessCreateTurn {
-  constructor(hostess, turn, hostessStore, turnStore, customerStore) {
-    this.hostess = hostess;
-    this.turn = turn;
+  constructor({
+    hostessId,
+    turnName,
+    turnGuests,
+    hostessStore,
+    turnStore,
+    customerStore,
+    branchStore
+  }) {
+    this.hostessId = hostessId;
+    this.turnName = turnName;
+    this.turnGuests = turnGuests;
     this.turnStore = turnStore;
     this.hostessStore = hostessStore;
     this.customerStore = customerStore;
-
-    this._validate();
+    this.branchStore = branchStore;
   }
 
   execute() {
     const customer = this.customerStore.getDefaultCustomer();
-    if (!customer) throw new hostessUseCaseErrors.CustomerNotFound();
+    const branch = this.hostessStore.find(this.hostessId)
+      .then(hostess => this.branchStore.find(hostess.id));
 
-    const hostess = this.hostessStore.find(this.hostess.id);
-    if (!hostess) throw new hostessUseCaseErrors.HostessNotFound();
+    return Promise.all([customer, branch])
+      .then(([customer, branch]) => this._createTurn(customer, branch))
+      .catch(error => this._manageError(error));
+  }
 
-    if (!hostess.branch) {
-      throw new hostessUseCaseErrors.HostessDoesNotBelongToAnyBranch();
+  _createTurn(customer, branch) {
+    if (!branch.isOpen()) {
+      throw new errors.BranchIsNotOpen();
     }
 
-    if (!this.turn.name) {
-      throw new hostessUseCaseErrors.MissingTurnName();
+    if (!this.turnName) {
+      throw new errors.MissingTurnName();
     }
 
     const turn = new Turn({
-      name: this.turn.name,
+      name: this.turnName,
+      guests: this.turnGuests,
       customer: customer,
-      branch: hostess.branch,
-      requested_time: this.turn.requested_time,
+      branch: branch,
     });
 
     return this.turnStore.create(turn);
   }
 
-  _validate() {
-    if (!this.hostess) {
-      throw new hostessUseCaseErrors.HostessNotPresent();
+  _manageError(error) {
+    if (error instanceof storeErrors.BranchNotFound) {
+      throw new errors.HostessDoesNotBelongToAnyBranch();
+    } else if (error instanceof storeErrors.CustomerNotFound) {
+      throw new errors.DefaultCustomerNotFound();
+    } else if (error instanceof storeErrors.HostessNotFound) {
+      throw new errors.HostessNotFound();
+    } else if (error instanceof storeErrors.TurnNotCreated) {
+      throw new errors.TurnNotCreated();
     }
 
-    if (!this.turn) {
-      throw new hostessUseCaseErrors.TurnNotPresent();
-    }
-
-    if (!this.turnStore) {
-      throw new hostesUseCaseErrors.TurnStoreNotPresent();
-    }
-
-    if (!this.hostessStore) {
-      throw new hostessUseCaseErrors.HostessStoreNotPresent();
-    }
-
-    if (!this.customerStore) {
-      throw new hostessUseCaseErrors.CustomerStoreNotPresent();
-    }
+    // TODO: Log unknown errors
+    // console.log(error)
+    throw error;
   }
 }
 
