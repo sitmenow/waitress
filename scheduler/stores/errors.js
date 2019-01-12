@@ -7,6 +7,7 @@ class TurnNotCreated extends StoreError {}
 class TurnModelNotCreated extends StoreError {}
 class BranchNotCreated extends StoreError {}
 class BranchModelNotCreated extends StoreError {}
+class HostessNotFound extends StoreError {}
 
 module.exports = {
   StoreError,
@@ -18,4 +19,5 @@ module.exports = {
   TurnNotFound,
   TurnNotCreated,
   TurnModelNotCreated,
+  HostessNotFound,
 };
