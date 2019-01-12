@@ -1,3 +1,4 @@
+const Branch = require('../../branch');
 const Hostess = require('../../hostess');
 const HostessModel = require('../../../services/db/mongoose/models/hostess');
 const storeErrors = require('../errors');
@@ -25,6 +26,7 @@ class HostessStore {
       hostess = new Hostess({
         id: model.id,
         name: model.name,
+        branch: new Branch({ id: model.branchId }),
       });
     } catch (error) {
       console.log(error)

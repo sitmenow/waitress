@@ -40,7 +40,9 @@ suite('Mongoose HostessStore', () => {
     });
 
     test('returns a hostess with the given id', async () => {
+      const branch = createBranch({ id: hostessModel.branchId });
       const expectedHostess = createHostess({
+        branch,
         hostessName,
         hostessId: hostessModel.id
       });

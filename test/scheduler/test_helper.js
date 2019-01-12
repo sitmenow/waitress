@@ -13,8 +13,6 @@ const HostessStore = require('../../scheduler/stores/hostess')
 
 before(() => {
   createBranch = ({ branchId, branchName, restaurant, schedule } = {}) => {
-    branchName = branchName || 'Branch'
-
     return new Branch({
       id: branchId,
       name: branchName,
@@ -24,8 +22,6 @@ before(() => {
   };
 
   createCustomer = ({ customerId, customerName } = {}) => {
-    customerName = customerName || 'Customer'
-
     return new Customer({
       id: customerId,
       name: customerName,
@@ -51,8 +47,6 @@ before(() => {
     requestedTime, expectedServiceTime
   }) => {
     // id should keep the same
-    turnName = turnName || 'Turn'
-
     return new Turn({
       id: turnId,
       name: turnName,
@@ -66,8 +60,6 @@ before(() => {
   };
 
   createHostess = ({ hostessId, hostessName, branch } = {}) => {
-    hostessName = hostessName || 'Hostess';
-
     return new Hostess({
       id: hostessId,
       name: hostessName,
@@ -76,8 +68,6 @@ before(() => {
   } ;
 
   createRestaurant = ({ restaurantId, restaurantName } = {}) => {
-    restaurantName = restaurantName || 'Restaurant';
-
     return new Restaurant({
       id: restaurantId,
       name: restaurantName,
