@@ -55,6 +55,8 @@ class HostessCreateTurn {
       throw new errors.HostessDoesNotBelongToAnyBranch();
     } else if (error instanceof storeErrors.CustomerNotFound) {
       throw new errors.DefaultCustomerNotFound();
+    } else if (error instanceof storeErrors.CustomerNotCreated) {
+      throw new errors.DefaultCustomerNotCreated();
     } else if (error instanceof storeErrors.HostessNotFound) {
       throw new errors.HostessNotFound();
     } else if (error instanceof storeErrors.TurnNotCreated) {

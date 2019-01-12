@@ -4,6 +4,7 @@ class HostessNotFound extends HostessUseCaseError {}
 class MissingTurnName extends HostessUseCaseError {}
 class BranchIsNotOpen extends HostessUseCaseError {}
 class DefaultCustomerNotFound extends HostessUseCaseError {}
+class DefaultCustomerNotCreated extends HostessUseCaseError {}
 class HostessDoesNotBelongToAnyBranch extends HostessUseCaseError {}
 class TurnNotCreated extends HostessUseCaseError {}
 
@@ -14,6 +15,7 @@ module.exports = {
   MissingTurnName,
   BranchIsNotOpen,
   DefaultCustomerNotFound,
+  DefaultCustomerNotCreated,
   HostessDoesNotBelongToAnyBranch,
   TurnNotCreated,
 };

@@ -19,6 +19,14 @@ class CustomerStore {
   async update(customer) {
   }
 
+  async getDefaultCustomer() {
+    const model = await CustomerModel.findOne({ name: "DEFAULT_CUSTOMER" });
+
+    if (!model) throw new storeErrors.CustomerNotFound("DEFAULT_CUSTOMER");
+
+    return this._modelToObject(model);
+  }
+
   _modelToObject(model) {
     let customer = null;
 

@@ -179,6 +179,31 @@ suite('Use Case: Hostess creates turn', () => {
       });
   });
 
+  test('hostess creates a turn but default customer object cannot be created', (done) => {
+    sandbox.stub(customerStore, 'getDefaultCustomer')
+      .returns(Promise.reject(new storeErrors.CustomerNotCreated()));
+    sandbox.stub(hostessStore, 'find')
+      .returns(Promise.resolve(hostess));
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+
+    const useCase = new HostessCreateTurn({
+      hostessId,
+      turnName,
+      turnGuests,
+      turnStore,
+      hostessStore,
+      customerStore,
+      branchStore,
+    });
+
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.DefaultCustomerNotCreated);
+        done();
+      });
+  });
+
   test('non-existent hostess creates turn', (done) => {
     sandbox.stub(customerStore, 'getDefaultCustomer')
       .returns(Promise.resolve(defaultCustomer));
