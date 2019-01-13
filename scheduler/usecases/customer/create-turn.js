@@ -1,23 +1,30 @@
 const Turn = require('../../turn');
-const customerUseCaseErrors = require('./errors');
+const errors = require('./errors');
 const storeErrors = require('../../stores/errors');
 
 
 class CustomerCreateTurn {
-  constructor(customer, turn, branch, turnStore, customerStore, branchStore) {
-    this.turn = turn;
-    this.branch = branch;
-    this.customer = customer;
+  constructor({
+    turnName,
+    turnGuests,
+    customerId,
+    branchId,
+    turnStore,
+    customerStore,
+    branchStore,
+  }) {
+    this.turnName = turnName;
+    this.turnGuests = turnGuests;
+    this.branchId = branchId;
+    this.customerId = customerId;
     this.turnStore = turnStore;
     this.branchStore = branchStore;
     this.customerStore = customerStore;
-
-    this._validate();
   }
 
   execute() {
-    const customer = this.customerStore.find(this.customer.id);
-    const branch = this.branchStore.find(this.branch.id);
+    const customer = this.customerStore.find(this.customerId);
+    const branch = this.branchStore.find(this.branchId);
 
     return Promise.all([customer, branch])
       .then(([customer, branch]) => this._createTurn(customer, branch))
@@ -27,12 +34,12 @@ class CustomerCreateTurn {
 
   _createTurn(customer, branch) {
     if (!branch.isOpen()) {
-      throw new customerUseCaseErrors.BranchIsNotOpen();
+      throw new errors.BranchIsNotOpen();
     }
 
     const turn = new Turn({
-      name: this.turn.name || customer.name,
-      guests: this.turn.guests,
+      name: this.turnName || customer.name,
+      guests: this.turnGuests,
       branch: branch,
       customer: customer,
     });
@@ -42,42 +49,18 @@ class CustomerCreateTurn {
 
   _manageError(error) {
     if (error instanceof storeErrors.BranchNotFound) {
-      throw new customerUseCaseErrors.BranchNotFound();
+      throw new errors.BranchNotFound();
     } else if (error instanceof storeErrors.CustomerNotFound) {
-      throw new customerUseCaseErrors.CustomerNotFound();
+      throw new errors.CustomerNotFound();
     } else if (error instanceof storeErrors.BranchNotCreated) {
-      throw new customerUseCaseErrors.BranchNotCreated();
+      throw new errors.BranchNotCreated();
     } else if (error instanceof storeErrors.CustomerNotCreated) {
-      throw new customerUseCaseErrors.CustomerNotCreated();
+      throw new errors.CustomerNotCreated();
+    } else if (error instanceof storeErrors.TurnNotCreated) {
+      throw new errors.TurnNotCreated();
     }
 
     throw error;
-  }
-
-  _validate() {
-    if (!this.turnStore) {
-      throw new customerUseCaseErrors.TurnStoreNotPresent();
-    }
-
-    if (!this.customerStore) {
-      throw new customerUseCaseErrors.CustomerStoreNotPresent();
-    }
-
-    if (!this.branchStore) {
-      throw new customerUseCaseErrors.BranchStoreNotPresent();
-    }
-
-    if (!this.branch) {
-      throw new customerUseCaseErrors.BranchNotPresent();
-    }
-
-    if (!this.customer) {
-      throw new customerUseCaseErrors.CustomerNotPresent();
-    }
-
-    if (!this.turn) {
-      throw new customerUseCaseErrors.TurnNotPresent();
-    }
   }
 }
 

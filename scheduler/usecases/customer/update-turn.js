@@ -4,19 +4,27 @@ const storeErrors = require('../../stores/errors');
 
 
 class CustomerUpdateTurn {
-  constructor(customer, turn, customerStore, turnStore, branchStore) {
-    this.turn = turn;
-    this.customer = customer;
+  constructor({
+    turnId,
+    turnName,
+    turnGuests,
+    customerId,
+    customerStore,
+    turnStore,
+    branchStore
+  }) {
+    this.turnId = turnId;
+    this.turnName = turnName;
+    this.turnGuests = turnGuests;
+    this.customerId = customerId;
     this.turnStore = turnStore;
     this.customerStore = customerStore;
     this.branchStore = branchStore;
-
-    this._validate();
   }
 
   execute() {
-    const customer = this.customerStore.find(this.customer.id);
-    const turn = this.turnStore.find(this.turn.id);
+    const customer = this.customerStore.find(this.customerId);
+    const turn = this.turnStore.find(this.turnId);
 
     return Promise.all([customer, turn])
       .then(([customer, turn]) => this._updateTurn(customer, turn))
@@ -32,22 +40,16 @@ class CustomerUpdateTurn {
       throw new errors.InactiveTurn();
     }
 
-    let requestedTime = this.turn.requestedTime;
-
-    if (this.turn.requestedTime != turn.requestedTime) {
-      requestedTime = null;
-    }
-
     const branch = await this.branchStore.find(turn.branch.id);
 
-    if (!branch.isOpen(requestedTime)) {
+    if (!branch.isOpen()) {
       throw new errors.BranchIsNotOpen();
     }
 
     const updatedTurn = new Turn({
-      name: this.turn.name || turn.name,
-      guests: this.turn.guests || turn.guests,
-      requestedTime: requestedTime,
+      name: this.turnName || turn.name,
+      guests: this.turnGuests || turn.guests,
+      requestedTime: turn.requestedTime,
       branch: branch,
       customer: customer,
     });
@@ -62,31 +64,12 @@ class CustomerUpdateTurn {
       throw new errors.CustomerNotFound();
     } else if (error instanceof storeErrors.TurnNotFound) {
       throw new errors.TurnNotFound();
+    } else if (error instanceof storeErrors.TurnNotUpdated) {
+      throw new errors.TurnNotUpdated();
     }
 
+    // console.log(error)
     throw error;
-  }
-
-  _validate() {
-    if (!this.turn) {
-      throw new errors.TurnNotPresent();
-    }
-
-    if (!this.customer) {
-      throw new errors.CustomerNotPresent();
-    }
-
-    if (!this.turnStore) {
-      throw new errors.TurnStoreNotPresent();
-    }
-
-    if (!this.customerStore) {
-      throw new errors.CustomerStoreNotPresent();
-    }
-
-    if (!this.branchStore) {
-      throw new errors.BranchStoreNotPresent();
-    }
   }
 }
 
