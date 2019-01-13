@@ -8,6 +8,7 @@ class DefaultCustomerNotCreated extends HostessUseCaseError {}
 class HostessDoesNotBelongToAnyBranch extends HostessUseCaseError {}
 class TurnNotCreated extends HostessUseCaseError {}
 class TurnNotServed extends HostessUseCaseError {}
+class TurnNotRejected extends HostessUseCaseError {}
 class TurnIsNotWaiting extends HostessUseCaseError {}
 class BranchMissMatch extends HostessUseCaseError {}
 class BranchNotFound extends HostessUseCaseError {}
@@ -28,5 +29,6 @@ module.exports = {
   TurnNotFound,
   TurnNotCreated,
   TurnNotServed,
+  TurnNotRejected,
   TurnIsNotWaiting,
 };
