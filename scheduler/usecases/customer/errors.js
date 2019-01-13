@@ -13,15 +13,21 @@ class TurnStoreNotPresent extends CustomerUseCaseError {}
 
 class CustomerNotPresent extends CustomerUseCaseError {}
 class BranchIsNotOpen extends CustomerUseCaseError {}
+class UnavailableBranchShift extends CustomerUseCaseError {}
 
 class TurnDoesNotBelongToCustomer extends CustomerUseCaseError {}
 class InactiveTurn extends CustomerUseCaseError {}
+
+class TurnNotUpdated extends CustomerUseCaseError {}
+class TurnNotCreated extends CustomerUseCaseError {}
 
 module.exports = {
   CustomerUseCaseError,
   BranchNotFound,
   BranchNotCreated,
   TurnNotFound,
+  TurnNotCreated,
+  TurnNotUpdated,
   CustomerNotFound,
   CustomerNotCreated,
   BranchStoreNotPresent,
@@ -32,4 +38,5 @@ module.exports = {
   TurnStoreNotPresent,
   TurnDoesNotBelongToCustomer,
   InactiveTurn,
+  UnavailableBranchShift,
 };

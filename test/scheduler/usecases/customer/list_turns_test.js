@@ -1,150 +1,162 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-const Turn = require('../../../../scheduler/turn');
+require('../../test_helper');
+
 const Branch = require('../../../../scheduler/branch');
-const Schedule = require('../../../../scheduler/schedule');
-const Customer = require('../../../../scheduler/customer');
-const BranchStore = require('../../../../scheduler/stores/branch');
-const TurnStore = require('../../../../scheduler/stores/turn');
 const storeErrors = require('../../../../scheduler/stores/errors');
-const customerUseCaseErrors = require('../../../../scheduler/usecases/customer/errors');
+const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
 const CustomerListTurns = require('../../../../scheduler/usecases/customer/list-turns');
 
 
 suite('Use Case: Customer lists turns', () => {
-
   setup(() => {
     sandbox = sinon.createSandbox();
-    schedule = new Schedule();
-    // TODO: Update the objects below with true data
-    branch = new Branch({
-      id: 'restaurant-branch-id',
-      schedule: schedule,
-    });
-    customer = new Customer({
-      id: 'customer-id',
-    });
-    turn = new Turn({
-      id: 'turn-id',
-      name: 'Test',
-      branch: branch,
-      customer: customer,
-    });
-    currentTurns = [turn, turn, turn];
 
-    branchStore = new BranchStore();
-    turnStore = new TurnStore();
+    branchStore = createBranchStore();
+    turnStore = createTurnStore();
+    customerStore = createCustomerStore();
+
+    index = null;
+    branchId = 'branch-id';
+    customerId = 'customer-id';
+    schedule = createSchedule();
+    restaurant = createRestaurant();
+    branch = createBranch({ branchId, restaurant, schedule });
+    customer = createCustomer({ customerId });
+    turn = createTurn({
+      turnId: 'turn-id',
+      turnName: 'Turn Test',
+      branch,
+      customer,
+    });
   });
 
   teardown(() => {
     sandbox.restore();
   });
 
-  test('when the given branch is open returns its current turns', async () => {
-    const index = null;
-    sandbox.stub(turnStore, 'findByBranch')
-      .returns(Promise.resolve(currentTurns));
+  test('customer list turns', async () => {
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(branch, 'getShift')
-      .returns({ start: 9, end: 18 });
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
+    sandbox.stub(turnStore, 'findByBranch')
+      .returns(true)
+    sandbox.stub(branch, 'isOpen')
+      .returns(true);
 
-    const useCase = new CustomerListTurns(
-      customer, branch, index, branchStore, turnStore
-    );
+    const shift = { start: 9, end: 18 };
+
+    sandbox.stub(branch, 'getShift')
+      .returns(shift);
+
+    const useCase = new CustomerListTurns({
+      index,
+      customerId,
+      branchId,
+      branchStore,
+      turnStore,
+      customerStore,
+    });
 
     const output = await useCase.execute();
-    assert.deepEqual(currentTurns, output);
+
+    assert.isTrue(turnStore.findByBranch.calledWith(branchId, shift.start, index));
+    assert.isTrue(output);
   });
 
-  test('when the given branch is not open returns an emtpy list', async () => {
-    const index = null;
-    sandbox.stub(turnStore, 'findByBranch')
-      .returns(Promise.resolve(currentTurns));
+  test('customer lists turns when the branch is closed', (done) => {
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(branch, 'getShift')
-      .returns();
+    sandbox.stub(branch, 'isOpen')
+      .returns(false);
 
-    const useCase = new CustomerListTurns(
-      customer, branch, index, branchStore, turnStore
-    );
+    const useCase = new CustomerListTurns({
+      index,
+      customerId,
+      branchId,
+      branchStore,
+      turnStore,
+      customerStore,
+    });
 
-    const output = await useCase.execute();
-    assert.deepEqual([], output);
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.BranchIsNotOpen);
+        done();
+      });
   });
 
-  test('when branch model does not exist throws a restaurant branch not found error', (done) => {
-    const index = null;
-     sandbox.stub(branchStore, 'find')
+  test('customer list turns but branch current shift is corrupted', (done) => {
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
+    sandbox.stub(branch, 'isOpen')
+      .returns(true);
+    sandbox.stub(branch, 'getShift')
+      .returns(null);
+
+    const useCase = new CustomerListTurns({
+      index,
+      customerId,
+      branchId,
+      branchStore,
+      turnStore,
+      customerStore,
+    });
+
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.UnavailableBranchShift);
+        done();
+      });
+  });
+
+  test('customer lists turns for a non-existent branch', (done) => {
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
+    sandbox.stub(branchStore, 'find')
       .returns(Promise.reject(new storeErrors.BranchNotFound()));
 
-    const useCase = new CustomerListTurns(
-      customer, branch, index, branchStore, turnStore
-    );
+    const useCase = new CustomerListTurns({
+      index,
+      customerId,
+      branchId,
+      branchStore,
+      turnStore,
+      customerStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
         done();
       });
   });
 
-  test('when branch object cannot be created throws a restaurant branch not found error', (done) => {
-    const index = null;
-    const branchStore = new BranchStore();
-     sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchNotCreated()));
+  test('non-existent customer list turns', (done) => {
+    sandbox.stub(branchStore, 'find')
+      .returns(branch);
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.reject(new storeErrors.CustomerNotFound()));
 
-    const useCase = new CustomerListTurns(
-      customer, branch, index, branchStore, turnStore
-    );
+    const useCase = new CustomerListTurns({
+      index,
+      customerId,
+      branchId,
+      branchStore,
+      turnStore,
+      customerStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.BranchNotCreated);
+        expect(error).to.be.instanceof(useCaseErrors.CustomerNotFound);
         done();
       });
-  });
-
-  test('invalid branch store while creating use case', () => {
-    const index = null;
-    const branchStore = null;
-
-    assert.throws(
-      () => new CustomerListTurns(customer, branch, index, branchStore, turnStore),
-      customerUseCaseErrors.BranchStoreNotPresent
-    );
-  });
-
-  test('invalid turn store while creating use case', () => {
-    const index = null;
-    const turnStore = null;
-
-    assert.throws(
-      () => new CustomerListTurns(customer, branch, index, branchStore, turnStore),
-      customerUseCaseErrors.TurnStoreNotPresent
-    );
-  });
-
-  test('invalid branch while creating use case', () => {
-    const index = null;
-    const branch = null;
-
-    assert.throws(
-      () => new CustomerListTurns(customer, branch, index, branchStore, turnStore),
-      customerUseCaseErrors.BranchNotPresent
-    );
-  });
-
-  test('invalid customer while creating use case', () => {
-    const index = null;
-    const customer = null;
-
-    assert.throws(
-      () => new CustomerListTurns(customer, branch, index, branchStore, turnStore),
-      customerUseCaseErrors.CustomerNotPresent
-    );
   });
 });

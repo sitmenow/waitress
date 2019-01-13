@@ -2,37 +2,31 @@ const sinon = require('sinon');
 const { expect, assert } = require('chai');
 const tk = require('timekeeper');
 
-const Turn = require('../../../../scheduler/turn');
+require('../../test_helper');
+
 const Branch = require('../../../../scheduler/branch');
-const Schedule = require('../../../../scheduler/schedule');
-const Customer = require('../../../../scheduler/customer');
-const BranchStore = require('../../../../scheduler/stores/branch');
-const TurnStore = require('../../../../scheduler/stores/turn');
-const CustomerStore = require('../../../../scheduler/stores/customer');
 const storeErrors = require('../../../../scheduler/stores/errors');
-const customerUseCaseErrors = require('../../../../scheduler/usecases/customer/errors');
+const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
 const CustomerCreateTurn = require('../../../../scheduler/usecases/customer/create-turn');
 
 
 suite('Use Case: Customer creates turn', () => {
-
   setup(() => {
     sandbox = sinon.createSandbox();
-    schedule = new Schedule();
-    branch = new Branch({
-      id: 'restaurant-branch-id',
-      schedule: schedule,
-    });
-    customer = new Customer({
-      id: 'customer-id',
-    });
-    turn = new Turn({
-      name: 'Test',
-    });
 
-    customerStore = new CustomerStore();
-    branchStore = new BranchStore();
-    turnStore = new TurnStore();
+    customerStore = createCustomerStore();
+    branchStore = createBranchStore();
+    turnStore = createTurnStore();
+
+    customerId = 'customer-id';
+    customerName = 'Customer Test';
+    turnName = 'Turn Test';
+    turnGuests = 11;
+    branchId = 'branch-id';
+    schedule = createSchedule();
+    restaurant = createRestaurant();
+    branch = createBranch({ branchId, restaurant, schedule });
+    customer = createCustomer({ customerId, customerName });
   });
 
   teardown(() => {
@@ -48,30 +42,106 @@ suite('Use Case: Customer creates turn', () => {
     sandbox.stub(Branch.prototype, 'isOpen')
       .returns(true);
     sandbox.stub(turnStore, 'create')
-      .returns(Promise.resolve(turn)); // expected turn maybe?
+      .returns(Promise.resolve(true));
 
-    const requestedTime = new Date(Date.UTC(2018, 12, 9));
-    const expectedTurn = new Turn({
-      name: turn.name,
-      requestedTime: requestedTime,
-      customer: customer,
-      branch: branch,
+    const requestedTime = new Date();
+    const expectedTurn = createTurn({
+      turnName,
+      turnGuests,
+      requestedTime,
+      branch,
+      customer,
     });
-    const useCase = new CustomerCreateTurn(
-      customer, turn, branch, turnStore, customerStore, branchStore
-    );
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
 
     tk.freeze(requestedTime);
     const output = await useCase.execute();
 
     assert.isTrue(turnStore.create.calledWith(expectedTurn));
-    assert.deepEqual(turn, output);
+    assert.isTrue(output);
   });
 
-  // test customer creates turn with no guests
-  // test customer creates turn with no name
+  test('customer creates a turn with null turn name', async () => {
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
+    sandbox.stub(turnStore, 'create')
+      .returns(Promise.resolve(true));
 
-  test('when the given branch is not open throw a branch not open error', (done) => {
+    const turnName = null;
+    const requestedTime = new Date();
+    const expectedTurn = createTurn({
+      turnName: customer.name,
+      turnGuests,
+      requestedTime,
+      branch,
+      customer,
+    });
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
+
+    tk.freeze(requestedTime);
+    const output = await useCase.execute();
+
+    assert.isTrue(turnStore.create.calledWith(expectedTurn));
+    assert.isTrue(output);
+  });
+
+  test('customer creates a turn with empty turn name', async () => {
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
+    sandbox.stub(turnStore, 'create')
+      .returns(Promise.resolve(true));
+
+    const turnName = '';
+    const requestedTime = new Date();
+    const expectedTurn = createTurn({
+      turnName: customer.name,
+      turnGuests,
+      requestedTime,
+      branch,
+      customer,
+    });
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
+
+    tk.freeze(requestedTime);
+    const output = await useCase.execute();
+
+    assert.isTrue(turnStore.create.calledWith(expectedTurn));
+    assert.isTrue(output);
+  });
+
+  test('customer creates a turn when the branch is closed', (done) => {
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(customerStore, 'find')
@@ -79,148 +149,147 @@ suite('Use Case: Customer creates turn', () => {
     sandbox.stub(Branch.prototype, 'isOpen')
       .returns(false);
 
-    const useCase = new CustomerCreateTurn(
-      customer, turn, branch, turnStore, customerStore, branchStore
-    );
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.BranchIsNotOpen);
+        expect(error).to.be.instanceof(useCaseErrors.BranchIsNotOpen);
         done();
       });
   });
 
-  test('when the given branch does not exist throw a branch not found error', (done) => {
+  test('customer creates a turn for a non-existent branch', (done) => {
     sandbox.stub(customerStore, 'find')
       .returns(Promise.resolve(customer));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.reject(new storeErrors.BranchNotFound()));
 
-    const useCase = new CustomerCreateTurn(
-      customer, turn, branch, turnStore, customerStore, branchStore
-    );
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
         done();
       });
   });
 
-  test('when the given customer does not exist throw a customer not found error', (done) => {
+  test('non-existent customer creates turn', (done) => {
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(customerStore, 'find')
       .returns(Promise.reject(new storeErrors.CustomerNotFound()));
 
-    const useCase = new CustomerCreateTurn(
-      customer, turn, branch, turnStore, customerStore, branchStore
-    );
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.CustomerNotFound);
+        expect(error).to.be.instanceof(useCaseErrors.CustomerNotFound);
         done();
       });
   });
 
-  test('when the given branch cannot generate an object throw a branch not created error', (done) => {
+  test('customer creates a turn but branch store cannot create found branch', (done) => {
     sandbox.stub(customerStore, 'find')
       .returns(Promise.resolve(customer));
      sandbox.stub(branchStore, 'find')
       .returns(Promise.reject(new storeErrors.BranchNotCreated()));
 
-    const useCase = new CustomerCreateTurn(
-      customer, turn, branch, turnStore, customerStore, branchStore
-    );
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.BranchNotCreated);
+        expect(error).to.be.instanceof(useCaseErrors.BranchNotCreated);
         done();
       });
   });
 
-  test('when the given customer cannot generate an object throw a customer not created error', (done) => {
+  test('customer creates a turn but customer store cannot create found customer', (done) => {
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
      sandbox.stub(customerStore, 'find')
       .returns(Promise.reject(new storeErrors.CustomerNotCreated()));
 
-    const useCase = new CustomerCreateTurn(
-      customer, turn, branch, turnStore, customerStore, branchStore
-    );
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(customerUseCaseErrors.CustomerNotCreated);
+        expect(error).to.be.instanceof(useCaseErrors.CustomerNotCreated);
         done();
       });
   });
 
-  test('when the given branch store is null throw a branch store not present error', () => {
-    const branchStore = null;
+  test('customer creates a turn but turn store cannot create new turn', (done) => {
+    sandbox.stub(branchStore, 'find')
+      .returns(Promise.resolve(branch));
+    sandbox.stub(customerStore, 'find')
+      .returns(Promise.resolve(customer));
+    sandbox.stub(Branch.prototype, 'isOpen')
+      .returns(true);
+    sandbox.stub(turnStore, 'create')
+      .returns(Promise.reject(new storeErrors.TurnNotCreated()));
 
+    const useCase = new CustomerCreateTurn({
+      customerId,
+      turnName,
+      turnGuests,
+      branchId,
+      turnStore,
+      customerStore,
+      branchStore,
+    });
+
+    useCase.execute()
+      .catch((error) => {
+        expect(error).to.be.instanceof(useCaseErrors.TurnNotCreated);
+        done();
+      });
+  });
+    /*
     assert.throws(
       () => new CustomerCreateTurn(
         customer, turn, branch, turnStore, customerStore, branchStore
       ),
-      customerUseCaseErrors.BranchStoreNotPresent
+      useCaseErrors.TurnNotPresent
     );
-  });
-
-  test('when the given customer store is null throw a customer store not present error', () => {
-    const customerStore = null;
-
-    assert.throws(
-      () => new CustomerCreateTurn(
-        customer, turn, branch, turnStore, customerStore, branchStore
-      ),
-      customerUseCaseErrors.CustomerStoreNotPresent
-    );
-  });
-
-  test('when the given turn store is null store throw a turn store not present error', () => {
-    const turnStore = null;
-
-    assert.throws(
-      () => new CustomerCreateTurn(
-        customer, turn, branch, turnStore, customerStore, branchStore
-      ),
-      customerUseCaseErrors.TurnStoreNotPresent
-    );
-  });
-
-  test('when the given branch is null throw a branch not present error', () => {
-    const branch = null;
-
-    assert.throws(
-      () => new CustomerCreateTurn(
-        customer, turn, branch, turnStore, customerStore, branchStore
-      ),
-      customerUseCaseErrors.BranchNotPresent
-    );
-  });
-
-  test('when the given customer is null throw a customer not present error', () => {
-    const customer = null;
-
-    assert.throws(
-      () => new CustomerCreateTurn(
-        customer, turn, branch, turnStore, customerStore, branchStore
-      ),
-      customerUseCaseErrors.CustomerNotPresent
-    );
-  });
-
-  test('when the given turn is null throw a turn not present error', () => {
-    const turn = null;
-
-    assert.throws(
-      () => new CustomerCreateTurn(
-        customer, turn, branch, turnStore, customerStore, branchStore
-      ),
-      customerUseCaseErrors.TurnNotPresent
-    );
-  });
+    */
 });

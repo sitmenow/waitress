@@ -1,32 +1,42 @@
-const customerUseCaseErrors = require('./errors');
+const errors = require('./errors');
 const storeErrors = require('../../stores/errors');
 
 
 // Hay N turnos en espera de ser atendidos. Deseas continuar?
 
 class CustomerListTurns {
-  constructor(customer, branch, index, branchStore, turnStore) {
+  constructor({
+    index,
+    customerId,
+    branchId,
+    branchStore,
+    turnStore,
+  }) {
     this.index = index;
-    this.branch = branch;
-    this.customer = customer;
+    this.customerId = customerId;
+    this.branchId = branchId;
     this.branchStore = branchStore;
     this.turnStore = turnStore;
-
-    this._validate();
+    this.customerStore = customerStore;
   }
 
   execute() {
-    return this.branchStore.find(this.branch.id)
-      .then(branch => this._getBranchCurrentShiftTurns(branch))
+    const customer = this.customerStore.find(this.customerId);
+    const branch = this.branchStore.find(this.branchId);
+
+    return Promise.all([customer, branch])
+      .then(([customer, branch]) => this._listTurns(branch))
       .catch(error => this._manageError(error));
   }
 
-  _getBranchCurrentShiftTurns(branch) {
-    const shift = branch.getShift();
+  _listTurns(branch) {
+    if (!branch.isOpen()) {
+      throw new errors.BranchIsNotOpen();
+    }
 
+    const shift = branch.getShift();
     if (!shift) {
-      // throw new customerUseCaseErrors.BranchIsNotOpen();
-      return [];
+      throw new errors.UnavailableBranchShift();
     }
 
     return this.turnStore.findByBranch(branch.id, shift.start, this.index);
@@ -34,35 +44,17 @@ class CustomerListTurns {
 
   _manageError(error) {
     if (error instanceof storeErrors.BranchNotFound) {
-      throw new customerUseCaseErrors.BranchNotFound();
+      throw new errors.BranchNotFound();
     } else if (error instanceof storeErrors.BranchNotCreated) {
-      throw new customerUseCaseErrors.BranchNotCreated();
+      throw new errors.BranchNotCreated();
+    } else if(error instanceof storeErrors.CustomerNotFound) {
+      throw new errors.CustomerNotFound();
+    } else if(error instanceof storeErrors.CustomerNotCreated) {
+      throw new errors.CustomerNotCreated();
     }
 
-    // else if(error instanceof customerUseCaseErrors.BranchIsNotOpen) {
-    //  return [];
-    // }
-
-    console.log(error)
+    // console.log(error)
     throw error;
-  }
-
-  _validate() {
-    if (!this.branch) {
-      throw new customerUseCaseErrors.BranchNotPresent();
-    }
-
-    if (!this.customer) {
-      throw new customerUseCaseErrors.CustomerNotPresent();
-    }
-
-    if (!this.branchStore) {
-      throw new customerUseCaseErrors.BranchStoreNotPresent();
-    }
-
-    if (!this.turnStore) {
-      throw new customerUseCaseErrors.TurnStoreNotPresent();
-    }
   }
 }
 

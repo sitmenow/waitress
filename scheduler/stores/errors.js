@@ -4,6 +4,7 @@ class CustomerNotFound extends StoreError {}
 class CustomerNotCreated extends StoreError {}
 class TurnNotFound extends StoreError {}
 class TurnNotCreated extends StoreError {}
+class TurnNotUpdated extends StoreError {}
 class TurnModelNotCreated extends StoreError {}
 class BranchNotCreated extends StoreError {}
 class BranchModelNotCreated extends StoreError {}
@@ -19,6 +20,7 @@ module.exports = {
   CustomerNotCreated,
   TurnNotFound,
   TurnNotCreated,
+  TurnNotUpdated,
   TurnModelNotCreated,
   HostessNotFound,
   HostessNotCreated,
