@@ -70,7 +70,7 @@ class Turn {
   }
 
   reject() {
-    if (this._status != WAITING || this._status != ON_HOLD) {
+    if (this._status != WAITING && this._status != ON_HOLD) {
       throw new Error();
     }
 
