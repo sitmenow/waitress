@@ -9,6 +9,7 @@ const TurnStore = require('../../scheduler/stores/turn')
 const BranchStore = require('../../scheduler/stores/branch')
 const CustomerStore = require('../../scheduler/stores/customer')
 const HostessStore = require('../../scheduler/stores/hostess')
+const CacheStore = require('../../scheduler/stores/cache');
 
 
 before(() => {
@@ -81,6 +82,8 @@ before(() => {
   createBranchStore = () => new BranchStore();
 
   createCustomerStore = () => new CustomerStore();
+
+  createCacheStore = () => new CacheStore();
 });
 
 
