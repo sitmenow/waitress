@@ -46,3 +46,21 @@ Usuarios premium:
 
 EXTRAS:
  - Cuando un branch cierra el dia, todos sus tickets actuales se van a rejected
+
+
+
+
+
+GAS API:
+GET    /gasolineras
+GET    /gasolineras/:gasolinera-id
+PUT    /gasolineras/:gasolinera-id -> Activar/Desactivar
+GET    /gasolineras/:gasolinera-id/turnos
+POST   /gasolineras/:gasolinera-id/turnos
+GET    /gasolineras/:gasolinera-id/turnos/:turno-id
+
+GET /sign-in
+
+GET /
+   si hay registro -> /
+   no hay registr -> gasolineras

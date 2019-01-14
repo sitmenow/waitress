@@ -48,8 +48,8 @@ class CacheStore {
     }
 
     return model;
-  }
   */
+  }
 }
 
 module.exports = CacheStore;

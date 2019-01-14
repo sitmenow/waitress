@@ -1,14 +1,14 @@
-const database = require('../../../../database');
+const config = require('config');
 
+const database = require('../../../../scheduler/stores/mongoose');
 require('../../test_helper')
-
 const BranchModel = require('../../../../services/db/mongoose/models/branch');
 const HostessModel = require('../../../../services/db/mongoose/models/hostess');
-
 const HostessStore = require('../../../../scheduler/stores/mongoose/hostess');
 
+
 before(() => {
-  mongoose = database()
+  mongoose = database(config)
     .catch(error => console.log(`Error while connecting to database: ${error}`));
 
   createBranchModel = ({ branchName, restaurantId }) => {
