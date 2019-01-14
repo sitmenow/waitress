@@ -1,15 +1,15 @@
-const dbService = require('../../../services/db/typeorm');
-const TurnStore = require('./turn');
-const HostessStore = require('./hostess');
-const AdminStore = require('./admin');
+const mongoose = require('mongoose');
 
 
-module.exports = config => {
-  const connection = dbService(config);
+function URI({ scheme, host, database }) {
+  return scheme + '://' + host + '/' + database;
+  // return 'mongodb://localhost/test';
+}
 
-  return {
-    turn: TurnStore(connection),
-    admin: AdminStore(connection),
-    hostess: HostessStore(connection),
-  };
+// TODO: Look for In-Memory engine
+// Always use mongoose.connect instead of mongoose.createConnection
+module.exports = (config) => {
+  const uri = URI(config.services.db);
+
+  return mongoose.connect(uri, config.services.db.options);
 };
