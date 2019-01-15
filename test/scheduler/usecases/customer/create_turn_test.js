@@ -23,9 +23,8 @@ suite('Use Case: Customer creates turn', () => {
     turnName = 'Turn Test';
     turnGuests = 11;
     branchId = 'branch-id';
-    schedule = createSchedule();
     restaurant = createRestaurant();
-    branch = createBranch({ branchId, restaurant, schedule });
+    branch = createBranch({ branchId, restaurant });
     customer = createCustomer({ customerId, customerName });
   });
 

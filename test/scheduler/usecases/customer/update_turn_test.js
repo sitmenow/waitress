@@ -23,14 +23,13 @@ suite('Use Case: Customer updates turn', () => {
     turnId = 'turn-id';
     turnName = 'Turn Test';
     turnGuests = 6;
-    schedule = createSchedule();
     restaurant = createRestaurant();
-    branch = createBranch({ restaurant, schedule });
+    branch = createBranch({ restaurant });
     customer = createCustomer({ customerId });
     turn = createTurn({
       turnId,
       branch,
-      customer, 
+      customer,
       turnGuests: 2,
       turnName: 'Old Turn Test',
     });
