@@ -17,6 +17,9 @@ module.exports = (stores, useCases) => {
   app.get('/gasolineras/:gasStationId', function(req, res) {
     // Customer -> Detail gas station
     // Dispatcher -> Block | Detail gas station
+    stores.branchStore.find(req.params.gasStationId)
+      .then(branch => res.json(branch))
+      .catch(error => res.json(error))
   });
 
   app.put('/gasolineras/:gasStationId', function(req, res) {
