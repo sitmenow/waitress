@@ -1,17 +1,23 @@
+const errors = require('./errors');
+
+
 class Branch {
-  constructor({ id, name, restaurant, schedule, address } = {}) {
+  constructor({
+    id,
+    name,
+    address,
+    coordinates,
+    lastOpeningTime,
+    lastClosingTime,
+    restaurant,
+  } = {}) {
     this._id = id;
+    this._name = name;
+    this._address = address;
+    this._coordinates = coordinates;
+    this._lastOpeningTime = lastOpeningTime;
+    this._lastClosingTime = lastClosingTime;
     this._restaurant = restaurant;
-
-    this.name = name;
-    this.schedule = schedule;
-    this.address = address;
-  }
-
-  static get days() {
-    return [
-      'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
-    ];
   }
 
   get id() {
@@ -22,29 +28,42 @@ class Branch {
     return this._restaurant;
   }
 
-  isOpen(moment) {
-    moment = moment || new Date(); // This must be in UTC
-    const day = Branch.days[moment.getDay()];
-    const shifts = this.schedule.week[day] || [];
-    const hour = moment.getUTCHours();
-
-    return shifts.some(([start, end]) => hour >= start && hour < end);
+  get lastOpeningTime() {
+    return this._lastOpeningTime;
   }
 
-  getShift(moment) {
-    moment = moment || new Date();
-    const day = Branch.days[moment.getDay()];
-    const shifts = this.schedule.week[day] || [];
-    const currentHours = moment.getUTCHours();
+  get lastClosingTime() {
+    return this._lastClosingTime;
+  }
 
-    const [start, end] = shifts.find(
-      ([start, end]) => currentHours >= start && currentHours < end
-    ) || [];
-
-    if (start && end) {
-      return { start, end };
+  close() {
+    if (this.isClosed()) {
+      throw new errors.BranchAlreadyClosed();
     }
+
+    this._lastOpeningTime = null;
+    this._lastClosingTime = new Date();
+    // TODO: Log this closing time
+  }
+
+  isClosed() {
+    return !!this._lastClosingTime;
+  }
+
+  isOpen() {
+    return !!this._lastOpeningTime;
+  }
+
+  open() {
+    if (this.isOpen()) {
+      throw new errors.BranchAlreadyOpen();
+    }
+
+    this._lastOpeningTime = new Date();
+    this._lastClosingTime = null;
+    // TODO: Log this opening time
   }
 }
+
 
 module.exports = Branch;
