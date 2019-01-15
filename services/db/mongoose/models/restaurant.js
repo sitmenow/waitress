@@ -5,4 +5,4 @@ const schema = new mongoose.Schema({
   name: String,
 });
 
-module.exports = mongoose.Model('Restaurant', schema);
+module.exports = mongoose.model('Restaurant', schema);
