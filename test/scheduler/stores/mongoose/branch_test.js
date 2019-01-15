@@ -4,45 +4,61 @@ const mongoose = require('mongoose');
 
 require('./store_test_helper');
 
-const BranchStore = require('../../../../scheduler/stores/mongoose/branch');
 const errors = require('../../../../scheduler/stores/errors');
 
 
 suite('Mongoose BranchStore', () => {
   setup(() => {
-    branchStore = new BranchStore();
+    branchStore = createBranchStore();
+  });
+
+  suiteSetup(() => {
+    sandbox = sinon.createSandbox();
+
+    restaurantName = 'Restaurant Test';
+    restaurantModel = createRestaurantModel({ restaurantName });
+
+    return restaurantModel.save();
+  });
+
+  suiteTeardown(() => {
+    return restaurantModel.delete();
   });
 
   suite('#find()', () => {
-    suiteSetup(() => {
-      sandbox = sinon.createSandbox();
+    teardown(() => {
+      sandbox.restore();
+    });
 
+    suiteSetup(() => {
       branchName = 'Branch Test';
       branchAddress = 'Address Test #10';
       lastOpeningTime = new Date();
       lastClosingTime = new Date();
       coordinates = [104, -213];
-      restaurant = createRestaurant();
+      restaurant = createRestaurant({
+        restaurantId: restaurantModel.id,
+      });
       branchModel = createBranchModel({
         branchName,
         branchAddress,
         lastOpeningTime,
         lastClosingTime,
         coordinates,
+        restaurantId: restaurantModel.id,
       });
 
       return branchModel.save();
     });
 
     suiteTeardown(() => {
-      sandbox.restore();
-
       return branchModel.delete();
     });
 
     test('returns a branch with the given id', async () => {
       // BranchModel.findById(branchModel._id)
       //   .then(_ => console.log(_));
+
       const expectedBranch = createBranch({
         branchName,
         branchAddress,

@@ -4,28 +4,24 @@ const mongoose = require('mongoose');
 
 require('./store_test_helper');
 
-const Branch = require('../../../../scheduler/branch');
-const Customer = require('../../../../scheduler/customer');
-const Turn = require('../../../../scheduler/turn');
-const TurnStore = require('../../../../scheduler/stores/mongoose/turn');
 const TurnModel = require('../../../../services/db/mongoose/models/turn');
-const BranchModel = require('../../../../services/db/mongoose/models/branch');
-const CustomerModel = require('../../../../services/db/mongoose/models/customer');
-const storeErrors = require('../../../../scheduler/stores/errors');
+const errors = require('../../../../scheduler/stores/errors');
 
 
 suite('Mongoose TurnStore', () => {
-
   setup(() => {
-    turnStore = new TurnStore();
+    turnStore = createTurnStore();
   });
 
   suiteSetup(() => {
-    branchModel = new BranchModel({
-      name: 'BranchTest',
+    sandbox = sinon.createSandbox();
+
+    branchModel = createBranchModel({
+      branchName: 'BranchTest',
+      coordinates: [324, 23],
     });
-    customerModel = new CustomerModel({
-      name: 'CustomerTest',
+    customerModel = createCustomerModel({
+      customerName: 'CustomerTest',
     });
 
     return Promise.all(
@@ -41,28 +37,28 @@ suite('Mongoose TurnStore', () => {
 
   suite('#create()', () => {
     suiteSetup(() => {
-      sandbox = sinon.createSandbox();
-      branch = new Branch({
-        id: branchModel.id,
-        name: branchModel.name,
+      branch = createBranch({
+        branchId: branchModel.id,
+        branchName: branchModel.name,
       });
-      customer = new Customer({
-        id: customerModel.id,
-        name: customerModel.name,
+      customer = createCustomer({
+        customerId: customerModel.id,
+        customerName: customerModel.name,
       });
-    });
-
-    suiteTeardown(() => {
-      sandbox.restore();
     });
 
     setup(() => {
-      turn = new Turn({
-        name: 'Test',
-        branch: branch,
-        customer: customer,
+      turn = createTurn({
+        turnName: 'Test',
+        branch,
+        customer,
       });
     });
+
+    teardown(() => {
+      sandbox.restore();
+    });
+
 
     test('create turn in DB and return its id', async () => {
       const turnId = await turnStore.create(turn);
@@ -85,11 +81,11 @@ suite('Mongoose TurnStore', () => {
 
     test('when the object cannot be converted to a model throw a turn model not created error', (done) => {
       sandbox.stub(turnStore, '_objectToModel')
-        .throws(new storeErrors.TurnModelNotCreated());
+        .throws(new errors.TurnModelNotCreated());
 
       turnStore.create(turn)
         .catch((error) => {
-          expect(error).to.be.instanceof(storeErrors.TurnModelNotCreated);
+          expect(error).to.be.instanceof(errors.TurnModelNotCreated);
           done();
         });
     });
@@ -97,30 +93,40 @@ suite('Mongoose TurnStore', () => {
 
   suite('#find()', () => {
     suiteSetup(() => {
-      sandbox = sinon.createSandbox();
-      turnModel = new TurnModel({
-        name: 'test',
-        guests: 2,
+      branch = createBranch({
+        branchId: branchModel.id,
+      });
+      customer = createCustomer({
+        customerId: customerModel.id,
+      });
+
+      turnModel = createTurnModel({
+        turnName: 'Turn Test',
+        turnGuests: 2,
         requestedTime: new Date(),
         customerId: customerModel.id,
         branchId: branchModel.id,
       });
+
       return turnModel.save();
     });
 
     suiteTeardown(() => {
-      sandbox.restore();
       return turnModel.delete();
     });
 
+    teardown(() => {
+      sandbox.restore();
+    });
+
     test('return a turn for the given id', async () => {
-      const expectedTurn = new Turn({
-        id: turnModel.id,
-        name: turnModel.name,
-        guests: turnModel.guests,
+      const expectedTurn = createTurn({
+        turnId: turnModel.id,
+        turnName: turnModel.name,
+        turnGuests: turnModel.guests,
         requestedTime: turnModel.requestedTime,
-        customer: new Customer({ id: customerModel.id }),
-        branch: new Branch({ id: branchModel.id }),
+        customer,
+        branch,
       });
 
       const turn = await turnStore.find(turnModel.id);
@@ -133,18 +139,18 @@ suite('Mongoose TurnStore', () => {
 
       turnStore.find(nonExistentId)
         .catch((error) => {
-          expect(error).to.be.instanceof(storeErrors.TurnNotFound);
+          expect(error).to.be.instanceof(errors.TurnNotFound);
           done();
         });
     });
 
     test('when the model cannot be converted to an object throw a turn not created error', (done) => {
       sandbox.stub(turnStore, '_modelToObject')
-        .throws(new storeErrors.TurnNotCreated());
+        .throws(new errors.TurnNotCreated());
 
       turnStore.find(turnModel.id)
         .catch((error) => {
-          expect(error).to.be.instanceof(storeErrors.TurnNotCreated);
+          expect(error).to.be.instanceof(errors.TurnNotCreated);
           done();
         });
     });
@@ -152,95 +158,105 @@ suite('Mongoose TurnStore', () => {
 
   suite('#findByBranch()', () => {
     suiteSetup(() => {
-      let turn;
-      let turnModel;
-      let turnRequestedTime;
-      const turnPromises = [];
-
       turnModels = [];
-      expectedTurns = [];
 
-      // Owners
-      branch = new Branch({
-        id: branchModel.id,
+      branch = createBranch({
+        branchId: branchModel.id,
       });
-      customer = new Customer({
-        id: customerModel.id,
+      customer = createCustomer({
+        customerId: customerModel.id,
       });
 
-      requestedTime = new Date();
+      baseRequestedTime = new Date();
 
       // Turn A
-      turnRequestedTime = new Date(requestedTime);
-      turnRequestedTime.setSeconds(turnRequestedTime.getSeconds() - 10);
-      turnModel = new TurnModel({
-        name: 'Turn-A',
-        branchId: branch.id,
-        customerId: customer.id,
-        requestedTime: turnRequestedTime,
-      });
-      turn = new Turn({
-        id: turnModel.id,
-        name: turnModel.name,
-        branch: branch,
-        customer: customer,
-        requestedTime: turnModel.requestedTime,
-      });
-      turnModels.push(turnModel);
-      turnPromises.push(turnModel.save());
-      expectedTurns.push(turn);
+      requestedTime = new Date(baseRequestedTime);
+      requestedTime.setSeconds(requestedTime.getSeconds() - 10);
+      turnModels.push(
+        createTurnModel({
+          turnName: 'Turn Test A',
+          branchId: branch.id,
+          customerId: customer.id,
+          requestedTime,
+        })
+      );
 
       // Turn B
-      turnRequestedTime = new Date(requestedTime);
-      turnRequestedTime.setSeconds(turnRequestedTime.getSeconds() + 10);
-      turnModel = new TurnModel({
-        name: 'Turn-B',
-        branchId: branch.id,
-        customerId: customer.id,
-        requestedTime: turnRequestedTime,
-      });
-      turn = new Turn({
-        id: turnModel.id,
-        name: turnModel.name,
-        branch: branch,
-        customer: customer,
-        requestedTime: turnModel.requestedTime,
-      });
-      turnModels.push(turnModel);
-      turnPromises.push(turnModel.save());
-      expectedTurns.push(turn);
+      requestedTime = new Date(baseRequestedTime);
+      requestedTime.setSeconds(requestedTime.getSeconds() + 10);
+      turnModels.push(
+        createTurnModel({
+          turnName: 'Turn Test B',
+          branchId: branch.id,
+          customerId: customer.id,
+          requestedTime,
+        })
+      );
 
       // Turn C
-      turnRequestedTime = new Date(requestedTime);
-      turnRequestedTime.setSeconds(turnRequestedTime.getSeconds() + 20);
-      turnModel = new TurnModel({
-        name: 'Turn-C',
-        branchId: branch.id,
-        customerId: customer.id,
-        requestedTime: turnRequestedTime,
-      });
-      turn = new Turn({
-        id: turnModel.id,
-        name: turnModel.name,
-        branch: branch,
-        customer: customer,
-        requestedTime: turnModel.requestedTime,
-      });
-      turnModels.push(turnModel);
-      turnPromises.push(turnModel.save());
-      expectedTurns.push(turn);
+      requestedTime = new Date(baseRequestedTime);
+      requestedTime.setSeconds(requestedTime.getSeconds() + 20);
+      turnModels.push(
+        createTurnModel({
+          turnName: 'Turn Test C',
+          branchId: branch.id,
+          customerId: customer.id,
+          requestedTime,
+        })
+      );
 
-      return Promise.all(turnPromises);
+      return Promise.all(turnModels.map(model => model.save()));
     });
 
     suiteTeardown(() => {
       return Promise.all(turnModels.map(model => model.delete()));
     });
 
-    test('return the turns for the given branch and the given requested time', async () => {
-      const turns = await turnStore.findByBranch(branch.id, requestedTime);
+    teardown(() => {
+      sandbox.restore();
+    });
 
-      assert.deepEqual(expectedTurns.slice(1), turns);
+    test('return the turns of a branch in a given time', async () => {
+      requestedTime = new Date(baseRequestedTime);
+      requestedTime.setSeconds(requestedTime.getSeconds() + 10)
+      const expectedTurnB = createTurn({
+        turnName: 'Turn Test B',
+        branch,
+        customer,
+        requestedTime,
+      });
+
+      requestedTime = new Date(baseRequestedTime);
+      requestedTime.setSeconds(requestedTime.getSeconds() + 20)
+      const expectedTurnC = createTurn({
+        turnName: 'Turn Test C',
+        branch,
+        customer,
+        requestedTime,
+      });
+
+      const [turnB, turnC] = await turnStore.findByBranch(branch.id, baseRequestedTime);
+
+      assert.isNotNull(turnB);
+      assert.equal(expectedTurnB.name, turnB.name);
+      assert.equal(expectedTurnB.customer.id, turnB.customer.id);
+      assert.equal(expectedTurnB.branch.id, turnB.branch.id);
+      assert.equal(expectedTurnB.guests, turnB.guests);
+      assert.equal(expectedTurnB.status, turnB.status);
+      assert.equal(
+        expectedTurnB.requestedTime.getTime(),
+        turnB.requestedTime.getTime()
+      );
+
+      assert.isNotNull(turnC);
+      assert.equal(expectedTurnC.name, turnC.name);
+      assert.equal(expectedTurnC.customer.id, turnC.customer.id);
+      assert.equal(expectedTurnC.branch.id, turnC.branch.id);
+      assert.equal(
+        expectedTurnC.requestedTime.getTime(),
+        turnC.requestedTime.getTime()
+      );
+
     });
 
     /*
@@ -251,7 +267,7 @@ suite('Mongoose TurnStore', () => {
     });
     */
 
-    test('when the branch does not have turns return an empty list', async () => {
+    test('returns an empty list when branch has no turns', async () => {
       const nonExistentId = mongoose.Types.ObjectId();
       const turns = await turnStore.findByBranch(nonExistentId, new Date());
 
@@ -261,48 +277,67 @@ suite('Mongoose TurnStore', () => {
 
   suite('#update()', () => {
     suiteSetup(() => {
-      sandbox = sinon.createSandbox();
-      turn = new Turn({
-        name: 'test',
-        guests: 2,
-        branch: new Branch({ id: branchModel.id }),
-        customer: new Customer({ id: customerModel.id }),
+      branch = createBranch({
+        branchId: branchModel.id,
       });
-      turnModel = new TurnModel({
-        name: turn.name,
-        guests: turn.guests,
-        requestedTime: turn.requestedTime,
-        customerId: turn.customer.id,
-        branchId: turn.branch.id,
+      customer = createCustomer({
+        customerId: customerModel.id,
       });
 
-      newBranchModel = new BranchModel({
-        name: 'BranchTest',
+      newBranchModel = createBranchModel({
+        branchName: 'New Branch Test',
+      coordinates: [324, 23],
       });
-      newCustomerModel = new CustomerModel({
-        name: 'CustomerTest',
+      newCustomerModel = createCustomerModel({
+        customerName: 'New Customer Test',
       });
 
-      return Promise.all(
-        [turnModel.save(), newBranchModel.save(), newCustomerModel.save()]
-      );
+      return Promise.all([
+        turnModel.save(),
+        newBranchModel.save(),
+        newCustomerModel.save(),
+      ]);
     });
 
     suiteTeardown(() => {
-      sandbox.restore();
-      return Promise.all(
-        [turnModel.delete(), newBranchModel.delete(), newCustomerModel.delete()]
-      );
+      return Promise.all([
+        newBranchModel.delete(),
+        newCustomerModel.delete()
+      ]);
     });
 
-    test('update the given turn', async () => {
-      const updatedTurn = new Turn({
-        id: turnModel.id,
+    setup(() => {
+      turnModel = createTurnModel({
+        turnName: 'Turn Test',
+        turnGuests: 12,
+        customerId: customer.id,
+        branchId: branch.id,
+      });
+
+      return turnModel.save();
+    });
+
+    teardown(() => {
+      sandbox.restore();
+
+      return turnModel.delete();
+    });
+
+    test('updates turn', async () => {
+      const newCustomer = createCustomer({
+        customerId: newCustomerModel.id,
+      });
+      const newBranch = createBranch({
+        branchId: newBranchModel.id,
+      });
+
+      const updatedTurn = createTurn({
+        turnId: turnModel.id,
         status: 'served',
-        name: 'update test',
-        guests: 10,
-        customer: new Customer({ id: newCustomerModel.id }),
-        branch: new Branch({ id: newBranchModel.id }),
+        turnName: 'New Turn Test',
+        turnGuests: 10,
+        customer: newCustomer,
+        branch: newBranch,
       });
 
       await turnStore.update(updatedTurn);
@@ -324,15 +359,15 @@ suite('Mongoose TurnStore', () => {
 
     test('when the given turn does not exist throw a turn not found error', (done) => {
       const nonExistentId = mongoose.Types.ObjectId();
-      const updatedTurn = new Turn({
+      const updatedTurn = createTurn({
         id: nonExistentId,
-        name: 'update test',
+        name: 'New Turn Test',
         guests: 10,
       });
 
       turnStore.update(updatedTurn)
         .catch((error) => {
-          expect(error).to.be.instanceof(storeErrors.TurnNotFound);
+          expect(error).to.be.instanceof(errors.TurnNotFound);
           done();
         });
     });

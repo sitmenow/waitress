@@ -6,6 +6,7 @@ const RestaurantModel = require('../../../../services/db/mongoose/models/restaur
 const BranchModel = require('../../../../services/db/mongoose/models/branch');
 const HostessModel = require('../../../../services/db/mongoose/models/hostess');
 const TurnModel = require('../../../../services/db/mongoose/models/turn');
+const CustomerModel = require('../../../../services/db/mongoose/models/customer');
 // const RestaurantStore = require('../../../../scheduler/stores/mongoose/restaurant');
 const HostessStore = require('../../../../scheduler/stores/mongoose/hostess');
 const BranchStore = require('../../../../scheduler/stores/mongoose/branch');
@@ -55,7 +56,32 @@ before(() => {
     });
   };
 
-  createTurnModel = ({}) => {};
+  createCustomerModel = ({ customerId, customerName }) => {
+    return new CustomerModel({
+      id: customerId,
+      name: customerName,
+    });
+  };
+
+  createTurnModel = ({
+    turnId,
+    turnName,
+    turnGuests,
+    requestedTime,
+    expectedServiceTime,
+    branchId,
+    customerId,
+  }) => {
+    return new TurnModel({
+      id: turnId,
+      name: turnName,
+      guests: turnGuests,
+      requestedTime,
+      expectedServiceTime,
+      branchId,
+      customerId,
+    });
+  };
 
   createHostessStore = () => new HostessStore();
 
