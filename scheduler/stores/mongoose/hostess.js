@@ -26,7 +26,9 @@ class HostessStore {
       hostess = new Hostess({
         id: model.id,
         name: model.name,
-        branch: new Branch({ id: model.branchId }),
+        branch: new Branch({
+          id: model.branchId.toString(),
+        }),
       });
     } catch (error) {
       console.log(error)

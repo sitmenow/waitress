@@ -39,7 +39,7 @@ class BranchStore {
         lastOpeningTime: model.lastOpeningTime,
         lastClosingTime: model.lastClosingTime,
         restaurant: new Restaurant({
-          id: model.restaurantId,
+          id: model.restaurantId.toString(),
         }),
       });
     } catch (error) {
