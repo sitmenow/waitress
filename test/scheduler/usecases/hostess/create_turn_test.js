@@ -22,9 +22,8 @@ suite('Use Case: Hostess creates turn', () => {
     hostessId = 'hostess-id';
     turnName = 'Turn';
     turnGuests = 6;
-    schedule = createSchedule();
     restaurant = createRestaurant();
-    branch = createBranch({ restaurant, schedule });
+    branch = createBranch({ restaurant });
     hostess = createHostess({ hostessId, branch });
     defaultCustomer = createCustomer();
   });

@@ -1,98 +1,125 @@
 const { assert } = require('chai');
 const tk = require('timekeeper');
 
-const Branch = require('../../scheduler/branch');
-const Schedule = require('../../scheduler/schedule');
+require('./test_helper');
+
+const errors = require('../../scheduler/errors');
 
 
 suite('Branch', () => {
-  suite('#isOpen()', () => {
-
-    setup(() => {
-      schedule = new Schedule({
-        monday: [[9, 13]],
-        wednesday: [[13, 24]],
-      });
-      branch = new Branch({
-        id: 'branch-id',
-        schedule: schedule,
-      });
+  setup(() => {
+    restaurant = createRestaurant({
+      restaurantId: 'restaurant-id',
+      restaurantName: 'Restaurant Test',
     });
 
-    teardown(() => {
-      tk.reset();
-    });
-
-    test('returns true at a given moment marked in schedule', () => {
-      const moment = new Date(Date.UTC(2018, 10, 12, 10));
-
-      assert.isTrue(branch.isOpen(moment))
-    });
-
-    test('returns false at a given moment non-marked in schedule', () => {
-      const moment = new Date(Date.UTC(2018, 10, 13, 8));
-
-      assert.isFalse(branch.isOpen(moment))
-    });
-
-    test('returns true at the current moment', () => {
-      const moment = new Date(Date.UTC(2018, 10, 12, 10));
-      tk.freeze(moment);
-
-      assert.isTrue(branch.isOpen())
-    });
-
-    test('returns false at the current moment', () => {
-      const moment = new Date(Date.UTC(2018, 10, 13, 8));
-      tk.freeze(moment);
-
-      assert.isFalse(branch.isOpen())
+    branch = createBranch({
+      branchId: 'branch-id',
+      branchName: 'Branch Test',
+      branchAddress: 'Branch Address Test #10',
+      lastOpeningTime: null,
+      lastClosingTime: null,
+      restaurant,
     });
   });
 
-  suite('#getShift()', () => {
+  teardown(() => {
+    tk.reset();
+  });
 
-    setup(() => {
-      schedule = new Schedule({
-        monday: [[9, 13]],
-        wednesday: [[13, 24]],
-      });
-      branch = new Branch({
-        id: 'branch-id',
-        schedule: schedule,
-      });
-    });
-
-    teardown(() => {
-      tk.reset();
-    });
-
-    test('when the branch is open returns the shift of a given moment', () => {
-      const moment = new Date(Date.UTC(2018, 10, 12, 10));
-      const [start, end] = schedule.week.monday[0];
-
-      assert.deepEqual({ start, end }, branch.getShift(moment));
-    });
-
-    test('when the branch is not open returns undefined for a given moment', () => {
-      const moment = new Date(Date.UTC(2018, 10, 13, 8));
-
-      assert.isUndefined(branch.getShift(moment));
-    });
-
-    test('when the branch is open returns the shift of the current moment', () => {
-      const moment = new Date(Date.UTC(2018, 10, 12, 10));
-      const [start, end] = schedule.week.monday[0];
+  suite('#open()', () => {
+    test('opens branch for first time', () => {
+      const moment = new Date();
       tk.freeze(moment);
 
-      assert.deepEqual({ start, end }, branch.getShift());
+      branch.open();
+
+      assert.isTrue(branch.isOpen());
+      assert.deepEqual(moment, branch.lastOpeningTime);
+      assert.isNull(branch.lastClosingTime);
     });
 
-    test('when the branch is not open returns undefined for the current moment', () => {
-      const moment = new Date(Date.UTC(2018, 10, 13, 8));
+    test('opens branch when it is closed', () => {
+      const moment = new Date();
       tk.freeze(moment);
 
-      assert.isUndefined(branch.getShift());
+      branch.close();
+      branch.open();
+
+      assert.isTrue(branch.isOpen());
+      assert.deepEqual(moment, branch.lastOpeningTime);
+      assert.isNull(branch.lastClosingTime);
+    });
+
+    test('throws error when branch is open', () => {
+      branch.open();
+
+      assert.throws(
+        () => branch.open(),
+        errors.BranchAlreadyOpen
+      );
+    });
+  });
+
+  suite('#close()', () => {
+    test('closes branch for first time', () => {
+      const moment = new Date();
+      tk.freeze(moment);
+
+      branch.close();
+
+      assert.isTrue(branch.isClosed());
+      assert.deepEqual(moment, branch.lastClosingTime);
+      assert.isNull(branch.lastOpeningTime);
+    });
+
+    test('closes branch when it is open', () => {
+      const moment = new Date();
+      tk.freeze(moment);
+
+      branch.open();
+      branch.close();
+
+      assert.isTrue(branch.isClosed());
+      assert.deepEqual(moment, branch.lastClosingTime);
+      assert.isNull(branch.lastOpeningTime);
+    });
+
+    test('throws error when branch is closed', () => {
+      branch.close();
+
+      assert.throws(
+        () => branch.close(),
+        errors.BranchAlreadyClosed
+      );
+    });
+  });
+
+  suite('#isOpen()', () => {
+    test('returns true when branch is open', () => {
+      branch.open();
+
+      assert.isTrue(branch.isOpen());
+    });
+
+    test('returns false when branch is closed', () => {
+      branch.close();
+
+      assert.isFalse(branch.isOpen());
+    });
+  });
+
+  suite('#isClosed()', () => {
+    test('returns true when branch is closed', () => {
+      branch.close();
+
+      assert.isTrue(branch.isClosed());
+    });
+
+    test('returns false when branch is open', () => {
+      branch.open();
+
+      assert.isFalse(branch.isClosed());
     });
   });
 });

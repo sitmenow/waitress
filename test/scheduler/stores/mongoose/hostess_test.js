@@ -4,16 +4,22 @@ const mongoose = require('mongoose');
 
 require('./store_test_helper');
 
-const storeErrors = require('../../../../scheduler/stores/errors');
+const errors = require('../../../../scheduler/stores/errors');
 
 
 suite('Mongoose HostessStore', () => {
+  setup(() => {
+    hostessStore = createHostessStore();
+  });
 
   suiteSetup(() => {
-    hostessStore = createHostessStore();
+    sandbox = sinon.createSandbox();
 
-    branchName = 'Branch Test'
-    branchModel = createBranchModel({ branchName });
+    branchModel = createBranchModel({
+      branchName: 'Branch Test',
+      coordinates: [10, 10],
+    });
+
     return branchModel.save();
   });
 
@@ -22,29 +28,33 @@ suite('Mongoose HostessStore', () => {
   });
 
   suite('#find()', () => {
+    teardown(() => {
+      sandbox.restore();
+    });
 
     suiteSetup(() => {
-      sandbox = sinon.createSandbox();
-
       hostessName = 'Hostess Test';
       hostessModel = createHostessModel({
         hostessName,
         branchId: branchModel.id
       });
+
       return hostessModel.save();
     });
 
     suiteTeardown(() => {
-      sandbox.restore();
       return hostessModel.delete();
     });
 
     test('returns a hostess with the given id', async () => {
-      const branch = createBranch({ id: hostessModel.branchId });
+      const branch = createBranch({
+        branchId: branchModel.id,
+      });
+
       const expectedHostess = createHostess({
         branch,
         hostessName,
-        hostessId: hostessModel.id
+        hostessId: hostessModel.id,
       });
 
       const hostess = await hostessStore.find(hostessModel.id);
@@ -57,18 +67,18 @@ suite('Mongoose HostessStore', () => {
 
       hostessStore.find(nonExistentId)
         .catch((error) => {
-          expect(error).to.be.instanceof(storeErrors.HostessNotFound);
+          expect(error).to.be.instanceof(errors.HostessNotFound);
           done();
         });
     });
 
     test('throws a hostess not created error', (done) => {
       sandbox.stub(hostessStore, '_modelToObject')
-        .throws(new storeErrors.HostessNotCreated());
+        .throws(new errors.HostessNotCreated());
 
       hostessStore.find(hostessModel.id)
         .catch((error) => {
-          expect(error).to.be.instanceof(storeErrors.HostessNotCreated);
+          expect(error).to.be.instanceof(errors.HostessNotCreated);
           done();
         });
     });

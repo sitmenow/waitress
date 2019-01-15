@@ -9,8 +9,9 @@ module.exports = (stores, useCases) => {
   app.get('/gasolineras', function(req, res) {
     // Customer -> List gas stations
     // Dispatcher -> Block | List gas stations
-    // const branches = stores.branchStore.all();
-    // res.send(JSON.stringify(branches));
+    stores.branchStore.all()
+      .then(branches => res.json(branches))
+      .catch(error => res.json(error))
   });
 
   app.get('/gasolineras/:gasStationId', function(req, res) {

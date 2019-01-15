@@ -39,7 +39,7 @@ class TurnStore {
 
   // En teoria nunca deberian quedar turnos en espera de ser atendidos
   // pero podria suceder que por ser ultimos clientes la hostess ya no
-  // registra su entrada y quedan esos turnos en espera eterna.
+  // sirve o rechacha los turnos y quedan en espera eterna.
   //
   // Cada hora correr un job y los branches con schedules que esten cerrados
   // a esa hora sin sesiones activas, poner todos sus turnos como removed.

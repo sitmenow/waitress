@@ -4,19 +4,19 @@ class CustomerStore {
   }
 
   create(turn) {
-    this.gateway.create(turn);
+    return this.gateway.create(turn);
   }
 
   find(turnId) {
-    this.gateway.find(turnId);
+    return this.gateway.find(turnId);
   }
 
   update(turn) {
-    this.gateway.update(turn);
+    return this.gateway.update(turn);
   }
 
   getDefaultCustomer() {
-    this.gateway.getDefaultCustomer();
+    return this.gateway.getDefaultCustomer();
   }
 }
 

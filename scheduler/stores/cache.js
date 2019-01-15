@@ -4,7 +4,7 @@ class CacheStore {
   }
 
   getBranchGasTurns(branchId) {
-    this.gateway.getBranchGasTurns(branchId);
+    return this.gateway.getBranchGasTurns(branchId);
   }
 }
 
