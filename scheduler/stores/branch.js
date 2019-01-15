@@ -3,16 +3,20 @@ class BranchStore {
     this.gateway = gateway;
   }
 
+  all() {
+    return this.gateway.all();
+  }
+
   create(branch) {
-    this.gateway.create(branch);
+    return this.gateway.create(branch);
   }
 
   find(branchId) {
-    this.gateway.find(branchId);
+    return this.gateway.find(branchId);
   }
 
   update(branch) {
-    this.gateway.update(branch);
+    return this.gateway.update(branch);
   }
 }
 
