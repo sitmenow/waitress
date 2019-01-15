@@ -293,7 +293,6 @@ suite('Mongoose TurnStore', () => {
       });
 
       return Promise.all([
-        turnModel.save(),
         newBranchModel.save(),
         newCustomerModel.save(),
       ]);
