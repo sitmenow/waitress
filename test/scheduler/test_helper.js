@@ -13,12 +13,23 @@ const CacheStore = require('../../scheduler/stores/cache');
 
 
 before(() => {
-  createBranch = ({ branchId, branchName, restaurant, schedule } = {}) => {
+  createBranch = ({
+    branchId,
+    branchName,
+    branchAddress,
+    restaurant,
+    lastOpeningTime,
+    lastClosingTime,
+    coordinates,
+  } = {}) => {
     return new Branch({
       id: branchId,
       name: branchName,
+      address: branchAddress,
       restaurant,
-      schedule
+      coordinates,
+      lastOpeningTime,
+      lastClosingTime,
     });
   };
 
