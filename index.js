@@ -28,8 +28,10 @@ const stores = {
   cacheStore: new schedulerStores.CacheStore(gateways.cache),
 };
 
-
 const app = api(stores, useCases);
+
+mongooseStore(config)
+  .catch(error => console.log(`Error while connecting to Mongo: ${error}`));
 
 app.disable('x-powered-by')
 app.listen(config.api.port)
