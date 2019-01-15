@@ -34,12 +34,9 @@ class CustomerListTurns {
       throw new errors.BranchIsNotOpen();
     }
 
-    const shift = branch.getShift();
-    if (!shift) {
-      throw new errors.UnavailableBranchShift();
-    }
+    const openingHour = branch.lastOpeningTime.getUTCHours();
 
-    return this.turnStore.findByBranch(branch.id, shift.start, this.index);
+    return this.turnStore.findByBranch(branch.id, openingHour, this.index);
   }
 
   _manageError(error) {

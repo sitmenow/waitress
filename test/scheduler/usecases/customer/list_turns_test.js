@@ -18,11 +18,12 @@ suite('Use Case: Customer lists turns', () => {
     customerStore = createCustomerStore();
 
     index = null;
+    lastOpeningTime = new Date();
+    lastClosingTime = new Date();
     branchId = 'branch-id';
     customerId = 'customer-id';
-    schedule = createSchedule();
     restaurant = createRestaurant();
-    branch = createBranch({ branchId, restaurant, schedule });
+    branch = createBranch({ branchId, restaurant, lastOpeningTime, lastClosingTime });
     customer = createCustomer({ customerId });
     turn = createTurn({
       turnId: 'turn-id',
@@ -46,11 +47,7 @@ suite('Use Case: Customer lists turns', () => {
     sandbox.stub(branch, 'isOpen')
       .returns(true);
 
-    const shift = { start: 9, end: 18 };
-
-    sandbox.stub(branch, 'getShift')
-      .returns(shift);
-
+    const openingHour = lastOpeningTime.getUTCHours();
     const useCase = new CustomerListTurns({
       index,
       customerId,
@@ -62,7 +59,7 @@ suite('Use Case: Customer lists turns', () => {
 
     const output = await useCase.execute();
 
-    assert.isTrue(turnStore.findByBranch.calledWith(branchId, shift.start, index));
+    assert.isTrue(turnStore.findByBranch.calledWith(branchId, openingHour, index));
     assert.isTrue(output);
   });
 
@@ -86,32 +83,6 @@ suite('Use Case: Customer lists turns', () => {
     useCase.execute()
       .catch((error) => {
         expect(error).to.be.instanceof(useCaseErrors.BranchIsNotOpen);
-        done();
-      });
-  });
-
-  test('customer list turns but branch current shift is corrupted', (done) => {
-    sandbox.stub(branchStore, 'find')
-      .returns(Promise.resolve(branch));
-    sandbox.stub(customerStore, 'find')
-      .returns(Promise.resolve(customer));
-    sandbox.stub(branch, 'isOpen')
-      .returns(true);
-    sandbox.stub(branch, 'getShift')
-      .returns(null);
-
-    const useCase = new CustomerListTurns({
-      index,
-      customerId,
-      branchId,
-      branchStore,
-      turnStore,
-      customerStore,
-    });
-
-    useCase.execute()
-      .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.UnavailableBranchShift);
         done();
       });
   });
