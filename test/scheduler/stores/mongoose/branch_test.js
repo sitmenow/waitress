@@ -4,39 +4,53 @@ const mongoose = require('mongoose');
 
 require('./store_test_helper');
 
-const Branch = require('../../../../scheduler/branch');
 const BranchStore = require('../../../../scheduler/stores/mongoose/branch');
-const BranchModel = require('../../../../services/db/mongoose/models/branch');
-const branchStoreErrors = require('../../../../scheduler/stores/errors');
+const errors = require('../../../../scheduler/stores/errors');
 
 
 suite('Mongoose BranchStore', () => {
-
   setup(() => {
     branchStore = new BranchStore();
   });
 
   suite('#find()', () => {
-
     suiteSetup(() => {
       sandbox = sinon.createSandbox();
-      branchModel = new BranchModel({
-        name: 'test',
+
+      branchName = 'Branch Test';
+      branchAddress = 'Address Test #10';
+      lastOpeningTime = new Date();
+      lastClosingTime = new Date();
+      coordinates = [104, -213];
+      restaurant = createRestaurant();
+      branchModel = createBranchModel({
+        branchName,
+        branchAddress,
+        lastOpeningTime,
+        lastClosingTime,
+        coordinates,
       });
+
       return branchModel.save();
     });
 
     suiteTeardown(() => {
       sandbox.restore();
+
       return branchModel.delete();
     });
 
     test('returns a branch with the given id', async () => {
       // BranchModel.findById(branchModel._id)
       //   .then(_ => console.log(_));
-      const expectedBranch = new Branch({
-        id: branchModel.id,
-        name: branchModel.name,
+      const expectedBranch = createBranch({
+        branchName,
+        branchAddress,
+        lastOpeningTime,
+        lastClosingTime,
+        coordinates,
+        restaurant,
+        branchId: branchModel.id,
       });
       const branch = await branchStore.find(branchModel.id);
 
@@ -51,18 +65,18 @@ suite('Mongoose BranchStore', () => {
           // NOTE: If the following expect is not fulfilled the promise
           //       will be considered as non-completed. Be careful with
           //       expected types
-          expect(error).to.be.instanceof(branchStoreErrors.BranchNotFound);
+          expect(error).to.be.instanceof(errors.BranchNotFound);
           done();
         });
     });
 
     test('throws a branch not created error', (done) => {
       sandbox.stub(branchStore, '_modelToObject')
-        .throws(new branchStoreErrors.BranchNotCreated());
+        .throws(new errors.BranchNotCreated());
 
       branchStore.find(branchModel.id)
         .catch((error) => {
-          expect(error).to.be.instanceof(branchStoreErrors.BranchNotCreated);
+          expect(error).to.be.instanceof(errors.BranchNotCreated);
           done();
         });
     });

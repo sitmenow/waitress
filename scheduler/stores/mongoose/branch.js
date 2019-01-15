@@ -5,13 +5,19 @@ const storeErrors = require('../errors');
 
 
 class BranchStore {
+  async all() {
+    const models = await BranchModel.find({});
+
+    return models.map(this._modelToObject);
+  }
+
   async create(branch) {
     model = this._objectToModel(branch);
     await model.save();
   }
 
   async find(branchId) {
-    const model = await BranchModel.findById(branchId)
+    const model = await BranchModel.findById(branchId);
 
     if (!model) throw new storeErrors.BranchNotFound(branchId);
 
@@ -28,11 +34,13 @@ class BranchStore {
       branch = new Branch({
         id: model.id,
         name: model.name,
-        // address: model.address,
-        // schedule: new Schedule(),
-        // restaurant: new Restaurant({
-        //  id: model.restaurantId,
-        //}),
+        address: model.address,
+        coordinates: model.location.coordinates,
+        lastOpeningTime: model.lastOpeningTime,
+        lastClosingTime: model.lastClosingTime,
+        restaurant: new Restaurant({
+          id: model.restaurantId,
+        }),
       });
     } catch (error) {
       throw new storeErrors.BranchNotCreated();
@@ -48,7 +56,12 @@ class BranchStore {
       model = new BranchModel({
         name: branch.name,
         address: branch.address,
-        // schedule: branch.schedule,
+        lastOpeningTime: branch.lastOpeningTime,
+        lastClosingTime: branch.lastClosingTime,
+        location: {
+          type: 'Point',
+          coordinates: branch.coordinates,
+        },
         restaurantId: branch.restaurant.id,
       });
     } catch (error) {
