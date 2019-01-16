@@ -21,6 +21,12 @@ class InactiveTurn extends CustomerUseCaseError {}
 class TurnNotUpdated extends CustomerUseCaseError {}
 class TurnNotCreated extends CustomerUseCaseError {}
 
+
+/******* gas stations *********/
+class TurnRequiresPlates extends CustomerUseCaseError {}
+class TurnRequiresIdentifier extends CustomerUseCaseError {}
+
+
 module.exports = {
   CustomerUseCaseError,
   BranchNotFound,
@@ -39,4 +45,10 @@ module.exports = {
   TurnDoesNotBelongToCustomer,
   InactiveTurn,
   UnavailableBranchShift,
+
+
+/******* gas stations *********/
+  TurnRequiresPlates,
+  TurnRequiresIdentifier,
+
 };
