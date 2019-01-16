@@ -11,6 +11,7 @@ class CustomerListTurns {
     branchId,
     branchStore,
     turnStore,
+    customerStore,
   }) {
     this.index = index;
     this.customerId = customerId;
@@ -34,9 +35,9 @@ class CustomerListTurns {
       throw new errors.BranchIsNotOpen();
     }
 
-    const openingHour = branch.lastOpeningTime.getUTCHours();
-
-    return this.turnStore.findByBranch(branch.id, openingHour, this.index);
+    return this.turnStore.findByBranch(
+      branch.id, branch.lastOpeningTime, this.index
+    );
   }
 
   _manageError(error) {
