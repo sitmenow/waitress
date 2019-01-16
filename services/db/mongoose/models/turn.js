@@ -9,6 +9,11 @@ const schema = new mongoose.Schema({
   expectedServiceTime: Date,
   branchId: mongoose.ObjectId,
   customerId: mongoose.ObjectId,
+
+/****** gas stations ********/
+  emailAddress: String,
+  plates: String,
+
 });
 
 module.exports = mongoose.model('Turn', schema);
