@@ -24,6 +24,14 @@ class Branch {
     return this._id;
   }
 
+  get name() {
+    return this._name;
+  }
+
+  get coordinates() {
+    return this._coordinates;
+  }
+
   get restaurant() {
     return this._restaurant;
   }

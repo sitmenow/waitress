@@ -22,6 +22,14 @@ module.exports = (stores, useCases) => {
   app.put('/gasolineras/:gasStationId', function(req, res) {
     // Customer -> Block
     // Dispatcher -> Enable/Disable own gas station
+    stores.branchStore.find(req.params.gasStationId)
+      .then(branch => {
+        if (branch.isOpen()) branch.close();
+        else branch.open();
+        stores.branchStore.update(branch);
+        res.json(branch);
+      })
+      .catch(error => res.json(error))
   });
 
   app.get('/gasolineras/:gasStationId/turnos', function(req, res) {

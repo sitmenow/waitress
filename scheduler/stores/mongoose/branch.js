@@ -25,6 +25,21 @@ class BranchStore {
   }
 
   async update(branch) {
+    const model = await BranchModel.findById(branch.id);
+
+    if (!model) throw new storeErrors.BranchNotFound(branch.id);
+
+    model.name = branch.name;
+    model.address = branch.address;
+    model.location = {
+      type: 'Point',
+      coordinates: branch.coordinates,
+    };
+    model.lastOpeningTime = branch.lastOpeningTime;
+    model.lastClosingTime = branch.lastClosingTime;
+    model.restaurantId = branch.restaurant.id;
+
+    await model.save();
   }
 
   _modelToObject(model) {
