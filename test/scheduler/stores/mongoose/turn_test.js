@@ -125,9 +125,18 @@ suite('Mongoose TurnStore', () => {
         turnName: turnModel.name,
         turnGuests: turnModel.guests,
         requestedTime: turnModel.requestedTime,
-        customer,
+
+/********** gas stations ******/
+        // customer,
+/****************************/
         branch,
       });
+
+/********** gas stations ******/
+      expectedTurn.plates = turnModel.plates;
+      expectedTurn.emailAddress = turnModel.emailAddress;
+/*****************************/
+
 
       const turn = await turnStore.find(turnModel.id);
 
@@ -239,7 +248,11 @@ suite('Mongoose TurnStore', () => {
 
       assert.isNotNull(turnB);
       assert.equal(expectedTurnB.name, turnB.name);
-      assert.equal(expectedTurnB.customer.id, turnB.customer.id);
+
+/********* gas stations *********/
+      // assert.equal(expectedTurnB.customer.id, turnB.customer.id);
+/********************************/
+
       assert.equal(expectedTurnB.branch.id, turnB.branch.id);
       assert.equal(expectedTurnB.guests, turnB.guests);
       assert.equal(expectedTurnB.status, turnB.status);
@@ -250,7 +263,11 @@ suite('Mongoose TurnStore', () => {
 
       assert.isNotNull(turnC);
       assert.equal(expectedTurnC.name, turnC.name);
-      assert.equal(expectedTurnC.customer.id, turnC.customer.id);
+
+/********* gas stations *********/
+      // assert.equal(expectedTurnC.customer.id, turnC.customer.id);
+/********************************/
+
       assert.equal(expectedTurnC.branch.id, turnC.branch.id);
       assert.equal(
         expectedTurnC.requestedTime.getTime(),

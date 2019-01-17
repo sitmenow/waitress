@@ -47,7 +47,6 @@ suite('Use Case: Customer lists turns', () => {
     sandbox.stub(branch, 'isOpen')
       .returns(true);
 
-    const openingHour = lastOpeningTime.getUTCHours();
     const useCase = new CustomerListTurns({
       index,
       customerId,
@@ -59,7 +58,9 @@ suite('Use Case: Customer lists turns', () => {
 
     const output = await useCase.execute();
 
-    assert.isTrue(turnStore.findByBranch.calledWith(branchId, openingHour, index));
+    assert.isTrue(
+      turnStore.findByBranch.calledWith(branchId, branch.lastOpeningTime, index)
+    );
     assert.isTrue(output);
   });
 

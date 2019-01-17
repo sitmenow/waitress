@@ -3,6 +3,8 @@ const express = require('express');
 
 const app = express();
 
+app.use(express.json());
+
 
 module.exports = (stores, useCases) => {
 
@@ -37,11 +39,32 @@ module.exports = (stores, useCases) => {
 
   app.get('/gasolineras/:gasStationId/turnos', function(req, res) {
     // Customer -> Summary of turns
+    useCase = new useCases.CustomerListGasTurns({
+      branchId: req.params.gasStationId,
+      branchStore: stores.branchStore,
+      turnStore: stores.turnStore,
+    });
+
+    useCase.execute()
+      .then(turns => res.json(turns))
+      .catch(error => { console.log(error); res.json(error)});
     // Dispatcher -> List own turns
   });
 
   app.post('/gasolineras/:gasStationId/turnos', function(req, res) {
     // Customer -> Create turn
+    useCase = new useCases.CustomerCreateGasTurn({
+      turnName: req.body.name,
+      turnEmailAddress: req.body.email_address,
+      turnPlates: req.body.plates,
+      branchId: req.params.gasStationId,
+      branchStore: stores.branchStore,
+      turnStore: stores.turnStore,
+    });
+
+    useCase.execute()
+      .then(turn => res.json(turn))
+      .catch(error => { console.log(error); res.json(error) });
     // Dispatcher -> Block
   });
 
