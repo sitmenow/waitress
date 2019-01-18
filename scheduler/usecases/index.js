@@ -6,6 +6,7 @@ const CustomerDetailTurn = require('./customer/detail-turn');
 const CustomerListGasTurns = require('./customer/list-gas-turns');
 const CustomerCreateGasTurn = require('./customer/create-gas-turn');
 const CustomerDetailGasTurn = require('./customer/detail-gas-turn');
+const CustomerDetailGasStation = require('./customer/detail-gas-station');
 
 const HostessListGasTurns = require('./hostess/list-gas-turns');
 const HostessServeGasTurn = require('./hostess/serve-gas-turn');
@@ -19,6 +20,7 @@ module.exports = {
   CustomerListGasTurns,
   CustomerDetailGasTurn,
   CustomerCreateGasTurn,
+  CustomerDetailGasStation,
 
   HostessListGasTurns,
   HostessToggleGasStation,
