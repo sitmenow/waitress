@@ -1,9 +1,14 @@
 const Branch = require('../../branch');
 const Hostess = require('../../hostess');
 const HostessModel = require('../../../services/db/mongoose/models/hostess');
-const storeErrors = require('../errors');
+const errors = require('../errors');
 
 class HostessStore {
+  async  all() {
+    const models = await HostessModel.find({});
+
+    return models.map(this._modelToObject)
+  }
 
   async create(hostess) {
   }
@@ -11,7 +16,7 @@ class HostessStore {
   async find(hostessId) {
     const model = await HostessModel.findById(hostessId);
 
-    if (!model) throw new storeErrors.HostessNotFound(hostessId);
+    if (!model) throw new errors.HostessNotFound(hostessId);
 
     return this._modelToObject(model);
   }
@@ -32,7 +37,7 @@ class HostessStore {
       });
     } catch (error) {
       console.log(error)
-      throw new storeErrors.HostessNotCreated();
+      throw new errors.HostessNotCreated();
     }
 
     return hostess;
