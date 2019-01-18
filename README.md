@@ -47,3 +47,9 @@ $ npm --silent run test-pah test/scheduler/stores/mongoose/
 ```bash
 $ npm run start
 ```
+
+## Seed
+To create objects manually, remember to use the right node environment. Example:
+```bash
+$ NODE_ENV=develop node <filename>.js
+```
