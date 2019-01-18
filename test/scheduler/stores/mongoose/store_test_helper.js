@@ -67,6 +67,7 @@ before(() => {
     turnId,
     turnName,
     turnGuests,
+    turnStatus,
     requestedTime,
     expectedServiceTime,
     branchId,
@@ -75,6 +76,7 @@ before(() => {
     return new TurnModel({
       id: turnId,
       name: turnName,
+      status: turnStatus,
       guests: turnGuests,
       requestedTime,
       expectedServiceTime,

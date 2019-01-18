@@ -103,7 +103,9 @@ suite('Mongoose TurnStore', () => {
       turnModel = createTurnModel({
         turnName: 'Turn Test',
         turnGuests: 2,
+        turnStatus: 'served',
         requestedTime: new Date(),
+        expectedServiceTime: new Date(),
         customerId: customerModel.id,
         branchId: branchModel.id,
       });
@@ -119,16 +121,14 @@ suite('Mongoose TurnStore', () => {
       sandbox.restore();
     });
 
-    test('return a turn for the given id', async () => {
+    test('returns a turn for the given id', async () => {
       const expectedTurn = createTurn({
         turnId: turnModel.id,
         turnName: turnModel.name,
+        turnStatus: turnModel.status,
         turnGuests: turnModel.guests,
         requestedTime: turnModel.requestedTime,
-
-/********** gas stations ******/
-        // customer,
-/****************************/
+        customer,
         branch,
       });
 
@@ -248,11 +248,7 @@ suite('Mongoose TurnStore', () => {
 
       assert.isNotNull(turnB);
       assert.equal(expectedTurnB.name, turnB.name);
-
-/********* gas stations *********/
-      // assert.equal(expectedTurnB.customer.id, turnB.customer.id);
-/********************************/
-
+      assert.equal(expectedTurnB.customer.id, turnB.customer.id);
       assert.equal(expectedTurnB.branch.id, turnB.branch.id);
       assert.equal(expectedTurnB.guests, turnB.guests);
       assert.equal(expectedTurnB.status, turnB.status);
@@ -263,11 +259,7 @@ suite('Mongoose TurnStore', () => {
 
       assert.isNotNull(turnC);
       assert.equal(expectedTurnC.name, turnC.name);
-
-/********* gas stations *********/
-      // assert.equal(expectedTurnC.customer.id, turnC.customer.id);
-/********************************/
-
+      assert.equal(expectedTurnC.customer.id, turnC.customer.id);
       assert.equal(expectedTurnC.branch.id, turnC.branch.id);
       assert.equal(
         expectedTurnC.requestedTime.getTime(),
