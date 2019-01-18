@@ -18,9 +18,9 @@ suite('Use Case: Hostess rejects gas turn', () => {
     hostessStore = createHostessStore();
     turnStore = createTurnStore();
 
-    hostessId = 'hostess-id';
-    branchId = 'branch-id';
     turnId = 'turn-id';
+    branchId = 'branch-id';
+    hostessId = 'hostess-id';
     turnName = 'Turn Test';
     branch = createBranch({ branchId });
     hostess = createHostess({ hostessId, branch });
@@ -38,10 +38,6 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(Branch.prototype, 'isOpen')
-      .returns(true);
-    sandbox.stub(Turn.prototype, 'isWaiting')
-      .returns(true);
     sandbox.stub(turnStore, 'update')
       .returns(true);
 
@@ -55,6 +51,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -67,18 +64,23 @@ suite('Use Case: Hostess rejects gas turn', () => {
     assert.isTrue(output)
   });
 
-  test('hostess rejects gas turn when the branch is closed', (done) => {
+  test('hostess rejects gas turn of some other branch', (done) => {
     sandbox.stub(turnStore, 'find')
       .returns(Promise.resolve(turn));
+
+    branch = createBranch({
+      branchId: 'some-other-branch-id',
+    });
+    hostess = createHostess({ hostessId, branch });
+
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(Branch.prototype, 'isOpen')
-      .returns(false);
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -87,7 +89,9 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchIsNotOpen);
+        expect(error).to.be.instanceof(
+          useCaseErrors.TurnDoesNotBelongToBranch
+        );
         done();
       });
   });
@@ -97,8 +101,6 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(Promise.resolve(turn));
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(Branch.prototype, 'isOpen')
-      .returns(true);
 
     branch = createBranch({
       branchId: 'some-other-branch-id',
@@ -109,6 +111,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -117,7 +120,9 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchMissMatch);
+        expect(error).to.be.instanceof(
+          useCaseErrors.HostessDoesNotBelongToBranch
+        );
         done();
       });
   });
@@ -129,13 +134,12 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(Branch.prototype, 'isOpen')
-      .returns(true);
 
     turn.reject();
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -144,7 +148,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnIsNotWaiting);
+        expect(error).to.be.instanceof(useCaseErrors.UnableToRejectTurn);
         done();
       });
   });
@@ -159,6 +163,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -182,6 +187,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -190,9 +196,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(
-          useCaseErrors.HostessDoesNotBelongToAnyBranch
-        );
+        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
         done();
       });
   });
@@ -207,6 +211,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,
@@ -227,15 +232,12 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(Branch.prototype, 'isOpen')
-      .returns(true);
-    sandbox.stub(Turn.prototype, 'isWaiting')
-      .returns(true);
     sandbox.stub(turnStore, 'update')
       .returns(Promise.reject(new storeErrors.TurnNotUpdated()));
 
     const useCase = new HostessRejectGasTurn({
       turnId,
+      branchId,
       hostessId,
       turnStore,
       hostessStore,

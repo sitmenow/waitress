@@ -1,3 +1,6 @@
+const errors = require('./errors');
+
+
 const SERVED = 'served';
 const WAITING = 'waiting';
 const ON_HOLD = 'on_hold';
@@ -39,7 +42,7 @@ class Turn {
 
   serve() {
     if (this._status != WAITING && this._status != ON_HOLD) {
-      throw new Error();
+      throw new errors.TurnMustBeWaitingToBeServed();
     }
 
     this._status = SERVED;
@@ -47,7 +50,7 @@ class Turn {
 
   hold() {
     if (this._status != WAITING) {
-      throw new Error();
+      throw new errors.TurnMustBeWaitingToBeOnHold();
     }
 
     this._status = ON_HOLD;
@@ -55,7 +58,7 @@ class Turn {
 
   cancel() {
     if (this._status != WAITING || this._status != ON_HOLD) {
-      throw new Error();
+      throw new errors.TurnMustBeWaitingToBeCanceled();
     }
 
     this._status = CANCEL;
@@ -63,7 +66,7 @@ class Turn {
 
   remove() {
     if (this._status != WAITING || !this._expectedServiceTime) {
-      throw new Error();
+      throw new errors.TurnMustBeWaitingToBeRemoved();
     }
 
     this._status = REMOVED;
@@ -71,7 +74,7 @@ class Turn {
 
   reject() {
     if (this._status != WAITING && this._status != ON_HOLD) {
-      throw new Error();
+      throw new errors.TurnMustBeWaitingToBeRejected();
     }
 
     this._status = REJECTED;
