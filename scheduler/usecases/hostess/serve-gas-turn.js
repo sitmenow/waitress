@@ -1,16 +1,19 @@
 const storeErrors = require('../../stores/errors');
+const schedulerErrors = require('../../errors');
 const errors = require('./errors');
 
 
 class HostessServeGasTurn {
   constructor({
     turnId,
+    branchId,
     hostessId,
     turnStore,
     hostessStore,
     branchStore,
   }) {
     this.turnId = turnId;
+    this.branchId = branchId;
     this.hostessId = hostessId;
     this.turnStore = turnStore;
     this.hostessStore = hostessStore;
@@ -19,30 +22,26 @@ class HostessServeGasTurn {
 
   execute() {
     const turn = this.turnStore.find(this.turnId);
-    const branch = this.hostessStore.find(this.hostessId)
-      .then(hostess => this.branchStore.find(hostess.branch.id));
+    const hostess = this.hostessStore.find(this.hostessId);
+    const branch = this.branchStore.find(this.branchId);
 
-    return Promise.all([turn, branch])
-      .then(([turn, branch]) => this._serveTurn(turn, branch))
+    return Promise.all([turn, hostess, branch])
+      .then(([turn, hostess, branch]) => this._serveGasTurn(turn, hostess, branch))
       .catch(error => this._manageError(error));
   }
 
-  _serveTurn(turn, branch) {
-    if (!branch.isOpen()) {
-      throw new errors.BranchIsNotOpen();
+  _serveGasTurn(turn, hostess, branch) {
+    if (branch.id != hostess.branch.id) {
+      throw new errors.HostessDoesNotBelongToBranch();
     }
 
     if (branch.id != turn.branch.id) {
-      throw new errors.BranchMissMatch();
+      throw new errors.TurnDoesNotBelongToBranch();
     }
 
-    if (!turn.isWaiting()) {
-      throw new errors.TurnIsNotWaiting();
-    }
-
-    // TODO: Manage turn serve error instead of above validation
     turn.serve();
-    return this.turnStore.update(turn);
+
+    return this.turnStore.update(turn)
   }
 
   _manageError(error) {
@@ -51,9 +50,11 @@ class HostessServeGasTurn {
     } else if (error instanceof storeErrors.HostessNotFound) {
       throw new errors.HostessNotFound();
     } else if (error instanceof storeErrors.BranchNotFound) {
-      throw new errors.HostessDoesNotBelongToAnyBranch();
+      throw new errors.BranchNotFound();
     } else if (error instanceof storeErrors.TurnNotUpdated) {
       throw new errors.TurnNotServed();
+    } else if (error instanceof schedulerErrors.TurnMustBeWaitingToBeServed) {
+      throw new errors.UnableToServeTurn();
     }
 
     // console.log(error);

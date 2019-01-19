@@ -31,8 +31,8 @@ class TurnStore {
     model.status = turn.status;
     model.requestedTime = turn.requestedTime;
     model.expectedServiceTime = turn.expectedServiceTime;
-    model.customerId = turn.customer.id;
     model.branchId = turn.branch.id;
+    model.customerId = turn.customer.id;
 
 /******* gas stations *********/
     model.emailAddress = turn.emailAddress;
@@ -64,6 +64,16 @@ class TurnStore {
     return turns.map(model => this._modelToObject(model));
   }
 
+  async findByBranchAndStatusWithLimit(branchId, start, end, status) {
+    const turns = await TurnModel.find({
+      branchId,
+      status: status,
+      requestedTime: { $gte: start, $lte: end },
+    })
+
+    return turns.map(model => this._modelToObject(model));
+  }
+
   _modelToObject(model) {
     let turn = null;
 
@@ -72,12 +82,10 @@ class TurnStore {
         id: model.id,
         name: model.name,
         guests: model.guests,
+        status: model.status,
         requestedTime: model.requestedTime,
         branch: new Branch({ id: model.branchId.toString() }),
-
-/******* gas stations *********/
-        //customer: new Customer({ id: model.customerId.toString() }),
-/****************************/
+        customer: new Customer({ id: model.customerId.toString() }),
       });
 
 /******* gas stations *********/

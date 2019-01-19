@@ -3,16 +3,20 @@ class HostessStore {
     this.gateway = gateway;
   }
 
-  create(turn) {
-    return this.gateway.create(turn);
+  all() {
+    return this.gateway.all();
   }
 
-  find(turnId) {
-    return this.gateway.find(turnId);
+  create(hostess) {
+    return this.gateway.create(hostess);
   }
 
-  update(turn) {
-    return this.gateway.update(turn);
+  find(hostessId) {
+    return this.gateway.find(hostessId);
+  }
+
+  update(hostess) {
+    return this.gateway.update(hostess);
   }
 }
 

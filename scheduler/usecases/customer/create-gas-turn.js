@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const Turn = require('../../turn');
+const Customer = require('../../customer');
 const errors = require('./errors');
 const storeErrors = require('../../stores/errors');
 
@@ -43,7 +45,7 @@ class CustomerCreateGasTurn {
     const turn = new Turn({
       name: this.turnName,
       branch: branch,
-      customer: {},
+      customer: new Customer({ id: mongoose.Types.ObjectId() }),
     });
 
     turn.emailAddress = this.turnEmailAddress;

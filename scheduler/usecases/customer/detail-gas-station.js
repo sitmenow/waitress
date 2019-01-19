@@ -2,7 +2,7 @@ const errors = require('./errors');
 const storeErrors = require('../../stores/errors');
 
 
-class CustomerListGasTurns {
+class CustomerDetailGasStation {
   constructor({
     branchId,
     branchStore,
@@ -15,20 +15,24 @@ class CustomerListGasTurns {
 
   execute() {
     return this.branchStore.find(this.branchId)
-      .then(branch => this._listGasTurns(branch))
+      .then(branch => this._detailGasStation(branch))
       .catch(error => this._manageError(error));
   }
 
-  _listGasTurns(branch) {
-    if (!branch.isOpen()) {
-      throw new errors.BranchIsNotOpen();
-    }
+  async _detailGasStation(branch) {
+    //if (!branch.isOpen()) {
+    //  throw new errors.BranchIsNotOpen();
+    //}
 
-    return this.turnStore.findByBranchAndStatus(
+    const turns = await this.turnStore.findByBranchAndStatus(
       branch.id,
       branch.lastOpeningTime,
       'waiting'
     );
+
+    branch.waitingTurns = turns.length;
+
+    return branch;
   }
 
   _manageError(error) {
@@ -43,4 +47,4 @@ class CustomerListGasTurns {
   }
 }
 
-module.exports = CustomerListGasTurns;
+module.exports = CustomerDetailGasStation;

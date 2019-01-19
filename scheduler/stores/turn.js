@@ -22,6 +22,14 @@ class TurnStore {
   findByBranch(branchId, start, index) {
     return this.gateway.findByBranch(branchId, start, index);
   }
+
+  findByBranchAndStatus(branchId, start, status, index) {
+    return this.gateway.findByBranchAndStatus(branchId, start, status, index);
+  }
+
+  findByBranchAndStatusWithLimit(branchId, start, end, status) {
+    return this.gateway.findByBranchAndStatusWithLimit(branchId, start, end, status);
+  }
 }
 
 module.exports = TurnStore;
