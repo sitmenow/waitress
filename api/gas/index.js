@@ -21,7 +21,7 @@ module.exports = (stores, useCases) => {
     // Dispatcher -> Block | Detail gas station
     const useCase = new useCases.CustomerDetailGasStation({
       branchId: req.params.gasStationId,
-      turnStore: stores.turnStore,
+      cacheStore: stores.cacheStore,
       branchStore: stores.branchStore,
     });
 
@@ -54,16 +54,37 @@ module.exports = (stores, useCases) => {
       branchId: req.params.gasStationId,
       branchStore: stores.branchStore,
       turnStore: stores.turnStore,
+      cacheStore: stores.cacheStore,
     });
 
     useCase.execute()
       .then(turns => res.json(turns))
       .catch(error => { console.log(error); res.json(error)});
+
     // Dispatcher -> List own turns
+  });
+
+  app.get('/gasStations/:gasStationId/cache', function(req, res) {
+    // Customer -> Summary of turns
+
+    // Dispatcher -> List own turns
+    const useCase = new useCases.HostessListGasTurns({
+      branchId: req.params.gasStationId,
+      hostessId: req.query.hostess_id,
+      branchStore: stores.branchStore,
+      turnStore: stores.turnStore,
+      hostessStore: stores.hostessStore,
+      cacheStore: stores.cacheStore,
+    });
+
+    useCase.execute()
+      .then(turn => res.json(turn))
+      .catch(error => { console.log(error); res.json(error) });
   });
 
   app.post('/gasStations/:gasStationId/turns', function(req, res) {
     // Customer -> Create turn
+    // Dispatcher -> Block
     const useCase = new useCases.CustomerCreateGasTurn({
       turnName: req.body.name,
       turnEmailAddress: req.body.email_address,
@@ -71,12 +92,12 @@ module.exports = (stores, useCases) => {
       branchId: req.params.gasStationId,
       branchStore: stores.branchStore,
       turnStore: stores.turnStore,
+      cacheStore: stores.cacheStore,
     });
 
     useCase.execute()
       .then(turn => res.json(turn))
       .catch(error => { console.log(error); res.json(error) });
-    // Dispatcher -> Block
   });
 
   app.get('/gasStations/:gasStationId/turns/:turnId', function(req, res) {
@@ -87,6 +108,7 @@ module.exports = (stores, useCases) => {
       branchId: req.params.gasStationId,
       turnStore: stores.turnStore,
       branchStore: stores.branchStore,
+      cacheStore: stores.cacheStore,
     });
 
     useCase.execute()
@@ -99,7 +121,6 @@ module.exports = (stores, useCases) => {
 
   app.put('/gasStations/:gasStationId/turns/:turnId/serve', function(req, res) {
     // Dispatcher -> Serve turn if own turn
-    stores.hostessStore.all().then(_ => console.log(_))
     const useCase = new useCases.HostessServeGasTurn({
       turnId: req.params.turnId,
       branchId: req.params.gasStationId,
@@ -107,6 +128,7 @@ module.exports = (stores, useCases) => {
       turnStore: stores.turnStore,
       hostessStore: stores.hostessStore,
       branchStore: stores.branchStore,
+      cacheStore: stores.cacheStore,
     });
 
     useCase.execute()
@@ -115,7 +137,7 @@ module.exports = (stores, useCases) => {
   });
 
   app.put('/gasStations/:gasStationId/turns/:turnId/reject', function(req, res) {
-    // Dispatcher -> Serve/Reject turn if own turn
+    // Dispatcher -> Reject turn if own turn
     const useCase = new useCases.HostessRejectGasTurn({
       turnId: req.params.turnId,
       branchId: req.params.gasStationId,
@@ -123,12 +145,31 @@ module.exports = (stores, useCases) => {
       turnStore: stores.turnStore,
       hostessStore: stores.hostessStore,
       branchStore: stores.branchStore,
+      cacheStore: stores.cacheStore,
     });
 
     useCase.execute()
       .then(turn => res.json(turn))
       .catch(error => { console.log(error); res.json(error) });
   });
+
+  app.put('/gasStations/:gasStationId/turns/:turnId/await', function(req, res) {
+    // Dispatcher -> Await turn if own turn
+    const useCase = new useCases.HostessAwaitGasTurn({
+      turnId: req.params.turnId,
+      branchId: req.params.gasStationId,
+      hostessId: req.body.hostess_id,
+      turnStore: stores.turnStore,
+      hostessStore: stores.hostessStore,
+      branchStore: stores.branchStore,
+      cacheStore: stores.cacheStore,
+    });
+
+    useCase.execute()
+      .then(turn => res.json(turn))
+      .catch(error => { console.log(error); res.json(error) });
+  });
+
 
   app.post('/token', function(req, res) {});
 
