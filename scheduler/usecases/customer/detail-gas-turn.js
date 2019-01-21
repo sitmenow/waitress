@@ -9,11 +9,13 @@ class CustomerDetailGasTurn {
     branchId,
     turnStore,
     branchStore,
+    cacheStore,
   }) {
     this.turnId = turnId;
     this.branchId = branchId;
     this.turnStore = turnStore;
     this.branchStore = branchStore;
+    this.cacheStore = cacheStore;
   }
 
   execute() {
@@ -29,9 +31,7 @@ class CustomerDetailGasTurn {
     // Doesn't care if branch is open/closed. The turn detail
     // should be available always. Maybe gas station was closed
     // to stop receiving turns
-    const turns = await this.turnStore.findByBranchAndStatusWithLimit(
-      branch.id, branch.lastOpeningTime, turn.requestedTime, 'waiting'
-    );
+    const turns = await this.cacheStore.getBranchGasTurns(branch.id);
 
     if (!turn.isServed()) {
       turn.position = turns.length

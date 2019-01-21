@@ -13,6 +13,7 @@ class CustomerCreateGasTurn {
     branchId,
     turnStore,
     branchStore,
+    cacheStore,
   }) {
     this.turnName = turnName;
     this.turnEmailAddress = turnEmailAddress;
@@ -20,6 +21,7 @@ class CustomerCreateGasTurn {
     this.branchId = branchId;
     this.turnStore = turnStore;
     this.branchStore = branchStore;
+    this.cacheStore = cacheStore;
   }
 
   execute() {
@@ -51,7 +53,8 @@ class CustomerCreateGasTurn {
     turn.emailAddress = this.turnEmailAddress;
     turn.plates = this.turnPlates;
 
-    return this.turnStore.create(turn);
+    return this.turnStore.create(turn)
+      .then(turnId => this.cacheStore.createGasTurn(turnId, branch.id));
   }
 
   _manageError(error) {
