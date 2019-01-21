@@ -10,6 +10,7 @@ class HostessRejectGasTurn {
     turnStore,
     hostessStore,
     branchStore,
+    cacheStore,
   }) {
     this.turnId = turnId;
     this.branchId = branchId;
@@ -17,6 +18,7 @@ class HostessRejectGasTurn {
     this.turnStore = turnStore;
     this.hostessStore = hostessStore;
     this.branchStore = branchStore;
+    this.cacheStore = cacheStore;
   }
 
   execute() {
@@ -40,7 +42,10 @@ class HostessRejectGasTurn {
 
     turn.reject();
 
-    return this.turnStore.update(turn)
+    return Promise.all([
+      this.turnStore.update(turn),
+      this.cacheStore.removeGasTurn(turn.id)
+    ]);
   }
 
   _manageError(error) {

@@ -17,6 +17,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     branchStore = createBranchStore();
     hostessStore = createHostessStore();
     turnStore = createTurnStore();
+    cacheStore = createCacheStore();
 
     turnId = 'turn-id';
     branchId = 'branch-id';
@@ -40,6 +41,8 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(Promise.resolve(branch));
     sandbox.stub(turnStore, 'update')
       .returns(true);
+    sandbox.stub(cacheStore, 'removeGasTurn')
+      .returns(true);
 
     const expectedTurn = createTurn({
       turnId,
@@ -56,12 +59,13 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
-    const output = await useCase.execute();
+    await useCase.execute();
 
     assert.isTrue(turnStore.update.calledWith(expectedTurn));
-    assert.isTrue(output)
+    assert.isTrue(cacheStore.removeGasTurn.calledWith(expectedTurn.id));
   });
 
   test('hostess rejects gas turn of some other branch', (done) => {
@@ -85,6 +89,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()
@@ -116,6 +121,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()
@@ -144,6 +150,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()
@@ -168,6 +175,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()
@@ -192,6 +200,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()
@@ -216,6 +225,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()
@@ -234,6 +244,8 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(Promise.resolve(branch));
     sandbox.stub(turnStore, 'update')
       .returns(Promise.reject(new storeErrors.TurnNotUpdated()));
+    sandbox.stub(cacheStore, 'removeGasTurn')
+      .returns(true);
 
     const useCase = new HostessRejectGasTurn({
       turnId,
@@ -242,6 +254,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       turnStore,
       hostessStore,
       branchStore,
+      cacheStore,
     });
 
     useCase.execute()

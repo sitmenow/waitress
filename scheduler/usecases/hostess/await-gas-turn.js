@@ -3,7 +3,7 @@ const schedulerErrors = require('../../errors');
 const errors = require('./errors');
 
 
-class HostessServeGasTurn {
+class HostessAwaitGasTurn {
   constructor({
     turnId,
     branchId,
@@ -28,11 +28,11 @@ class HostessServeGasTurn {
     const branch = this.branchStore.find(this.branchId);
 
     return Promise.all([turn, hostess, branch])
-      .then(([turn, hostess, branch]) => this._serveGasTurn(turn, hostess, branch))
+      .then(([turn, hostess, branch]) => this._awaitGasTurn(turn, hostess, branch))
       .catch(error => this._manageError(error));
   }
 
-  _serveGasTurn(turn, hostess, branch) {
+  _awaitGasTurn(turn, hostess, branch) {
     if (branch.id != hostess.branch.id) {
       throw new errors.HostessDoesNotBelongToBranch();
     }
@@ -41,12 +41,8 @@ class HostessServeGasTurn {
       throw new errors.TurnDoesNotBelongToBranch();
     }
 
-    turn.serve();
-
-    return Promise.all([
-      this.turnStore.update(turn),
-      this.cacheStore.removeGasTurn(turn.id)
-    ]);
+    const expectedArrivalTime = new Date();
+    return this.cacheStore.updateGasTurn(turn.id, expectedArrivalTime);
   }
 
   _manageError(error) {
@@ -67,4 +63,4 @@ class HostessServeGasTurn {
   }
 }
 
-module.exports = HostessServeGasTurn;
+module.exports = HostessAwaitGasTurn;

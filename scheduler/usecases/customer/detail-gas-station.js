@@ -6,11 +6,11 @@ class CustomerDetailGasStation {
   constructor({
     branchId,
     branchStore,
-    turnStore,
+    cacheStore,
   }) {
     this.branchId = branchId;
     this.branchStore = branchStore;
-    this.turnStore = turnStore;
+    this.cacheStore = cacheStore;
   }
 
   execute() {
@@ -20,15 +20,7 @@ class CustomerDetailGasStation {
   }
 
   async _detailGasStation(branch) {
-    //if (!branch.isOpen()) {
-    //  throw new errors.BranchIsNotOpen();
-    //}
-
-    const turns = await this.turnStore.findByBranchAndStatus(
-      branch.id,
-      branch.lastOpeningTime,
-      'waiting'
-    );
+    const turns = await this.cacheStore.getBranchGasTurns(branch.id);
 
     branch.waitingTurns = turns.length;
 

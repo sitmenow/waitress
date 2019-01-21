@@ -6,11 +6,15 @@ class CustomerListGasTurns {
   constructor({
     branchId,
     branchStore,
+    cacheStore,
     turnStore,
+    limit,
   }) {
     this.branchId = branchId;
     this.branchStore = branchStore;
+    this.cacheStore = cacheStore;
     this.turnStore = turnStore;
+    this.limit = limit || 25;
   }
 
   execute() {
@@ -19,16 +23,11 @@ class CustomerListGasTurns {
       .catch(error => this._manageError(error));
   }
 
-  _listGasTurns(branch) {
-    if (!branch.isOpen()) {
-      throw new errors.BranchIsNotOpen();
-    }
+  async _listGasTurns(branch) {
+    const cache = await this.cacheStore.getBranchGasTurns(branch.id, this.limit);
+    const turns = cache.map(item => this.turnStore.find(item.id));
 
-    return this.turnStore.findByBranchAndStatus(
-      branch.id,
-      branch.lastOpeningTime,
-      'waiting'
-    );
+    return Promise.all(turns);
   }
 
   _manageError(error) {

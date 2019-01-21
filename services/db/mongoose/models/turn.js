@@ -6,6 +6,7 @@ const schema = new mongoose.Schema({
   status: String,
   guests: Number,
   requestedTime: Date,
+  updatedTime: Date,
   expectedServiceTime: Date,
   branchId: mongoose.ObjectId,
   customerId: mongoose.ObjectId,

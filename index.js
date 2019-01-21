@@ -6,8 +6,9 @@ const mongooseBranchStore = require('./scheduler/stores/mongoose/branch');
 const mongooseCustomerStore = require('./scheduler/stores/mongoose/customer');
 const mongooseTurnStore = require('./scheduler/stores/mongoose/turn');
 const mongooseHostessStore = require('./scheduler/stores/mongoose/hostess');
-const dynamoDbStore = require('./scheduler/stores/dynamodb');
-const dynamoDbCacheStore = require('./scheduler/stores/dynamodb/cache');
+const mongooseCacheStore = require('./scheduler/stores/mongoose/cache');
+// const dynamoDbStore = require('./scheduler/stores/dynamodb');
+// const dynamoDbCacheStore = require('./scheduler/stores/dynamodb/cache');
 const useCases = require('./scheduler/usecases');
 const api = require('./api/gas');
 
@@ -17,7 +18,7 @@ const gateways = {
   customer: new mongooseCustomerStore(),
   hostess: new mongooseHostessStore(),
   turn: new mongooseTurnStore(),
-  cache: new dynamoDbCacheStore(),
+  cache: new mongooseCacheStore(),
 };
 
 const stores = {
