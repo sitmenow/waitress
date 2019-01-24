@@ -1,4 +1,7 @@
+require('dotenv').config()
 const config = require('config');
+
+console.log(config);
 
 const schedulerStores = require('./scheduler/stores');
 const mongooseStore = require('./scheduler/stores/mongoose');
@@ -34,9 +37,11 @@ const app = api(stores, useCases);
 mongooseStore(config)
   .catch(error => console.log(`Error while connecting to Mongo: ${error}`));
 
+console.log(config.api.port);
+
 app.disable('x-powered-by')
 app.listen(config.api.port)
-
+console.log("Waitress listening on ", config.api.port);
 
 // Setup express app
 // Setup sequelize

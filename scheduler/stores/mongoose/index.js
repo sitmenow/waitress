@@ -1,9 +1,24 @@
 const mongoose = require('mongoose');
 
 
-function URI({ scheme, host, database }) {
-  return scheme + '://' + host + '/' + database;
-  // return 'mongodb://localhost/test';
+function URI({ scheme, host, port, user, password, database }) {
+  if (process.env.MONGODB_URI) return process.env.MONGODB_URI;
+
+  let uri = scheme + '://';
+
+  if (user && password) {
+    uri += `${user}:${password}@`;
+  }
+
+  uri += host;
+  if (port) {
+    uri += `:${port}`;
+  }
+
+  uri += `/${database}`;
+
+  return uri;
+  // return 'mongodb://username:password@host:port/database?options...'
 }
 
 // TODO: Look for In-Memory engine

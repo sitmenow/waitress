@@ -8,12 +8,9 @@ module.exports = {
   services: {
     db: {
       database: "sit_me_now_dev",
-      options: {
-        // port: 5432,
-        // username: "grevych",
-        // password: "",
-        // schema: "public",
-      },
+      host: "localhost",
+      port: 27017,
+      options: {},
     },
   },
 };

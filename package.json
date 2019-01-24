@@ -4,7 +4,8 @@
   "description": "Sit Me Now",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=develop node index.js",
+    "start": "NODE_ENV=production node index.js",
+    "start-dev": "NODE_ENV=develop node index.js",
     "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd 'test/**/*_test.js'",
     "test-path": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd -- ",
     "test-coverage": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/_mocha -u tdd 'test/**/*_test.js'"
@@ -16,6 +17,7 @@
   "dependencies": {
     "bson-ext": "^2.0.1",
     "config": "^2.0.1",
+    "dotenv": "^6.2.0",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
     "express-jwt": "^5.3.1",
@@ -33,5 +35,8 @@
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
     "sinon": "^6.3.5"
+  },
+  "engines": {
+    "node": "8.11.x"
   }
 }
