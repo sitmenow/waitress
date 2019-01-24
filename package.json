@@ -6,7 +6,8 @@
   "scripts": {
     "start": "NODE_ENV=develop node index.js",
     "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd 'test/**/*_test.js'",
-    "test-path": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd -- "
+    "test-path": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd -- ",
+    "test-coverage": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/_mocha -u tdd 'test/**/*_test.js'"
   },
   "repository": "git@github.com:sitmenow/waitress.git",
   "author": "hello@sitmenow.com",
@@ -17,7 +18,9 @@
     "config": "^2.0.1",
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
+    "express-jwt": "^5.3.1",
     "graphql": "^0.13.2",
+    "jwks-rsa": "^1.3.0",
     "moment": "^2.22.2",
     "mongodb": "^3.1.10",
     "mongoose": "^5.3.12",
@@ -25,7 +28,10 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "istanbul": "^0.4.5",
+    "minimist": "^1.2.0",
     "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
     "sinon": "^6.3.5"
   }
 }
