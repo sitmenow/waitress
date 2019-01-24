@@ -6,6 +6,7 @@ const middlewares = require('./middlewares');
 
 const app = express();
 
+app.use(middlewares.cors);
 app.use(express.json());
 
 
