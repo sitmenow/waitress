@@ -1,4 +1,7 @@
 const express = require('express');
+const config = require('config');
+
+const middlewares = require('./middlewares');
 
 
 const app = express();
@@ -7,18 +10,13 @@ app.use(express.json());
 
 
 module.exports = (stores, useCases) => {
-
   app.get('/gasStations', function(req, res) {
-    // Customer -> List gas stations
-    // Dispatcher -> Block | List gas stations
     stores.branchStore.all()
       .then(branches => res.json(branches))
       .catch(error => res.json(error))
   });
 
   app.get('/gasStations/:gasStationId', function(req, res) {
-    // Customer -> Detail gas station
-    // Dispatcher -> Block | Detail gas station
     const useCase = new useCases.CustomerDetailGasStation({
       branchId: req.params.gasStationId,
       cacheStore: stores.cacheStore,
@@ -33,23 +31,8 @@ module.exports = (stores, useCases) => {
       })
   });
 
-  app.put('/gasStations/:gasStationId', function(req, res) {
-    // Customer -> Block
-    // Dispatcher -> Enable/Disable own gas station
-    const useCase = new useCases.HostessToggleGasStation({
-      branchId: req.params.gasStationId,
-      hostessId: req.body.hostess_id,
-      hostessStore: stores.hostessStore,
-      branchStore: stores.branchStore,
-    });
-
-    useCase.execute()
-      .then(_ => res.json(_))
-      .catch(error => res.json(error))
-  });
-
+  /*
   app.get('/gasStations/:gasStationId/turns', function(req, res) {
-    // Customer -> Summary of turns
     const useCase = new useCases.CustomerListGasTurns({
       branchId: req.params.gasStationId,
       branchStore: stores.branchStore,
@@ -60,31 +43,10 @@ module.exports = (stores, useCases) => {
     useCase.execute()
       .then(turns => res.json(turns))
       .catch(error => { console.log(error); res.json(error)});
-
-    // Dispatcher -> List own turns
   });
-
-  app.get('/gasStations/:gasStationId/cache', function(req, res) {
-    // Customer -> Summary of turns
-
-    // Dispatcher -> List own turns
-    const useCase = new useCases.HostessListGasTurns({
-      branchId: req.params.gasStationId,
-      hostessId: req.query.hostess_id,
-      branchStore: stores.branchStore,
-      turnStore: stores.turnStore,
-      hostessStore: stores.hostessStore,
-      cacheStore: stores.cacheStore,
-    });
-
-    useCase.execute()
-      .then(turn => res.json(turn))
-      .catch(error => { console.log(error); res.json(error) });
-  });
+  */
 
   app.post('/gasStations/:gasStationId/turns', function(req, res) {
-    // Customer -> Create turn
-    // Dispatcher -> Block
     const useCase = new useCases.CustomerCreateGasTurn({
       turnName: req.body.name,
       turnEmailAddress: req.body.email_address,
@@ -101,8 +63,6 @@ module.exports = (stores, useCases) => {
   });
 
   app.get('/gasStations/:gasStationId/turns/:turnId', function(req, res) {
-    // Customer -> Detail turn & summary of turns
-    // Dispatcher -> Block
     const useCase = new useCases.CustomerDetailGasTurn({
       turnId: req.params.turnId,
       branchId: req.params.gasStationId,
@@ -117,14 +77,41 @@ module.exports = (stores, useCases) => {
 
   });
 
+  app.put('/gasStations/:gasStationId', middlewares.auth, function(req, res) {
+    const useCase = new useCases.HostessToggleGasStation({
+      branchId: req.params.gasStationId,
+      hostessId: config.entities.hostess || req.user.sub,
+      hostessStore: stores.hostessStore,
+      branchStore: stores.branchStore,
+    });
+
+    useCase.execute()
+      .then(_ => res.json(_))
+      .catch(error => res.json(error))
+  });
+
+  app.get('/gasStations/:gasStationId/turns', middlewares.auth, function(req, res) {
+    const useCase = new useCases.HostessListGasTurns({
+      branchId: req.params.gasStationId,
+      hostessId: config.entities.hostess || req.user.sub,
+      branchStore: stores.branchStore,
+      turnStore: stores.turnStore,
+      hostessStore: stores.hostessStore,
+      cacheStore: stores.cacheStore,
+    });
+
+    useCase.execute()
+      .then(turn => res.json(turn))
+      .catch(error => { console.log(error); res.json(error) });
+  });
+
   // Customer -> Cancel turn
 
-  app.put('/gasStations/:gasStationId/turns/:turnId/serve', function(req, res) {
-    // Dispatcher -> Serve turn if own turn
+  app.put('/gasStations/:gasStationId/turns/:turnId/serve', middlewares.auth, function(req, res) {
     const useCase = new useCases.HostessServeGasTurn({
       turnId: req.params.turnId,
       branchId: req.params.gasStationId,
-      hostessId: req.body.hostess_id,
+      hostessId: config.entities.hostess || req.user.sub,
       turnStore: stores.turnStore,
       hostessStore: stores.hostessStore,
       branchStore: stores.branchStore,
@@ -136,12 +123,11 @@ module.exports = (stores, useCases) => {
       .catch(error => { console.log(error); res.json(error) });
   });
 
-  app.put('/gasStations/:gasStationId/turns/:turnId/reject', function(req, res) {
-    // Dispatcher -> Reject turn if own turn
+  app.put('/gasStations/:gasStationId/turns/:turnId/reject', middlewares.auth, function(req, res) {
     const useCase = new useCases.HostessRejectGasTurn({
       turnId: req.params.turnId,
       branchId: req.params.gasStationId,
-      hostessId: req.body.hostess_id,
+      hostessId: config.entities.hostess || req.user.sub,
       turnStore: stores.turnStore,
       hostessStore: stores.hostessStore,
       branchStore: stores.branchStore,
@@ -153,12 +139,11 @@ module.exports = (stores, useCases) => {
       .catch(error => { console.log(error); res.json(error) });
   });
 
-  app.put('/gasStations/:gasStationId/turns/:turnId/await', function(req, res) {
-    // Dispatcher -> Await turn if own turn
+  app.put('/gasStations/:gasStationId/turns/:turnId/await', middlewares.auth, function(req, res) {
     const useCase = new useCases.HostessAwaitGasTurn({
       turnId: req.params.turnId,
       branchId: req.params.gasStationId,
-      hostessId: req.body.hostess_id,
+      hostessId: config.entities.hostess || req.user.sub,
       turnStore: stores.turnStore,
       hostessStore: stores.hostessStore,
       branchStore: stores.branchStore,
@@ -169,9 +154,6 @@ module.exports = (stores, useCases) => {
       .then(turn => res.json(turn))
       .catch(error => { console.log(error); res.json(error) });
   });
-
-
-  app.post('/token', function(req, res) {});
 
   return app;
 };
