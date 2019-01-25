@@ -42,7 +42,11 @@ class HostessAwaitGasTurn {
     }
 
     const expectedArrivalTime = new Date();
-    return this.cacheStore.updateGasTurn(turn.id, expectedArrivalTime);
+    return this.cacheStore.updateGasTurn(turn.id, expectedArrivalTime)
+      .then(() => {
+        turn.expectedArrivalTime = expectedArrivalTime;
+        return turn;
+      });
   }
 
   _manageError(error) {
