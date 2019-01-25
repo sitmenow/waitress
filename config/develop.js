@@ -1,5 +1,6 @@
 module.exports = {
   api: {
+    origin: '*',
     port: 8080,
   },
   entities: {

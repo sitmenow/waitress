@@ -1,5 +1,6 @@
 const jwt = require('express-jwt');
 const jwks = require('jwks-rsa');
+const config = require('config');
 const cors = require('cors');
 
 const secret = jwks.expressJwtSecret({
@@ -19,5 +20,5 @@ const auth = jwt({
 
 module.exports = {
   auth,
-  cors: cors(),
+  cors: cors({ origin: config.api.origin }),
 };

@@ -2,8 +2,6 @@ const mongoose = require('mongoose');
 
 
 function URI({ scheme, host, port, user, password, database }) {
-  if (process.env.MONGODB_URI) return process.env.MONGODB_URI;
-
   let uri = scheme + '://';
 
   if (user && password) {
