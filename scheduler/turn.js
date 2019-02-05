@@ -9,15 +9,25 @@ const REMOVED = 'removed';
 const REJECTED = 'rejected';
 
 class Turn {
-  constructor({ id, name, status, guests, requestedTime, expectedServiceTime, customer, branch }) {
+  constructor({ 
+    id,
+    name,
+    status,
+    requestedTime,
+    expectedServiceTime,
+    metadata,
+    customer,
+    branch
+  }) {
     this._id = id;
     this._status = status || WAITING;
+    this._requestedTime = requestedTime || new Date();
+    this._metadata = metadata;
     this._customer = customer;
     this._branch = branch;
-    this._requestedTime = requestedTime || new Date();
-    this.expectedServiceTime = expectedServiceTime;
+
     this.name = name;
-    this.guests = guests || 1;
+    this.expectedServiceTime = expectedServiceTime;
   }
 
   get id() {
@@ -42,7 +52,9 @@ class Turn {
 
   serve() {
     if (this._status != WAITING && this._status != ON_HOLD) {
-      throw new errors.TurnMustBeWaitingToBeServed();
+      throw new errors.TurnNotAllowedToChangeStatus(
+        this.id, this.status, SERVED
+      );
     }
 
     this._status = SERVED;
@@ -50,7 +62,9 @@ class Turn {
 
   hold() {
     if (this._status != WAITING) {
-      throw new errors.TurnMustBeWaitingToBeOnHold();
+      throw new errors.TurnNotAllowedToChangeStatus(
+        this.id, this.status, ON_HOLD
+      );
     }
 
     this._status = ON_HOLD;
@@ -58,7 +72,9 @@ class Turn {
 
   cancel() {
     if (this._status != WAITING || this._status != ON_HOLD) {
-      throw new errors.TurnMustBeWaitingToBeCanceled();
+      throw new errors.TurnNotAllowedToChangeStatus(
+        this.id, this.status, CANCELED
+      );
     }
 
     this._status = CANCEL;
@@ -66,7 +82,9 @@ class Turn {
 
   remove() {
     if (this._status != WAITING || !this._expectedServiceTime) {
-      throw new errors.TurnMustBeWaitingToBeRemoved();
+      throw new errors.TurnNotAllowedToChangeStatus(
+        this.id, this.status, REMOVED
+      );
     }
 
     this._status = REMOVED;
@@ -74,7 +92,9 @@ class Turn {
 
   reject() {
     if (this._status != WAITING && this._status != ON_HOLD) {
-      throw new errors.TurnMustBeWaitingToBeRejected();
+      throw new errors.TurnNotAllowedToChangeStatus(
+        this.id, this.status, REJECTED
+      );
     }
 
     this._status = REJECTED;

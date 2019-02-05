@@ -1,0 +1,153 @@
+const { assert, expect } = require('chai');
+const sinon = require('sinon');
+const mongoose = require('mongoose');
+
+require('../store_test_helper');
+
+const TurnModel = require('../../../../../services/db/mongoose/models/turn');
+const errors = require('../../../../../scheduler/stores/errors');
+
+
+suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
+  suiteSetup(() => {
+    sandbox = sinon.createSandbox();
+
+    turnStore = createTurnStore();
+
+    baseTime = new Date();
+    baseTimeSeconds = baseTime.getSeconds();
+
+    branchModelA = createBranchModel({
+      name: 'Branch Test A',
+      coordinates: [324, 23],
+    });
+    branchModelB = createBranchModel({
+      name: 'Branch Test B',
+      coordinates: [324, 23],
+    });
+    customerModel = createCustomerModel({
+      name: 'CustomerTest',
+    });
+    turnModelA = createTurnModel({
+      name: 'Turn Test A',
+      status: 'waiting',
+      requestedTime: new Date(baseTime).setSeconds(baseTimeSeconds - 50),
+      expectedServiceTime: new Date(),
+      customerId: customerModel.id,
+      branchId: branchModelA.id,
+    });
+    turnModelB = createTurnModel({
+      name: 'Turn Test B',
+      status: 'waiting',
+      requestedTime: new Date(baseTime).setSeconds(baseTimeSeconds + 20),
+      expectedServiceTime: new Date(),
+      metadata: { guests: 5 },
+      customerId: customerModel.id,
+      branchId: branchModelB.id,
+    });
+    turnModelC = createTurnModel({
+      name: 'Turn Test C',
+      status: 'served',
+      requestedTime: new Date(baseTime).setSeconds(baseTimeSeconds + 20),
+      expectedServiceTime: new Date(),
+      metadata: { guests: 5 },
+      customerId: customerModel.id,
+      branchId: branchModelB.id,
+    });
+
+    return Promise.all([
+      branchModelA.save(),
+      branchModelB.save(),
+      customerModel.save(),
+      turnModelA.save(),
+      turnModelB.save(),
+      turnModelC.save(),
+    ]);
+  });
+
+  suiteTeardown(() => {
+    return Promise.all([
+      branchModelA.delete(),
+      branchModelB.delete(),
+      customerModel.delete(),
+      turnModelA.delete(),
+      turnModelB.delete(),
+      turnModelC.delete(),
+    ]);
+  });
+
+  setup(() => {
+    branchA = createBranch({
+      id: branchModelA.id,
+    });
+    branchB = createBranch({
+      id: branchModelB.id,
+    });
+    customer = createCustomer({
+      id: customerModel.id,
+    });
+  });
+
+  teardown(() => {
+    sandbox.restore();
+  });
+
+  test('returns all the waiting turns of the given branch id and the requested time range', async () => {
+    const expectedTurnB = createTurn({
+      id: turnModelB.id,
+      name: turnModelB.name,
+      status: turnModelB.status,
+      requestedTime: turnModelB.requestedTime,
+      expectedServiceTime: turnModelB.expectedServiceTime,
+      metadata: turnModelB.metadata,
+      customer,
+      branch: branchB,
+    });
+    const start = baseTime;
+    const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
+
+    const turns = await turnStore.findWaitingByBranchAndRequestedTimeRange(
+      branchModelB.id, start, end
+    );
+
+    assert.deepEqual([expectedTurnB], turns);
+  });
+
+  test('returns an empty list when the given branch does not exist', async () => {
+    const nonExistentId = mongoose.Types.ObjectId();
+    const start = baseTime;
+    const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
+
+    const turns = await turnStore.findWaitingByBranchAndRequestedTimeRange(
+      nonExistentId, start, end
+    );
+
+    assert.deepEqual([], turns);
+  });
+
+  test('returns an empty list when the given branch has no waiting turns in the given requested time range', async () => {
+    const start = baseTime;
+    const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
+
+    const turns = await turnStore.findWaitingByBranchAndRequestedTimeRange(
+      branchModelA.id, start, end
+    );
+
+    assert.deepEqual([], turns);
+  });
+
+  test('throws a turn entity not created error', (done) => {
+    sandbox.stub(turnStore, '_modelToObject')
+      .throws(new errors.TurnEntityNotCreated());
+
+    const start = baseTime;
+    const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
+
+    turnStore.findWaitingByBranchAndRequestedTimeRange(
+      branchModelB.id, start, end
+    ).catch((error) => {
+      expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
+      done();
+    });
+  });
+});
