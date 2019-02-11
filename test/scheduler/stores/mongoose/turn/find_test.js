@@ -4,15 +4,12 @@ const mongoose = require('mongoose');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../services/db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
 
 
 suite('Mongoose TurnStore #find()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
-
-    turnStore = createTurnStore();
 
     branchModel = createBranchModel({
       name: 'BranchTest',
@@ -21,6 +18,28 @@ suite('Mongoose TurnStore #find()', () => {
     customerModel = createCustomerModel({
       name: 'CustomerTest',
     });
+
+    return Promise.all(
+      [branchModel.save(), customerModel.save()]
+    );
+  });
+
+  suiteTeardown(() => {
+    return Promise.all(
+      [branchModel.delete(), customerModel.delete()]
+    );
+  });
+
+  setup(() => {
+    turnStore = createTurnStore();
+
+    branch = createBranch({
+      id: branchModel.id,
+    });
+    customer = createCustomer({
+      id: customerModel.id,
+    });
+
     turnModel = createTurnModel({
       name: 'Turn Test',
       status: 'served',
@@ -30,31 +49,16 @@ suite('Mongoose TurnStore #find()', () => {
       branchId: branchModel.id,
     });
 
-    return Promise.all(
-      [branchModel.save(), customerModel.save(), turnModel.save()]
-    );
-  });
-
-  suiteTeardown(() => {
-    return Promise.all(
-      [branchModel.delete(), customerModel.delete(), turnModel.delete()]
-    );
-  });
-
-  setup(() => {
-    branch = createBranch({
-      id: branchModel.id,
-    });
-    customer = createCustomer({
-      id: customerModel.id,
-    });
+    return turnModel.save();
   });
 
   teardown(() => {
     sandbox.restore();
+
+    return turnModel.delete();
   });
 
-  test('finds the object for the requested id', async () => {
+  test('finds the turn for the requested id', async () => {
     const expectedTurn = createTurn({
       id: turnModel.id,
       name: turnModel.name,
@@ -71,7 +75,8 @@ suite('Mongoose TurnStore #find()', () => {
     assert.deepEqual(expectedTurn, turn);
   });
 
-  test('throws a turn model not found error', (done) => {
+  test('throws a turn model not found error ' +
+       'when the given id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     turnStore.find(nonExistentId)

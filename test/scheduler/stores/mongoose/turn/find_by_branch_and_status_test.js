@@ -12,8 +12,6 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
 
-    turnStore = createTurnStore();
-
     branchModelA = createBranchModel({
       name: 'Branch Test A',
       coordinates: [324, 23],
@@ -25,6 +23,31 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
     customerModel = createCustomerModel({
       name: 'CustomerTest',
     });
+
+    return Promise.all(
+      [branchModelA.save(), branchModelB.save(), customerModel.save()]
+    );
+  });
+
+  suiteTeardown(() => {
+    return Promise.all(
+      [branchModelA.delete(), branchModelB.delete(), customerModel.delete()]
+    );
+  });
+
+  setup(() => {
+    turnStore = createTurnStore();
+
+    branchA = createBranch({
+      id: branchModelA.id,
+    });
+    branchB = createBranch({
+      id: branchModelB.id,
+    });
+    customer = createCustomer({
+      id: customerModel.id,
+    });
+
     turnModelA = createTurnModel({
       name: 'Turn Test A',
       status: 'served',
@@ -43,39 +66,17 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
       branchId: branchModelB.id,
     });
 
-    return Promise.all([
-      branchModelA.save(),
-      branchModelB.save(),
-      customerModel.save(),
-      turnModelA.save(),
-      turnModelB.save(),
-    ]);
-  });
-
-  suiteTeardown(() => {
-    return Promise.all([
-      branchModelA.delete(),
-      branchModelB.delete(),
-      customerModel.delete(),
-      turnModelA.delete(),
-      turnModelB.delete(),
-    ]);
-  });
-
-  setup(() => {
-    branchA = createBranch({
-      id: branchModelA.id,
-    });
-    branchB = createBranch({
-      id: branchModelB.id,
-    });
-    customer = createCustomer({
-      id: customerModel.id,
-    });
+    return Promise.all(
+      [turnModelA.save(), turnModelB.save()]
+    );
   });
 
   teardown(() => {
     sandbox.restore();
+
+    return Promise.all(
+      [turnModelA.delete(), turnModelB.delete()]
+    );
   });
 
   test('returns all the turns of the given branch id and status', async () => {
@@ -97,7 +98,8 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
     assert.deepEqual([expectedTurnA], turns);
   });
 
-  test('returns an empty list when the given branch does not exist', async () => {
+  test('returns an empty list ' +
+       'when the given branch does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     const turns = await turnStore.findByBranchAndStatus(
@@ -107,7 +109,8 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
     assert.deepEqual([], turns);
   });
 
-  test('returns an empty list when the given branch has no turns for the given status', async () => {
+  test('returns an empty list ' +
+       'when the given branch has no turns for the given status', async () => {
     const turns = await turnStore.findByBranchAndStatus(
       branchModelA.id, 'waiting'
     );

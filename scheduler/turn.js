@@ -71,20 +71,26 @@ class Turn {
   }
 
   cancel() {
-    if (this._status != WAITING || this._status != ON_HOLD) {
+    if (this._status != WAITING && this._status != ON_HOLD) {
       throw new errors.TurnNotAllowedToChangeStatus(
         this.id, this.status, CANCELED
       );
     }
 
-    this._status = CANCEL;
+    this._status = CANCELED;
   }
 
   remove() {
-    if (this._status != WAITING || !this._expectedServiceTime) {
+    now = new Date();
+
+    if (this._status != WAITING) {
       throw new errors.TurnNotAllowedToChangeStatus(
         this.id, this.status, REMOVED
       );
+    }
+
+    if (this.expectedServiceTime < now) {
+      throw new Error();
     }
 
     this._status = REMOVED;

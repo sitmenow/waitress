@@ -16,7 +16,7 @@ class HostessStore {
   async find(hostessId) {
     const model = await HostessModel.findById(hostessId);
 
-    if (!model) throw new errors.HostessNotFound(hostessId);
+    if (!model) throw new errors.HostessModelNotFound(hostessId);
 
     return this._modelToObject(model);
   }
@@ -31,13 +31,10 @@ class HostessStore {
       hostess = new Hostess({
         id: model.id,
         name: model.name,
-        branch: new Branch({
-          id: model.branchId.toString(),
-        }),
+        branch: new Branch({ id: model.branchId.toString() }),
       });
     } catch (error) {
-      console.log(error)
-      throw new errors.HostessNotCreated();
+      throw new errors.HostessEntityNotCreated(model.id, error.stack);
     }
 
     return hostess;

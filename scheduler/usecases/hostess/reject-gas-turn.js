@@ -49,19 +49,18 @@ class HostessRejectGasTurn {
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.TurnNotFound) {
+    if (error instanceof storeErrors.TurnModelNotFound) {
       throw new errors.TurnNotFound();
-    } else if (error instanceof storeErrors.HostessNotFound) {
+    } else if (error instanceof storeErrors.HostessModelNotFound) {
       throw new errors.HostessNotFound();
-    } else if (error instanceof storeErrors.BranchNotFound) {
+    } else if (error instanceof storeErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
     } else if (error instanceof storeErrors.TurnNotUpdated) {
       throw new errors.TurnNotRejected();
-    } else if (error instanceof schedulerErrors.TurnMustBeWaitingToBeRejected) {
+    } else if (error instanceof schedulerErrors.TurnNotAllowedToChangeStatus) {
       throw new errors.UnableToRejectTurn();
     }
 
-    // console.log(error);
     throw error;
   }
 }

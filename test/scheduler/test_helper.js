@@ -1,6 +1,6 @@
 const Turn = require('../../scheduler/turn');
 const Branch = require('../../scheduler/branch');
-const Restaurant = require('../../scheduler/restaurant');
+const Brand = require('../../scheduler/brand');
 const Schedule = require('../../scheduler/schedule');
 const Hostess = require('../../scheduler/hostess');
 const Customer = require('../../scheduler/customer');
@@ -13,78 +13,42 @@ const CacheStore = require('../../scheduler/stores/cache');
 
 
 before(() => {
-  createBranch = ({
-    branchId,
-    branchName,
-    branchAddress,
-    restaurant,
-    lastOpeningTime,
-    lastClosingTime,
-    coordinates,
-  } = {}) => {
-    return new Branch({
-      id: branchId,
-      name: branchName,
-      address: branchAddress,
-      restaurant,
-      coordinates,
-      lastOpeningTime,
-      lastClosingTime,
-    });
-  };
+  createBranch = branch => new Branch({
+    id: branch.id,
+    name: branch.name,
+    address: branch.address,
+    coordinates: branch.coordinates,
+    lastOpeningTime: branch.lastOpeningTime,
+    lastClosingTime: branch.lastClosingTime,
+    brand: branch.brand,
+  });
 
-  createCustomer = ({ customerId, customerName } = {}) => {
-    return new Customer({
-      id: customerId,
-      name: customerName,
-    });
-  };
+  createCustomer = customer => new Customer({
+    id: customer.id,
+    name: customer.name,
+  });
 
-  createSchedule = ({ week } = {}) => {
-    week = week || {
-      sunday: [[9, 20]],
-      monday: [[9, 20]],
-      tuesday: [[9, 20]],
-      wednesday: [[9, 20]],
-      thursday: [[9, 20]],
-      friday: [[9, 20]],
-      saturday: [[9, 20]],
-    };
+  createTurn = turn => new Turn({
+    id: turn.id,
+    name: turn.name,
+    status: turn.status,
+    requestedTime: turn.requestedTime,
+    expectedServiceTime: turn.expectedServiceTime,
+    metadata: turn.metadata,
+    branch: turn.branch,
+    customer: turn.customer,
+  });
 
-    return new Schedule(week);
-  };
+  createHostess = hostess => new Hostess({
+    id: hostess.id,
+    name: hostess.name,
+    branch: hostess.branch,
+  });
 
-  createTurn = ({
-    turnId, turnName, turnGuests, turnStatus, customer, branch,
-    requestedTime, expectedServiceTime
-  }) => {
-    // id should keep the same
-    return new Turn({
-      id: turnId,
-      name: turnName,
-      guests: turnGuests,
-      status: turnStatus,
-      customer,
-      branch,
-      requestedTime,
-      expectedServiceTime
-    });
-  };
-
-  createHostess = ({ hostessId, hostessName, branch } = {}) => {
-    return new Hostess({
-      id: hostessId,
-      name: hostessName,
-      branch,
-    });
-  } ;
-
-  createRestaurant = ({ restaurantId, restaurantName } = {}) => {
-    return new Restaurant({
-      id: restaurantId,
-      name: restaurantName,
-    });
-  };
+  createBrand = brand => new Brand({
+    id: brand.id,
+    name: brand.name,
+  });
 
   createTurnStore = () => new TurnStore();
 
@@ -96,5 +60,3 @@ before(() => {
 
   createCacheStore = () => new CacheStore();
 });
-
-

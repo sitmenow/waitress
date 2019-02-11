@@ -8,7 +8,7 @@ const TurnModel = require('../../../../../services/db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
 
 
-suite('Mongoose TurnStore #update', () => {
+suite('Mongoose TurnStore #update()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
 
@@ -76,8 +76,8 @@ suite('Mongoose TurnStore #update', () => {
     sandbox.restore();
   });
 
-  test('updates turn with the new passed object', async () => {
-    const newTurn = createTurn({
+  test('updates turn with the given object', async () => {
+    const updatedTurn = createTurn({
       id: turnModel.id,
       status: 'served',
       name: 'New Turn Test',
@@ -88,32 +88,33 @@ suite('Mongoose TurnStore #update', () => {
       metadata: { guests: 50 },
     });
 
-    await turnStore.update(newTurn);
+    await turnStore.update(updatedTurn);
 
     const storedTurn = await TurnModel.findById(turnModel.id);
 
-    assert.equal(newTurn.name, storedTurn.name);
-    assert.equal(newTurn.metadata, storedTurn.metadata);
-    assert.equal(newTurn.status, storedTurn.status);
-    assert.equal(newTurn.customer.id, storedTurn.customerId);
-    assert.equal(newTurn.branch.id, storedTurn.branchId);
+    assert.equal(updatedTurn.name, storedTurn.name);
+    assert.equal(updatedTurn.metadata, storedTurn.metadata);
+    assert.equal(updatedTurn.status, storedTurn.status);
+    assert.equal(updatedTurn.customer.id, storedTurn.customerId);
+    assert.equal(updatedTurn.branch.id, storedTurn.branchId);
     assert.equal(
-      newTurn.requestedTime.getTime(),
+      updatedTurn.requestedTime.getTime(),
       storedTurn.requestedTime.getTime()
     );
     assert.equal(
-      newTurn.expectedServiceTime.getTime(),
+      updatedTurn.expectedServiceTime.getTime(),
       storedTurn.expectedServiceTime.getTime()
     );
   });
 
-  test('throws a turn not found error when the given turn does not exist', (done) => {
-    const newTurn = createTurn({
+  test('throws a turn not found error ' +
+       'when the given turn does not exist', (done) => {
+    const updatedTurn = createTurn({
       id: mongoose.Types.ObjectId(),
       name: 'New Turn Test',
     });
 
-    turnStore.update(newTurn)
+    turnStore.update(updatedTurn)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnModelNotFound);
         done();

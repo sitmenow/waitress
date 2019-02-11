@@ -28,6 +28,33 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     customerModel = createCustomerModel({
       name: 'CustomerTest',
     });
+
+    return Promise.all([
+      branchModelA.save(),
+      branchModelB.save(),
+      customerModel.save(),
+    ]);
+  });
+
+  suiteTeardown(() => {
+    return Promise.all([
+      branchModelA.delete(),
+      branchModelB.delete(),
+      customerModel.delete(),
+    ]);
+  });
+
+  setup(() => {
+    branchA = createBranch({
+      id: branchModelA.id,
+    });
+    branchB = createBranch({
+      id: branchModelB.id,
+    });
+    customer = createCustomer({
+      id: customerModel.id,
+    });
+
     turnModelA = createTurnModel({
       name: 'Turn Test A',
       status: 'waiting',
@@ -56,43 +83,24 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     });
 
     return Promise.all([
-      branchModelA.save(),
-      branchModelB.save(),
-      customerModel.save(),
       turnModelA.save(),
       turnModelB.save(),
       turnModelC.save(),
     ]);
   });
 
-  suiteTeardown(() => {
+  teardown(() => {
+    sandbox.restore();
+
     return Promise.all([
-      branchModelA.delete(),
-      branchModelB.delete(),
-      customerModel.delete(),
       turnModelA.delete(),
       turnModelB.delete(),
       turnModelC.delete(),
     ]);
   });
 
-  setup(() => {
-    branchA = createBranch({
-      id: branchModelA.id,
-    });
-    branchB = createBranch({
-      id: branchModelB.id,
-    });
-    customer = createCustomer({
-      id: customerModel.id,
-    });
-  });
-
-  teardown(() => {
-    sandbox.restore();
-  });
-
-  test('returns all the waiting turns of the given branch id and the requested time range', async () => {
+  test('returns all the waiting turns ' +
+       'of the given branch id and the requested time range', async () => {
     const expectedTurnB = createTurn({
       id: turnModelB.id,
       name: turnModelB.name,
@@ -113,7 +121,8 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     assert.deepEqual([expectedTurnB], turns);
   });
 
-  test('returns an empty list when the given branch does not exist', async () => {
+  test('returns an empty list ' +
+       'when the given branch does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
@@ -125,7 +134,8 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     assert.deepEqual([], turns);
   });
 
-  test('returns an empty list when the given branch has no waiting turns in the given requested time range', async () => {
+  test('returns an empty list ' +
+       'when the given branch has no waiting turns at  requested time range', async () => {
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
 

@@ -17,7 +17,7 @@ const schema = new mongoose.Schema({
       required: true,
     },
   },
-  restaurantId: mongoose.ObjectId,
+  brandId: mongoose.ObjectId,
 });
 
 module.exports = mongoose.model('Branch', schema);

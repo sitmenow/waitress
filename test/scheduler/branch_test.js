@@ -8,18 +8,18 @@ const errors = require('../../scheduler/errors');
 
 suite('Branch', () => {
   setup(() => {
-    restaurant = createRestaurant({
-      restaurantId: 'restaurant-id',
-      restaurantName: 'Restaurant Test',
+    brand = createBrand({
+      id: 'brand-id',
+      name: 'Brand Test',
     });
 
     branch = createBranch({
-      branchId: 'branch-id',
-      branchName: 'Branch Test',
-      branchAddress: 'Branch Address Test #10',
+      id: 'branch-id',
+      name: 'Branch Test',
+      address: 'Branch Address Test #10',
       lastOpeningTime: null,
       lastClosingTime: null,
-      restaurant,
+      brand,
     });
   });
 
