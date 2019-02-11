@@ -1,7 +1,7 @@
+const Brand = require('../../brand');
 const Branch = require('../../branch');
-const Restaurant = require('../../restaurant');
 const BranchModel = require('../../../services/db/mongoose/models/branch');
-const storeErrors = require('../errors');
+const errors = require('../errors');
 
 
 class BranchStore {
@@ -14,12 +14,14 @@ class BranchStore {
   async create(branch) {
     model = this._objectToModel(branch);
     await model.save();
+
+    return model.id;
   }
 
   async find(branchId) {
     const model = await BranchModel.findById(branchId);
 
-    if (!model) throw new storeErrors.BranchNotFound(branchId);
+    if (!model) throw new errors.BranchModelNotFound(branchId);
 
     return this._modelToObject(model);
   }
@@ -27,7 +29,7 @@ class BranchStore {
   async update(branch) {
     const model = await BranchModel.findById(branch.id);
 
-    if (!model) throw new storeErrors.BranchNotFound(branch.id);
+    if (!model) throw new errors.BranchModelNotFound(branch.id);
 
     model.name = branch.name;
     model.address = branch.address;
@@ -37,7 +39,7 @@ class BranchStore {
     };
     model.lastOpeningTime = branch.lastOpeningTime;
     model.lastClosingTime = branch.lastClosingTime;
-    model.restaurantId = branch.restaurant.id;
+    model.brandId = branch.brand.id;
 
     await model.save();
   }
@@ -53,12 +55,12 @@ class BranchStore {
         coordinates: model.location.coordinates,
         lastOpeningTime: model.lastOpeningTime,
         lastClosingTime: model.lastClosingTime,
-        restaurant: new Restaurant({
-          id: model.restaurantId.toString(),
+        brand: new Brand({
+          id: model.brandId.toString(),
         }),
       });
     } catch (error) {
-      throw new storeErrors.BranchNotCreated();
+      throw new errors.BranchEntityNotCreated(model.id, error.stack);
     }
 
     return branch;
@@ -77,10 +79,10 @@ class BranchStore {
           type: 'Point',
           coordinates: branch.coordinates,
         },
-        restaurantId: branch.restaurant.id,
+        brandId: branch.brand.id,
       });
     } catch (error) {
-      throw new storeErrors.BranchModelNotCreated();
+      throw new errors.BranchModelNotCreated(branch.id, error.stack);
     }
 
     return model;

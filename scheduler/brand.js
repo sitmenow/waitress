@@ -1,4 +1,4 @@
-class Restaurant {
+class Brand {
   constructor({ id, name }) {
     this._id = id;
     this._name = name;
@@ -13,4 +13,4 @@ class Restaurant {
   }
 }
 
-module.exports = Restaurant;
+module.exports = Brand;

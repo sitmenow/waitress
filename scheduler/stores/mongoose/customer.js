@@ -1,30 +1,24 @@
 const Customer = require('../../customer');
 const CustomerModel = require('../../../services/db/mongoose/models/customer');
-const storeErrors = require('../errors');
+const errors = require('../errors');
 
 class CustomerStore {
   async create(customer) {
-    model = this._objectToModel(customer);
+    const model = this._objectToModel(customer);
     await model.save();
+
+    return model.id;
   }
 
   async find(customerId) {
     const model = await CustomerModel.findById(customerId);
 
-    if (!model) throw new storeErrors.CustomerNotFound(customerId);
+    if (!model) throw new errors.CustomerModelNotFound(customerId);
 
     return this._modelToObject(model);
   }
 
   async update(customer) {
-  }
-
-  async getDefaultCustomer() {
-    const model = await CustomerModel.findOne({ name: "DEFAULT_CUSTOMER" });
-
-    if (!model) throw new storeErrors.CustomerNotFound("DEFAULT_CUSTOMER");
-
-    return this._modelToObject(model);
   }
 
   _modelToObject(model) {
@@ -36,8 +30,7 @@ class CustomerStore {
         name: model.name,
       });
     } catch (error) {
-      console.log(error)
-      throw new storeErrors.CustomerNotCreated();
+      throw new errors.CustomerEntityNotCreated(model.id, error.stack);
     }
 
     return customer;
@@ -47,9 +40,11 @@ class CustomerStore {
     let model = null;
 
     try {
-      model = new CustomerModel(customer);
+      model = new CustomerModel({
+        name: customer.name,
+      });
     } catch (error) {
-      throw new storeErrors.CustomerModelNotCreated();
+      throw new errors.CustomerModelNotCreated(model.id, error.stack);
     }
 
     return model;

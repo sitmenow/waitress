@@ -3,20 +3,22 @@ const Branch = require('../../branch');
 const Customer = require('../../customer');
 const Schedule = require('../../schedule');
 const TurnModel = require('../../../services/db/mongoose/models/turn');
-const storeErrors = require('../errors');
+const errors = require('../errors');
 
 
 class TurnStore {
   async create(turn) {
     const model = this._objectToModel(turn);
+
     await model.save();
+
     return model.id;
   }
 
   async find(turnId) {
     const model = await TurnModel.findById(turnId);
 
-    if (!model) throw new storeErrors.TurnNotFound(turnId);
+    if (!model) throw new errors.TurnModelNotFound(turnId);
 
     return this._modelToObject(model);
   }
@@ -24,54 +26,82 @@ class TurnStore {
   async update(turn) {
     const model = await TurnModel.findById(turn.id);
 
-    if (!model) throw new storeErrors.TurnNotFound(turn.id);
+    if (!model) throw new errors.TurnModelNotFound(turn.id);
 
     model.name = turn.name;
-    model.guests = turn.guests;
     model.status = turn.status;
+    model.updatedTime = turn.updatedTime;
     model.requestedTime = turn.requestedTime;
     model.expectedServiceTime = turn.expectedServiceTime;
     model.branchId = turn.branch.id;
     model.customerId = turn.customer.id;
+    model.metadata = turn.metadata;
 
-/******* gas stations *********/
-    model.emailAddress = turn.emailAddress;
-    model.plates = turn.plates;
-/*****************************/
+    // TODO: Test all possible errors ^
 
     await model.save();
   }
 
-  // En teoria nunca deberian quedar turnos en espera de ser atendidos
-  // pero podria suceder que por ser ultimos clientes la hostess ya no
-  // sirve o rechacha los turnos y quedan en espera eterna.
-  //
-  // Cada hora correr un job y los branches con schedules que esten cerrados
-  // a esa hora sin sesiones activas, poner todos sus turnos como removed.
-  async findByBranch(branchId, start, index) {
-    const turns = await TurnModel.find({ branchId, requestedTime: { $gte: start }});
+  async updateProperties(turn) {
+    const model = await TurnModel.findById(turn.id);
 
-    return turns.map(model => this._modelToObject(model));
+    if (!model) throw new errors.TurnModelNotFound(turn.id);
+
+    if (turn.name) {
+      model.name = turn.name;
+    }
+
+    if (turn.status) {
+      model.status = turn.status;
+    }
+
+    if (turn.updatedTime) {
+      model.updatedTime = turn.updatedTime;
+    }
+
+    if (turn.requestedTime) {
+      model.requestedTime = turn.requestedTime;
+    }
+
+    if (turn.expectedServiceTime) {
+      model.expectedServiceTime = turn.expectedServiceTime;
+    }
+
+    if (turn.branch && turn.branch.id) {
+      model.branchId = turn.branch.id;
+    }
+
+    if (turn.customer && turn.customer.id) {
+      model.customerId = turn.customer.id;
+    }
+
+    if (turn.metadata) {
+      model.metadata = turn.metadata;
+    }
+
+    await model.save();
   }
 
-  async findByBranchAndStatus(branchId, start, status, index) {
-    const turns = await TurnModel.find({
-      branchId,
-      requestedTime: { $gte: start },
-      status: status,
-    });
+  async findByBranch(branchId) {
+    const turns = await TurnModel.find({ branchId });
 
-    return turns.map(model => this._modelToObject(model));
+    return turns.map(this._modelToObject);
   }
 
-  async findByBranchAndStatusWithLimit(branchId, start, end, status) {
+  async findByBranchAndStatus(branchId, status) {
+    const turns = await TurnModel.find({ branchId, status });
+
+    return turns.map(this._modelToObject);
+  }
+
+  async findWaitingByBranchAndRequestedTimeRange(branchId, start, end) {
     const turns = await TurnModel.find({
       branchId,
-      status: status,
+      status: 'waiting',
       requestedTime: { $gte: start, $lte: end },
     })
 
-    return turns.map(model => this._modelToObject(model));
+    return turns.map(this._modelToObject);
   }
 
   _modelToObject(model) {
@@ -81,22 +111,16 @@ class TurnStore {
       turn = new Turn({
         id: model.id,
         name: model.name,
-        guests: model.guests,
         status: model.status,
+        updatedAt: model.updatedAt,
         requestedTime: model.requestedTime,
+        expectedServiceTime: model.expectedServiceTime,
+        metadata: model.metadata,
         branch: new Branch({ id: model.branchId.toString() }),
         customer: new Customer({ id: model.customerId.toString() }),
       });
-
-/******* gas stations *********/
-      turn.emailAddress = model.emailAddress;
-      turn.plates = model.plates;
-/****************************/
-
     } catch (error) {
-      // console.log(error)
-
-      throw new storeErrors.TurnNotCreated();
+      throw new errors.TurnEntityNotCreated(model.id, error.stack);
     }
 
     return turn;
@@ -109,21 +133,15 @@ class TurnStore {
       model = new TurnModel({
         name: turn.name,
         status: turn.status,
-        guests: turn.guests,
+        updatedAt: turn.updatedAt,
         requestedTime: turn.requestedTime,
         expectedServiceTime: turn.expectedServiceTime,
         branchId: turn.branch.id,
         customerId: turn.customer.id,
-
-/******* gas stations *********/
-        emailAddress: turn.emailAddres,
-        plates: turn.plates,
-/****************************/
       });
 
     } catch (error) {
-      // console.log(error)
-      throw new storeErrors.TurnModelNotCreated();
+      throw new errors.TurnModelNotCreated(turn.id, error.stack);
     }
 
     return model;

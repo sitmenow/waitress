@@ -3,32 +3,38 @@ class TurnStore {
     this.gateway = gateway;
   }
 
+  all() {
+    return this.gateway.all();
+  }
+
   create(turn) {
     return this.gateway.create(turn);
   }
 
-  find(turn_id) {
-   return this.gateway.find(turn_id);
+  find(turnId) {
+   return this.gateway.find(turnId);
   }
 
-  remove(turn_id) {
-    return this.gateway.remove(turn_id);
+  remove(turnId) {
+    return this.gateway.remove(turnId);
   }
 
   update(turn) {
     return this.gateway.update(turn);
   }
 
-  findByBranch(branchId, start, index) {
-    return this.gateway.findByBranch(branchId, start, index);
+  findByBranch(branchId, start) {
+    return this.gateway.findByBranch(branchId, start);
   }
 
-  findByBranchAndStatus(branchId, start, status, index) {
-    return this.gateway.findByBranchAndStatus(branchId, start, status, index);
+  findByBranchAndStatus(branchId, status) {
+    return this.gateway.findByBranchAndStatus(branchId, status);
   }
 
-  findByBranchAndStatusWithLimit(branchId, start, end, status) {
-    return this.gateway.findByBranchAndStatusWithLimit(branchId, start, end, status);
+  findWaitingByBranchAndRequestedTimeRange(branchId, start, end, status) {
+    return this.gateway.findWaitingByBranchAndRequestedTimeRange(
+      branchId, start, end
+    );
   }
 }
 

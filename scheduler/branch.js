@@ -9,7 +9,7 @@ class Branch {
     coordinates,
     lastOpeningTime,
     lastClosingTime,
-    restaurant,
+    brand,
   } = {}) {
     this._id = id;
     this._name = name;
@@ -17,7 +17,7 @@ class Branch {
     this._coordinates = coordinates;
     this._lastOpeningTime = lastOpeningTime;
     this._lastClosingTime = lastClosingTime;
-    this._restaurant = restaurant;
+    this._brand = brand;
   }
 
   get id() {
@@ -32,8 +32,8 @@ class Branch {
     return this._coordinates;
   }
 
-  get restaurant() {
-    return this._restaurant;
+  get brand() {
+    return this._brand;
   }
 
   get lastOpeningTime() {

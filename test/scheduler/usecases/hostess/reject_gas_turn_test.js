@@ -19,13 +19,18 @@ suite('Use Case: Hostess rejects gas turn', () => {
     turnStore = createTurnStore();
     cacheStore = createCacheStore();
 
-    turnId = 'turn-id';
-    branchId = 'branch-id';
-    hostessId = 'hostess-id';
-    turnName = 'Turn Test';
-    branch = createBranch({ branchId });
-    hostess = createHostess({ hostessId, branch });
-    turn = createTurn({ turnId, turnName, branch });
+    branch = createBranch({
+      id: 'branch-id',
+    });
+    hostess = createHostess({
+      id: 'hostess-id',
+      branch,
+    });
+    turn = createTurn({
+      id: 'turn-id',
+      name: 'Turn Test',
+      branch,
+    });
   });
 
   teardown(() => {
@@ -45,17 +50,17 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(true);
 
     const expectedTurn = createTurn({
-      turnId,
-      turnName,
-      branch,
+      id: turn.id,
+      name: turn.name,
+      status: 'rejected',
       requestedTime: turn.requestedTime,
+      branch,
     });
-    expectedTurn.reject();
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: branch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -72,20 +77,23 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(turnStore, 'find')
       .returns(Promise.resolve(turn));
 
-    branch = createBranch({
-      branchId: 'some-other-branch-id',
+    newBranch = createBranch({
+      id: 'some-other-branch-id',
     });
-    hostess = createHostess({ hostessId, branch });
+    hostess = createHostess({
+      id: hostess.id,
+      branch: newBranch,
+    });
 
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
-      .returns(Promise.resolve(branch));
+      .returns(Promise.resolve(newBranch));
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: newBranch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -107,17 +115,17 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
 
-    branch = createBranch({
-      branchId: 'some-other-branch-id',
+    newBranch = createBranch({
+      id: 'some-other-branch-id',
     });
 
     sandbox.stub(branchStore, 'find')
-      .returns(Promise.resolve(branch));
+      .returns(Promise.resolve(newBranch));
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: newBranch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -144,9 +152,9 @@ suite('Use Case: Hostess rejects gas turn', () => {
     turn.reject();
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: branch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -162,16 +170,16 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
   test('hostess rejects non-existent gas turn', (done) => {
     sandbox.stub(turnStore, 'find')
-      .returns(Promise.reject(new storeErrors.TurnNotFound()));
+      .returns(Promise.reject(new storeErrors.TurnModelNotFound()));
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: branch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -191,12 +199,12 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchNotFound()));
+      .returns(Promise.reject(new storeErrors.BranchModelNotFound()));
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: branch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -214,14 +222,14 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(turnStore, 'find')
       .returns(Promise.resolve(turn));
     sandbox.stub(hostessStore, 'find')
-      .returns(Promise.reject(new storeErrors.HostessNotFound()));
+      .returns(Promise.reject(new storeErrors.HostessModelNotFound()));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: branch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
@@ -248,9 +256,9 @@ suite('Use Case: Hostess rejects gas turn', () => {
       .returns(true);
 
     const useCase = new HostessRejectGasTurn({
-      turnId,
-      branchId,
-      hostessId,
+      turnId: turn.id,
+      branchId: branch.id,
+      hostessId: hostess.id,
       turnStore,
       hostessStore,
       branchStore,
