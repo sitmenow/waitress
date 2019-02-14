@@ -1,25 +1,65 @@
 class CustomerUseCaseError extends Error {}
 
-class BranchNotFound extends CustomerUseCaseError {}
-class CustomerNotFound extends CustomerUseCaseError {}
-class TurnNotFound extends CustomerUseCaseError {}
+class NotFound extends CustomerUseCaseError {
+  constructor(element, id) {
+    super(`${element} '${id}' not found`);
+  }
+}
 
-class BranchNotCreated extends CustomerUseCaseError {}
-class CustomerNotCreated extends CustomerUseCaseError {}
+class BranchNotFound extends NotFound {
+  constructor(branchId) {
+    super('Branch', branchId);
+  }
+}
 
-class BranchStoreNotPresent extends CustomerUseCaseError {}
-class CustomerStoreNotPresent extends CustomerUseCaseError {}
-class TurnStoreNotPresent extends CustomerUseCaseError {}
+class CustomerNotFound extends NotFound {
+  constructor(customerId) {
+    super('Customer', customerId);
+  }
+}
 
-class CustomerNotPresent extends CustomerUseCaseError {}
+class TurnNotFound extends NotFound {
+  constructor(turnId) {
+    super('Turn', turnId);
+  }
+}
+
+class NotCreated extends CustomerUseCaseError {
+  constructor(element, id) {
+    super(`${element} '${id}' not created`);
+  }
+}
+
+class BranchNotCreated extends NotCreated {
+  constructor(branchId) {
+    super('Branch', branchId);
+  }
+}
+
+class CustomerNotCreated extends NotCreated {
+  constructor(customerId) {
+    super('Customer', customerId);
+  }
+}
+
+class TurnNotCreated extends NotCreated {
+  constructor(turnId) {
+    super('Turn', turnId);
+  }
+}
+
 class BranchIsNotOpen extends CustomerUseCaseError {}
-class UnavailableBranchShift extends CustomerUseCaseError {}
+
+class BranchIsClosed extends CustomerUseCaseError {
+  constructor(branchId, branchLastClosingTime) {
+    super(`Branch '${branchId}' was closed on ${branchLastClosingTime}`);
+  }
+} 
 
 class TurnDoesNotBelongToCustomer extends CustomerUseCaseError {}
 class InactiveTurn extends CustomerUseCaseError {}
 
 class TurnNotUpdated extends CustomerUseCaseError {}
-class TurnNotCreated extends CustomerUseCaseError {}
 
 
 /******* gas stations *********/
@@ -27,28 +67,52 @@ class TurnRequiresPlates extends CustomerUseCaseError {}
 class TurnRequiresIdentifier extends CustomerUseCaseError {}
 
 
+/************* coffe errors ***********/
+class InvalidCustomerName extends CustomerUseCaseError {
+  constructor(customerName) {
+    super(`Invalid customer name: ${customerName}`);
+  }
+}
+
+class InvalidCustomerElection extends CustomerUseCaseError {
+  constructor(customerName, customerElection) {
+    super(
+      `Invalid election '${customerElection}' from customer '${customerName}'`
+    );
+  }
+}
+
+class InvalidTurnId extends CustomerUseCaseError {
+  constructor(turnId) {
+    super(`Invalid turn id: ${turnId}`);
+  }
+}
+/*************************************/
+
+
 module.exports = {
-  CustomerUseCaseError,
   BranchNotFound,
-  BranchNotCreated,
   TurnNotFound,
-  TurnNotCreated,
-  TurnNotUpdated,
   CustomerNotFound,
-  CustomerNotCreated,
-  BranchStoreNotPresent,
-  CustomerStoreNotPresent,
-  BranchIsNotOpen,
-  CustomerNotPresent,
+
   BranchNotCreated,
-  TurnStoreNotPresent,
+  TurnNotCreated,
+  BranchNotCreated,
+  CustomerNotCreated,
+
+  TurnNotUpdated,
+  BranchIsNotOpen,
   TurnDoesNotBelongToCustomer,
   InactiveTurn,
-  UnavailableBranchShift,
 
+  BranchIsClosed,
 
 /******* gas stations *********/
   TurnRequiresPlates,
   TurnRequiresIdentifier,
 
+  // Cofee errors
+  InvalidCustomerName,
+  InvalidCustomerElection,
+  InvalidTurnId,
 };
