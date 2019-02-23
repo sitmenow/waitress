@@ -1,4 +1,7 @@
 module.exports = {
+  api: {
+    port: 3000,
+  },
   services: {
     db: {
       scheme: "mongodb",

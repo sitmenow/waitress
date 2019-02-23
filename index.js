@@ -1,4 +1,4 @@
-require('dotenv').config()
+// require('dotenv').config()
 const config = require('config');
 
 const schedulerStores = require('./scheduler/stores');
@@ -11,7 +11,9 @@ const mongooseCacheStore = require('./scheduler/stores/mongoose/cache');
 // const dynamoDbStore = require('./scheduler/stores/dynamodb');
 // const dynamoDbCacheStore = require('./scheduler/stores/dynamodb/cache');
 const useCases = require('./scheduler/usecases');
-const api = require('./api/gas');
+// cost api = require('./api/gas');
+// const api = require('./api/coffee');
+const slackAppAPI = require('./api/coffee/slack');
 
 
 const gateways = {
@@ -30,7 +32,7 @@ const stores = {
   cacheStore: new schedulerStores.CacheStore(gateways.cache),
 };
 
-const app = api(stores, useCases);
+const app = slackAppAPI(stores, useCases);
 
 mongooseStore(config)
   .catch(error => console.log(`Error while connecting to Mongo: ${error}`));
@@ -38,9 +40,3 @@ mongooseStore(config)
 app.disable('x-powered-by')
 app.listen(config.api.port)
 console.log("Waitress listening on ", config.api.port);
-
-// Setup express app
-// Setup sequelize
-// Setup passport (for api tokens)
-//
-// Setup use cases and then pass them to the controllers

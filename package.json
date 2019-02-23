@@ -15,6 +15,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "@slack/events-api": "^2.1.1",
     "bson-ext": "^2.0.1",
     "config": "^2.0.1",
     "cors": "^2.8.5",
@@ -38,6 +39,6 @@
     "sinon": "^6.3.5"
   },
   "engines": {
-    "node": "10.15.0"
+    "node": "11.10.0"
   }
 }
