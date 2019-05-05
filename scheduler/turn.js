@@ -50,6 +50,10 @@ class Turn {
     return this._requestedTime;
   }
 
+  get metadata() {
+    return this._metadata;
+  }
+
   serve() {
     if (this._status != WAITING && this._status != ON_HOLD) {
       throw new errors.TurnNotAllowedToChangeStatus(
