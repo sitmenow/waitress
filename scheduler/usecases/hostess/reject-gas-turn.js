@@ -55,10 +55,10 @@ class HostessRejectGasTurn {
       throw new errors.HostessNotFound();
     } else if (error instanceof storeErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
-    } else if (error instanceof storeErrors.TurnNotUpdated) {
+    } else if (error instanceof storeErrors.TurnModelNotUpdated) {
       throw new errors.TurnNotRejected();
     } else if (error instanceof schedulerErrors.TurnNotAllowedToChangeStatus) {
-      throw new errors.UnableToRejectTurn();
+      throw new errors.TurnNotRejected();
     }
 
     throw error;

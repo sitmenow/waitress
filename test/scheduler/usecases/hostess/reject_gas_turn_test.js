@@ -9,7 +9,6 @@ const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
 const storeErrors = require('../../../../scheduler/stores/errors');
 const HostessRejectGasTurn = require('../../../../scheduler/usecases/hostess/reject-gas-turn');
 
-
 suite('Use Case: Hostess rejects gas turn', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
@@ -163,7 +162,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.UnableToRejectTurn);
+        expect(error).to.be.instanceof(useCaseErrors.TurnNotRejected);
         done();
       });
   });
@@ -251,7 +250,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(turnStore, 'update')
-      .returns(Promise.reject(new storeErrors.TurnNotUpdated()));
+      .returns(Promise.reject(new storeErrors.TurnModelNotUpdated()));
     sandbox.stub(cacheStore, 'removeGasTurn')
       .returns(true);
 
