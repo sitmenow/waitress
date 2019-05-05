@@ -3,6 +3,7 @@ class SchedulerError extends Error {}
 class BranchError extends SchedulerError {}
 class BranchAlreadyOpen extends BranchError {}
 class BranchAlreadyClosed extends BranchError {}
+class BranchIsClosed extends BranchError {}
 
 class TurnError extends SchedulerError {}
 
@@ -15,6 +16,7 @@ class TurnNotAllowedToChangeStatus extends TurnError {
 module.exports = {
   BranchAlreadyOpen,
   BranchAlreadyClosed,
+  BranchIsClosed,
 
   TurnNotAllowedToChangeStatus,
 };
