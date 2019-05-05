@@ -1,12 +1,11 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const TurnModel = require('../../../../../services/db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
-
 
 suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
   suiteSetup(() => {
@@ -55,15 +54,16 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
       expectedServiceTime: new Date(),
       customerId: customerModel.id,
       branchId: branchModelA.id,
+      metadata: { guests: 1 },
     });
     turnModelB = createTurnModel({
       name: 'Turn Test B',
       status: 'waiting',
       requestedTime: new Date(),
       expectedServiceTime: new Date(),
-      metadata: { guests: 5 },
       customerId: customerModel.id,
       branchId: branchModelB.id,
+      metadata: { guests: 5 },
     });
 
     return Promise.all(
@@ -79,7 +79,7 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
     );
   });
 
-  test('returns all the turns of the given branch id and status', async () => {
+  test('returns the turns for the given branch id and turn status', async () => {
     const expectedTurnA = createTurn({
       id: turnModelA.id,
       name: turnModelA.name,
@@ -87,8 +87,8 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
       requestedTime: turnModelA.requestedTime,
       expectedServiceTime: turnModelA.expectedServiceTime,
       metadata: turnModelA.metadata,
-      customer,
       branch: branchA,
+      customer,
     });
 
     const turns = await turnStore.findByBranchAndStatus(
@@ -99,7 +99,7 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
   });
 
   test('returns an empty list ' +
-       'when the given branch does not exist', async () => {
+       'when the given branch id does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     const turns = await turnStore.findByBranchAndStatus(
@@ -110,7 +110,7 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
   });
 
   test('returns an empty list ' +
-       'when the given branch has no turns for the given status', async () => {
+       'when the given branch id has no turns for the given status', async () => {
     const turns = await turnStore.findByBranchAndStatus(
       branchModelA.id, 'waiting'
     );
@@ -118,7 +118,8 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
     assert.deepEqual([], turns);
   });
 
-  test('throws a turn entity not created error', (done) => {
+  test('throws a turn entity not created error ' +
+       'when an error occurs while casting the turn model', (done) => {
     sandbox.stub(turnStore, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 

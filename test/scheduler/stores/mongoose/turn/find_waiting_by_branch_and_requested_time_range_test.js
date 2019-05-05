@@ -1,18 +1,15 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const TurnModel = require('../../../../../services/db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
 
-
 suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
-
-    turnStore = createTurnStore();
 
     baseTime = new Date();
     baseTimeSeconds = baseTime.getSeconds();
@@ -45,6 +42,8 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
   });
 
   setup(() => {
+    turnStore = createTurnStore();
+
     branchA = createBranch({
       id: branchModelA.id,
     });
@@ -99,8 +98,8 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     ]);
   });
 
-  test('returns all the waiting turns ' +
-       'of the given branch id and the requested time range', async () => {
+  test('returns the turns with a waiting status ' +
+       'for the given branch id and the turn requested time range', async () => {
     const expectedTurnB = createTurn({
       id: turnModelB.id,
       name: turnModelB.name,
@@ -108,8 +107,8 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
       requestedTime: turnModelB.requestedTime,
       expectedServiceTime: turnModelB.expectedServiceTime,
       metadata: turnModelB.metadata,
-      customer,
       branch: branchB,
+      customer,
     });
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
@@ -122,7 +121,7 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
   });
 
   test('returns an empty list ' +
-       'when the given branch does not exist', async () => {
+       'when the given branch id does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
@@ -135,7 +134,7 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
   });
 
   test('returns an empty list ' +
-       'when the given branch has no waiting turns at  requested time range', async () => {
+       'when the given branch id has no waiting turns at a given requested time range', async () => {
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
 
@@ -146,7 +145,8 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     assert.deepEqual([], turns);
   });
 
-  test('throws a turn entity not created error', (done) => {
+  test('throws a turn entity not created error ' +
+       'when an error occurs while casting the turn model', (done) => {
     sandbox.stub(turnStore, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 

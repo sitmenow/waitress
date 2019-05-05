@@ -1,18 +1,15 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const TurnModel = require('../../../../../services/db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
 
-
 suite('Mongoose TurnStore #update()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
-
-    turnStore = createTurnStore();
 
     branchModel = createBranchModel({
       name: 'Branch Test',
@@ -47,6 +44,8 @@ suite('Mongoose TurnStore #update()', () => {
   });
 
   setup(() => {
+    turnStore = createTurnStore();
+
     branch = createBranch({
       id: branchModel.id,
     });
@@ -74,6 +73,8 @@ suite('Mongoose TurnStore #update()', () => {
 
   teardown(() => {
     sandbox.restore();
+
+    return turnModel.delete();
   });
 
   test('updates turn with the given object', async () => {
@@ -93,10 +94,10 @@ suite('Mongoose TurnStore #update()', () => {
     const storedTurn = await TurnModel.findById(turnModel.id);
 
     assert.equal(updatedTurn.name, storedTurn.name);
-    assert.equal(updatedTurn.metadata, storedTurn.metadata);
     assert.equal(updatedTurn.status, storedTurn.status);
     assert.equal(updatedTurn.customer.id, storedTurn.customerId);
     assert.equal(updatedTurn.branch.id, storedTurn.branchId);
+    assert.equal(updatedTurn.updatedTime, storedTurn.updatedTime);
     assert.equal(
       updatedTurn.requestedTime.getTime(),
       storedTurn.requestedTime.getTime()
@@ -105,9 +106,10 @@ suite('Mongoose TurnStore #update()', () => {
       updatedTurn.expectedServiceTime.getTime(),
       storedTurn.expectedServiceTime.getTime()
     );
+    assert.deepEqual(updatedTurn.metadata, storedTurn.metadata);
   });
 
-  test('throws a turn not found error ' +
+  test('throws a turn model not found error ' +
        'when the given turn does not exist', (done) => {
     const updatedTurn = createTurn({
       id: mongoose.Types.ObjectId(),

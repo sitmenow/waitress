@@ -1,18 +1,15 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const TurnModel = require('../../../../../services/db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
 
-
 suite('Mongoose TurnStore #create', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
-
-    turnStore = createTurnStore();
 
     branchModel = createBranchModel({
       name: 'Branch Test',
@@ -34,6 +31,8 @@ suite('Mongoose TurnStore #create', () => {
   });
 
   setup(() => {
+    turnStore = createTurnStore();
+
     branch = createBranch({
       id: branchModel.id,
     });
@@ -55,7 +54,7 @@ suite('Mongoose TurnStore #create', () => {
     sandbox.restore();
   });
 
-  test('creates the passed turn in DB', async () => {
+  test('creates a turn model with the given turn entity', async () => {
     const turnId = await turnStore.create(turn);
 
     const storedTurn = await TurnModel.findById(turnId);
@@ -64,6 +63,7 @@ suite('Mongoose TurnStore #create', () => {
     assert.equal(turn.status, storedTurn.status);
     assert.equal(turn.customer.id, storedTurn.customerId);
     assert.equal(turn.branch.id, storedTurn.branchId);
+    assert.equal(turn.updatedTime, storedTurn.updatedTime);
     assert.equal(
       turn.requestedTime.getTime(),
       storedTurn.requestedTime.getTime()
@@ -75,7 +75,7 @@ suite('Mongoose TurnStore #create', () => {
     assert.deepEqual(turn.metadata, storedTurn.metadata);
   });
 
-  test('returns the id of the created model', async () => {
+  test('returns the id of the created turn model', async () => {
     const turnId = await turnStore.create(turn);
 
     assert.isNotNull(turnId);
@@ -87,7 +87,8 @@ suite('Mongoose TurnStore #create', () => {
     assert.isTrue(mongoose.Types.ObjectId.isValid(turnId));
   });
 
-  test('throws a turn model not created error', (done) => {
+  test('throws a turn model not created error ' +
+       'when an error occurs while casting the turn entity', (done) => {
     sandbox.stub(turnStore, '_objectToModel')
       .throws(new errors.TurnModelNotCreated());
 

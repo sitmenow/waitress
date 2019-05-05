@@ -1,11 +1,10 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const errors = require('../../../../../scheduler/stores/errors');
-
 
 suite('Mongoose TurnStore #find()', () => {
   suiteSetup(() => {
@@ -47,6 +46,9 @@ suite('Mongoose TurnStore #find()', () => {
       expectedServiceTime: new Date(),
       customerId: customerModel.id,
       branchId: branchModel.id,
+      metadata: {
+        product: 'Product test',
+      },
     });
 
     return turnModel.save();
@@ -86,7 +88,8 @@ suite('Mongoose TurnStore #find()', () => {
       });
   });
 
-  test('throws a turn entity not created error', (done) => {
+  test('throws a turn entity not created error ' +
+       'when an error occurs while casting the turn model', (done) => {
     sandbox.stub(turnStore, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
