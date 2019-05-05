@@ -1,11 +1,10 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const errors = require('../../../../../scheduler/stores/errors');
-
 
 suite('Mongoose HostessStore #find()', () => {
   suiteSetup(() => {
@@ -57,7 +56,7 @@ suite('Mongoose HostessStore #find()', () => {
   });
 
   test('throws a hostess model not found error ' +
-       'when the given id does not exist', (done) => {
+       'when the given hostess id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     hostessStore.find(nonExistentId)
@@ -67,7 +66,8 @@ suite('Mongoose HostessStore #find()', () => {
       });
   });
 
-  test('throws a customer entity not created error', (done) => {
+  test('throws a hostess entity not created error ' +
+       'when an error ocurrs while casting the hostess model', (done) => {
     sandbox.stub(hostessStore, '_modelToObject')
       .throws(new errors.HostessEntityNotCreated());
 
