@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
+  _id: mongoose.Schema.ObjectId,
   name: String,
   status: String,
   requestedTime: Date,
   updatedTime: Date,
-  // servedTime    -> logger
-  // rejectedTime  -> logger
   expectedServiceTime: Date,
   branchId: mongoose.ObjectId,
   customerId: mongoose.ObjectId,
-  metadata: Object, // { guests, plates, email_address, etc }
-});
+  metadata: Object,
+  expirationTime: {
+    type: Date,
+    expires: 10800, // 3 hours
+  },
+}, { _id: true, id: true });
 
-module.exports = mongoose.model('Turn', schema);
+module.exports = mongoose.model('TurnCache', schema);
