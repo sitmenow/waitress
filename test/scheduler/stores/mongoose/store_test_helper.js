@@ -7,12 +7,14 @@ const BrandModel = require('../../../../services/db/mongoose/models/brand');
 const BranchModel = require('../../../../services/db/mongoose/models/branch');
 const HostessModel = require('../../../../services/db/mongoose/models/hostess');
 const TurnModel = require('../../../../services/db/mongoose/models/turn');
+const TurnCacheModel = require('../../../../services/db/mongoose/models/turn-cache');
 const CustomerModel = require('../../../../services/db/mongoose/models/customer');
 const BrandStore = require('../../../../scheduler/stores/mongoose/brand');
 const HostessStore = require('../../../../scheduler/stores/mongoose/hostess');
 const BranchStore = require('../../../../scheduler/stores/mongoose/branch');
 const CustomerStore = require('../../../../scheduler/stores/mongoose/customer');
 const TurnStore = require('../../../../scheduler/stores/mongoose/turn');
+const TurnCacheStore = require('../../../../scheduler/stores/mongoose/turn-cache');
 
 
 before(() => {
@@ -59,6 +61,19 @@ before(() => {
     customerId: turn.customerId,
   });
 
+  createTurnCacheModel = turn => new TurnCacheModel({
+    _id: turn.id,
+    name: turn.name,
+    status: turn.status,
+    requestedTime: turn.requestedTime,
+    expectedServiceTime: turn.expectedServiceTime,
+    metadata: turn.metadata,
+    branchId: turn.branchId,
+    customerId: turn.customerId,
+  });
+
+  // The following stores are the mongoose implementations
+  // Do not mix them with generic stores in parent test helper file
   createHostessStore = () => new HostessStore();
 
   createBranchStore = () => new BranchStore();
@@ -66,6 +81,8 @@ before(() => {
   createCustomerStore = () => new CustomerStore();
 
   createTurnStore = () => new TurnStore();
+
+  createTurnCacheStore = () => new TurnCacheStore();
 
   return mongoose;
 });
