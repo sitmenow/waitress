@@ -1,14 +1,4 @@
 class StoreError extends Error {}
-class BranchNotFound extends StoreError {}
-class CustomerNotFound extends StoreError {}
-class CustomerNotCreated extends StoreError {}
-class TurnNotFound extends StoreError {}
-class TurnNotCreated extends StoreError {}
-class TurnNotUpdated extends StoreError {}
-class BranchNotCreated extends StoreError {}
-class HostessNotFound extends StoreError {}
-class HostessNotCreated extends StoreError {}
-
 
 class ModelNotFound extends StoreError {
   constructor(id) {
@@ -17,6 +7,7 @@ class ModelNotFound extends StoreError {
 }
 
 class TurnModelNotFound extends ModelNotFound {}
+class TurnCacheModelNotFound extends ModelNotFound {}
 class BranchModelNotFound extends ModelNotFound {}
 class CustomerModelNotFound extends ModelNotFound {}
 class HostessModelNotFound extends ModelNotFound {}
@@ -39,34 +30,47 @@ class ModelNotCreated extends StoreError {
 }
 
 class TurnModelNotCreated extends ModelNotCreated {}
+class TurnCacheModelNotCreated extends ModelNotCreated {}
 class BranchModelNotCreated extends ModelNotCreated {}
 class CustomerModelNotCreated extends ModelNotCreated {}
 class HostessModelNotCreated extends ModelNotCreated {}
 
+class ModelNotUpdated extends StoreError {
+  constructor(id, errorStack) {
+    super(`Model ${id} not updated \n${errorStack}`);
+  }
+}
+
+class TurnModelNotUpdated extends ModelNotUpdated {}
+
+class ModelNotRemoved extends StoreError {
+  constructor(id, errorStack) {
+    super(`Model ${id} not removed \n${errorStack}`);
+  }
+}
+
+class TurnCacheModelNotRemoved extends ModelNotRemoved {}
 
 module.exports = {
   StoreError,
-  BranchNotFound,
-  BranchNotCreated,
-  BranchModelNotCreated,
-  CustomerNotFound,
-  CustomerNotCreated,
-  TurnNotFound,
-  TurnNotCreated,
-  TurnNotUpdated,
-  TurnModelNotCreated,
-  HostessNotFound,
-  HostessNotCreated,
 
   TurnModelNotFound,
   TurnModelNotCreated,
+  TurnModelNotUpdated,
   TurnEntityNotCreated,
+
+  TurnCacheModelNotFound,
+  TurnCacheModelNotCreated,
+  TurnCacheModelNotRemoved,
+
   BranchModelNotFound,
   BranchModelNotCreated,
   BranchEntityNotCreated,
+
   CustomerModelNotFound,
   CustomerModelNotCreated,
   CustomerEntityNotCreated,
+
   HostessModelNotFound,
   HostessModelNotCreated,
   HostessEntityNotCreated,
