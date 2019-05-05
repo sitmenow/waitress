@@ -5,37 +5,43 @@ const storeErrors = require('../../stores/errors');
 const Turn = require('../../turn');
 const Customer = require('../../customer');
 
-
 class CustomerCreateCoffeeTurn {
   constructor({
-    customerName,
+    customerId,
     customerCompany,
     customerElection,
     branchId,
     turnStore,
+    turnCacheStore,
+    customerStore,
     branchStore,
   }) {
-    this.customerName = customerName;
+    this.customerId = customerId;
     this.customerCompany = customerCompany;
     this.customerElection = customerElection;
     this.branchId = branchId;
     this.turnStore = turnStore;
+    this.turnCacheStore = turnCacheStore;
+    this.customerStore = customerStore;
     this.branchStore = branchStore;
   }
 
   execute() {
-    return this.branchStore.find(this.branchId)
-      .then(branch => this._createCoffeeTurn(branch))
+    const customer = this.customerStore.find(this.customerId);
+    const branch = this.branchStore.find(this.branchId);
+
+    return Promise.all([customer, branch])
+      .then(([customer, branch]) => this._createCoffeeTurn(customer, branch))
       .catch(error => this._manageError(error));
   }
 
-  _createCoffeeTurn(branch) {
-    if (!branch.isOpen()) {
+  _createCoffeeTurn(customer, branch) {
+    if (branch.isClosed()) {
       throw new errors.BranchIsClosed(branch.id, branch.lastOpeningTime);
     }
 
-    if (!this.customerName) {
-      throw new errors.InvalidCustomerName(this.customerName);
+    if (!customer.name) {
+      throw new errors.InvalidCustomerName(customer.id);
     }
 
     if (!this.customerElection) {
@@ -46,29 +52,37 @@ class CustomerCreateCoffeeTurn {
 
     const turn = new Turn({
       branch,
-      name: this.customerName,
-      customer: new Customer({
-        id: mongoose.Types.ObjectId(),
-        name: this.customerName,
-      }),
+      customer,
+      name: customer.name,
       metadata: {
         company: this.customerCompany,
-        election: this.customerElection,
+        product: this.customerElection,
       },
     });
 
-    return this.turnStore.create(turn);
+    return this.turnStore.create(turn)
+      .then(turnId => this.turnStore.find(turnId))
+      .then(storedTurn =>
+        this.turnCacheStore.create(storedTurn)
+          .then(_ => storedTurn)
+      );
   }
 
   _manageError(error) {
     if (error instanceof storeErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound(this.branchId);
     } else if (error instanceof storeErrors.BranchEntityNotCreated) {
-      throw new errors.BranchNotCreated(this.branchId);
+      throw new errors.TurnNotCreated();
+    } else if (error instanceof storeErrors.CustomerModelNotFound) {
+      throw new errors.CustomerNotFound(this.customerId);
     } else if (error instanceof storeErrors.CustomerEntityNotCreated) {
-      throw new errors.CustomerNotCreated(this.customerId);
+      throw new errors.TurnNotCreated();
+    } else if (error instanceof storeErrors.TurnModelNotFound) {
+      throw new errors.TurnNotCreated();
     } else if (error instanceof storeErrors.TurnEntityNotCreated) {
-      throw new errors.TurnNotCreated(); // Turn Id does not exist :thinking:
+      throw new errors.TurnNotCreated(); // Unknown error
+    } else if (error instanceof storeErrors.TurnModelNotCreated) {
+      throw new errors.TurnNotCreated(); // Unknown error if comes from turn cache
     }
 
     throw error;
