@@ -1,4 +1,4 @@
-const CacheModel = require('../../../services/db/mongoose/models/cache');
+const CacheModel = require('../../../db/mongoose/models/cache');
 const storeErrors = require('../errors');
 
 

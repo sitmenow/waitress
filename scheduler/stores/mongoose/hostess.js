@@ -1,6 +1,6 @@
 const Branch = require('../../branch');
 const Hostess = require('../../hostess');
-const HostessModel = require('../../../services/db/mongoose/models/hostess');
+const HostessModel = require('../../../db/mongoose/models/hostess');
 const errors = require('../errors');
 
 class HostessStore {

@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const BranchModel = require('../../../../../services/db/mongoose/models/branch');
+const BranchModel = require('../../../../../db/mongoose/models/branch');
 const errors = require('../../../../../scheduler/stores/errors');
 
 suite('Mongoose BranchStore #update()', () => {

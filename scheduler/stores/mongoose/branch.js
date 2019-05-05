@@ -1,6 +1,6 @@
 const Brand = require('../../brand');
 const Branch = require('../../branch');
-const BranchModel = require('../../../services/db/mongoose/models/branch');
+const BranchModel = require('../../../db/mongoose/models/branch');
 const errors = require('../errors');
 
 

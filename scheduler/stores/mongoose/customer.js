@@ -1,5 +1,5 @@
 const Customer = require('../../customer');
-const CustomerModel = require('../../../services/db/mongoose/models/customer');
+const CustomerModel = require('../../../db/mongoose/models/customer');
 const errors = require('../errors');
 
 class CustomerStore {

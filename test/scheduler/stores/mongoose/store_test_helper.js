@@ -3,12 +3,12 @@ const config = require('config');
 require('../../test_helper')
 
 const database = require('../../../../scheduler/stores/mongoose');
-const BrandModel = require('../../../../services/db/mongoose/models/brand');
-const BranchModel = require('../../../../services/db/mongoose/models/branch');
-const HostessModel = require('../../../../services/db/mongoose/models/hostess');
-const TurnModel = require('../../../../services/db/mongoose/models/turn');
-const TurnCacheModel = require('../../../../services/db/mongoose/models/turn-cache');
-const CustomerModel = require('../../../../services/db/mongoose/models/customer');
+const BrandModel = require('../../../../db/mongoose/models/brand');
+const BranchModel = require('../../../../db/mongoose/models/branch');
+const HostessModel = require('../../../../db/mongoose/models/hostess');
+const TurnModel = require('../../../../db/mongoose/models/turn');
+const TurnCacheModel = require('../../../../db/mongoose/models/turn-cache');
+const CustomerModel = require('../../../../db/mongoose/models/customer');
 const BrandStore = require('../../../../scheduler/stores/mongoose/brand');
 const HostessStore = require('../../../../scheduler/stores/mongoose/hostess');
 const BranchStore = require('../../../../scheduler/stores/mongoose/branch');

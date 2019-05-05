@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnCacheModel = require('../../../../../services/db/mongoose/models/turn-cache');
+const TurnCacheModel = require('../../../../../db/mongoose/models/turn-cache');
 const errors = require('../../../../../scheduler/stores/errors');
 
 suite('Mongoose TurnCacheStore #findByBranch()', () => {

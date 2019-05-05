@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../services/db/mongoose/models/turn');
+const TurnModel = require('../../../../../db/mongoose/models/turn');
 const errors = require('../../../../../scheduler/stores/errors');
 
 suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
