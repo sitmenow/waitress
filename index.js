@@ -8,12 +8,11 @@ const mongooseCustomerStore = require('./scheduler/stores/mongoose/customer');
 const mongooseTurnStore = require('./scheduler/stores/mongoose/turn');
 const mongooseHostessStore = require('./scheduler/stores/mongoose/hostess');
 const mongooseCacheStore = require('./scheduler/stores/mongoose/cache');
+const mongooseTurnCacheStore = require('./scheduler/stores/mongoose/turn-cache');
 // const dynamoDbStore = require('./scheduler/stores/dynamodb');
 // const dynamoDbCacheStore = require('./scheduler/stores/dynamodb/cache');
 const useCases = require('./scheduler/usecases');
-// cost api = require('./api/gas');
-// const api = require('./api/coffee');
-const slackAppAPI = require('./api/coffee/slack');
+const api = require('./api/coffee');
 
 
 const gateways = {
@@ -22,6 +21,7 @@ const gateways = {
   hostess: new mongooseHostessStore(),
   turn: new mongooseTurnStore(),
   cache: new mongooseCacheStore(),
+  turnCache: new mongooseTurnCacheStore(),
 };
 
 const stores = {
@@ -30,9 +30,10 @@ const stores = {
   hostessStore: new schedulerStores.HostessStore(gateways.hostess),
   customerStore: new schedulerStores.CustomerStore(gateways.customer),
   cacheStore: new schedulerStores.CacheStore(gateways.cache),
+  turnCacheStore: new schedulerStores.TurnCacheStore(gateways.turnCache),
 };
 
-const app = slackAppAPI(stores, useCases);
+const app = api(stores, useCases);
 
 mongooseStore(config)
   .catch(error => console.log(`Error while connecting to Mongo: ${error}`));
