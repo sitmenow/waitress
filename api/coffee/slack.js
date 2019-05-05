@@ -39,17 +39,17 @@ app.use('/v1/slack/coffee', slackEvents.expressMiddleware());
 
 module.exports = (stores, useCases) => {
 
-  // app.post('/v1/slack/coffee', function(req, res) {
-  //   // Challenge request
-  //   res.send({ challenge: req.body.challenge });
-  // });
+  app.post('/v1/slack/coffee', function(req, res) {
+     // Challenge request
+     res.send({ challenge: req.body.challenge });
+   });
 
 
   // Attach listeners to events by Slack Event "type"
   // See: https://api.slack.com/events/message.im
   slackEvents.on('message', (event) => {
     console.log(
-      `Received a message event: user ${event.user} ` + 
+      `Received a message event: user ${event.user} ` +
       `in channel ${event.channel} says ${event.text}`
     );
 
@@ -59,15 +59,7 @@ module.exports = (stores, useCases) => {
     const target = sentence.shift();
     const parameters = sentence.join(' ').trim();
 
-
-
-    
-
-
-
-
     console.log(event);
-
   });
 
   // Handle errors (see `errorCodes` export)
