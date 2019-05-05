@@ -24,5 +24,6 @@ function URI({ scheme, host, port, user, password, database }) {
 module.exports = (config) => {
   const uri = URI(config.services.db);
 
+  console.log(uri)
   return mongoose.connect(uri, config.services.db.options);
 };

@@ -1,7 +1,7 @@
 const Turn = require('../../turn');
 const Branch = require('../../branch');
 const Customer = require('../../customer');
-const TurnModel = require('../../../services/db/mongoose/models/turn');
+const TurnModel = require('../../../db/mongoose/models/turn');
 const errors = require('../errors');
 
 class TurnStore {
