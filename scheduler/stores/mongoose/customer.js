@@ -5,6 +5,7 @@ const errors = require('../errors');
 class CustomerStore {
   async create(customer) {
     const model = this._objectToModel(customer);
+
     await model.save();
 
     return model.id;
@@ -14,6 +15,15 @@ class CustomerStore {
     const model = await CustomerModel.findById(customerId);
 
     if (!model) throw new errors.CustomerModelNotFound(customerId);
+
+    return this._modelToObject(model);
+  }
+
+  // Slack coffee turns hack
+  async findByName(customerName) {
+    const model = await CustomerModel.findOne({ name: customerName });
+
+    if (!model) throw new errors.CustomerModelNotFound(customerName);
 
     return this._modelToObject(model);
   }

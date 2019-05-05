@@ -2,7 +2,6 @@ const storeErrors = require('../../stores/errors');
 const schedulerErrors = require('../../errors');
 const errors = require('./errors');
 
-
 class HostessServeGasTurn {
   constructor({
     turnId,
@@ -56,10 +55,10 @@ class HostessServeGasTurn {
       throw new errors.HostessNotFound();
     } else if (error instanceof storeErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
-    } else if (error instanceof storeErrors.TurnNotUpdated) {
+    } else if (error instanceof storeErrors.TurnModelNotUpdated) {
       throw new errors.TurnNotServed();
     } else if (error instanceof schedulerErrors.TurnNotAllowedToChangeStatus) {
-      throw new errors.UnableToServeTurn();
+      throw new errors.TurnNotServed();
     }
 
     // console.log(error);

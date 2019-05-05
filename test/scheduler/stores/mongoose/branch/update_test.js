@@ -1,12 +1,11 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const BranchModel = require('../../../../../services/db/mongoose/models/branch');
 const errors = require('../../../../../scheduler/stores/errors');
-
 
 suite('Mongoose BranchStore #update()', () => {
   suiteSetup(() => {
@@ -77,7 +76,10 @@ suite('Mongoose BranchStore #update()', () => {
     assert.equal(updatedBranch.name, storedBranch.name);
     assert.equal(updatedBranch.address, storedBranch.address);
     assert.equal(updatedBranch.brand.id, storedBranch.brandId);
-    assert.deepEqual(updatedBranch.coordinates, storedBranch.location.coordinates);
+    assert.deepEqual(
+      updatedBranch.coordinates,
+      storedBranch.location.coordinates
+    );
     assert.equal(
       updatedBranch.lastOpeningTime.getTime(),
       storedBranch.lastOpeningTime.getTime()

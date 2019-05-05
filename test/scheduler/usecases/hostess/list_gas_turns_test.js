@@ -62,7 +62,7 @@ suite('Use Case: Hostess lists gas turns', () => {
     sandbox.stub(hostessStore, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchNotFound()));
+      .returns(Promise.reject(new storeErrors.BranchModelNotFound()));
 
     const useCase = new HostessListGasTurns({
       branchId,
@@ -83,7 +83,7 @@ suite('Use Case: Hostess lists gas turns', () => {
 
   test('non-existent hostess list gas turns', (done) => {
     sandbox.stub(hostessStore, 'find')
-      .returns(Promise.reject(new storeErrors.HostessNotFound()));
+      .returns(Promise.reject(new storeErrors.HostessModelNotFound()));
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
 

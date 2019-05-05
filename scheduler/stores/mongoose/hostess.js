@@ -4,7 +4,7 @@ const HostessModel = require('../../../services/db/mongoose/models/hostess');
 const errors = require('../errors');
 
 class HostessStore {
-  async  all() {
+  async all() {
     const models = await HostessModel.find({});
 
     return models.map(this._modelToObject)
@@ -31,7 +31,9 @@ class HostessStore {
       hostess = new Hostess({
         id: model.id,
         name: model.name,
-        branch: new Branch({ id: model.branchId.toString() }),
+        branch: new Branch({
+          id: model.branchId.toString()
+        }),
       });
     } catch (error) {
       throw new errors.HostessEntityNotCreated(model.id, error.stack);

@@ -1,11 +1,10 @@
-const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
+const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
 const errors = require('../../../../../scheduler/stores/errors');
-
 
 suite('Mongoose BranchStore #find()', () => {
   suiteSetup(() => {
@@ -47,7 +46,7 @@ suite('Mongoose BranchStore #find()', () => {
     return branchModel.delete();
   });
 
-  test('finds the object for the requested id', async () => {
+  test('finds the branch for the requested id', async () => {
     const expectedBranch = createBranch({
       id: branchModel.id,
       name: branchModel.name,
@@ -63,7 +62,8 @@ suite('Mongoose BranchStore #find()', () => {
     assert.deepEqual(expectedBranch, branch);
   });
 
-  test('throws a branch model not found error', (done) => {
+  test('throws a branch model not found error ' +
+       'when the given branch id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     branchStore.find(nonExistentId)
@@ -76,7 +76,8 @@ suite('Mongoose BranchStore #find()', () => {
       });
   });
 
-  test('throws a branch entity not created error', (done) => {
+  test('throws a branch entity not created error ' +
+       'when an error occurs while casting the branch model', (done) => {
     sandbox.stub(branchStore, '_modelToObject')
       .throws(new errors.BranchEntityNotCreated());
 

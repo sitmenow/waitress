@@ -1,10 +1,8 @@
 const Turn = require('../../turn');
 const Branch = require('../../branch');
 const Customer = require('../../customer');
-const Schedule = require('../../schedule');
 const TurnModel = require('../../../services/db/mongoose/models/turn');
 const errors = require('../errors');
-
 
 class TurnStore {
   async create(turn) {
@@ -112,7 +110,7 @@ class TurnStore {
         id: model.id,
         name: model.name,
         status: model.status,
-        updatedAt: model.updatedAt,
+        updatedTime: model.updatedTime,
         requestedTime: model.requestedTime,
         expectedServiceTime: model.expectedServiceTime,
         metadata: model.metadata,
@@ -133,11 +131,12 @@ class TurnStore {
       model = new TurnModel({
         name: turn.name,
         status: turn.status,
-        updatedAt: turn.updatedAt,
+        updatedTime: turn.updatedTime,
         requestedTime: turn.requestedTime,
         expectedServiceTime: turn.expectedServiceTime,
         branchId: turn.branch.id,
         customerId: turn.customer.id,
+        metadata: turn.metadata,
       });
 
     } catch (error) {

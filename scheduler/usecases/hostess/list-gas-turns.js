@@ -47,9 +47,9 @@ class HostessListGasTurns {
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.HostessNotFound) {
+    if (error instanceof storeErrors.HostessModelNotFound) {
        throw new errors.HostessNotFound();
-    } else if (error instanceof storeErrors.BranchNotFound) {
+    } else if (error instanceof storeErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
     }
 

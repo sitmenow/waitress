@@ -3,16 +3,20 @@ class CustomerStore {
     this.gateway = gateway;
   }
 
-  create(turn) {
-    return this.gateway.create(turn);
+  create(customer) {
+    return this.gateway.create(customer);
   }
 
-  find(turnId) {
-    return this.gateway.find(turnId);
+  find(customerId) {
+    return this.gateway.find(customerId);
   }
 
-  update(turn) {
-    return this.gateway.update(turn);
+  findByName(customerName) {
+    return this.gateway.findByName(customerName);
+  }
+
+  update(customer) {
+    return this.gateway.update(customer);
   }
 
   getDefaultCustomer() {

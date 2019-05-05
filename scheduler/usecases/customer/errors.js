@@ -69,8 +69,8 @@ class TurnRequiresIdentifier extends CustomerUseCaseError {}
 
 /************* coffe errors ***********/
 class InvalidCustomerName extends CustomerUseCaseError {
-  constructor(customerName) {
-    super(`Invalid customer name: ${customerName}`);
+  constructor(customerId) {
+    super(`Invalid customer id: ${customerId}`);
   }
 }
 
@@ -91,6 +91,8 @@ class InvalidTurnId extends CustomerUseCaseError {
 
 
 module.exports = {
+  CustomerUseCaseError,
+
   BranchNotFound,
   TurnNotFound,
   CustomerNotFound,
@@ -100,7 +102,6 @@ module.exports = {
   BranchNotCreated,
   CustomerNotCreated,
 
-  TurnNotUpdated,
   BranchIsNotOpen,
   TurnDoesNotBelongToCustomer,
   InactiveTurn,
@@ -115,4 +116,6 @@ module.exports = {
   InvalidCustomerName,
   InvalidCustomerElection,
   InvalidTurnId,
+
+  TurnNotUpdated,
 };

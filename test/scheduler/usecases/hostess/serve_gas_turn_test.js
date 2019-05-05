@@ -163,7 +163,7 @@ suite('Use Case: Hostess serves gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.UnableToServeTurn);
+        expect(error).to.be.instanceof(useCaseErrors.TurnNotServed);
         done();
       });
   });
@@ -251,7 +251,7 @@ suite('Use Case: Hostess serves gas turn', () => {
     sandbox.stub(branchStore, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(turnStore, 'update')
-      .returns(Promise.reject(new storeErrors.TurnNotUpdated()));
+      .returns(Promise.reject(new storeErrors.TurnModelNotUpdated()));
     sandbox.stub(cacheStore, 'removeGasTurn')
       .returns(true);
 
