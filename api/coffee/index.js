@@ -8,14 +8,14 @@ const middlewares = require('./middlewares');
 const app = express();
 const slackEvents = createEventAdapter(config.services.slack.events.secret);
 const slackWebClient = new WebClient(config.services.slack.web.oauthToken);
+const slackBotClient = new WebClient(config.services.slack.web.botToken);
 
 app.use(middlewares.cors);
 app.use('/v1/slack/coffee', slackEvents.expressMiddleware());
 app.use(express.json());
+app.use(middlewares.auth);
 
-const HOSTESS_ID = config.hostessId;
 const BRANCH_ID = config.branchId;
-const BRAND_ID = config.brandId;
 
 module.exports = (stores, useCases) => {
 
@@ -48,15 +48,22 @@ module.exports = (stores, useCases) => {
   // Admin | Hostess ... Maybe customer but that will affect the endpoint above
   app.get('/v1/brands/:brandId/branches/:branchId/turns', function(req, res) {
     const useCase = new useCases.HostessListCoffeeTurns({
+      // branchId: req.params.branchId,
       branchId: req.params.branchId,
-      hostessId: HOSTESS_ID,
+      hostessId: req.user.profile,
       branchStore: stores.branchStore,
       hostessStore: stores.hostessStore,
       turnCacheStore: stores.turnCacheStore,
     });
 
     useCase.execute()
-      .then(turns => res.send(turns))
+      .then((turns) => {
+        turns = turns.map((turn) => {
+          turn.name = turn.name.split('_').pop();
+          return turn;
+        });
+        res.send(turns);
+      })
       .catch(manageAPIError(res));
   });
 
@@ -77,18 +84,30 @@ module.exports = (stores, useCases) => {
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/prepare', function(req, res) {
-    const turn = stores.turnStore.find(req.params.turnId);
-    const customer = stores.customerStore.find(turn.customer.id);
-    const channel = customer.name.split('_').unshift();
-    _callSlack(channel)(`Tu orden ${turn.id} esta siendo preparada: ${turn.metadata.product}`);
+    stores.turnStore.find(req.params.turnId)
+      .then((turn) => {
+        return stores.customerStore.find(turn.customer.id)
+          .then((customer) => {
+            const channel = customer.name.split('_').shift();
+            _callSlack(channel)(`Tu orden ${turn.id} esta siendo preparada: ${turn.metadata.product}`);
+          });
+      })
+      .catch(manageAPIError(res))
+      .then(_ => res.json({}));
   });
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/unprepare', function(req, res) {
-    const turn = stores.turnStore.find(req.params.turnId);
-    const customer = stores.customerStore.find(turn.customer.id);
-    const channel = customer.name.split('_').unshift();
-    _callSlack(channel)(`Tu orden ${turn.id} esta de nuevo en espera: ${turn.metadata.product}`);
+    stores.turnStore.find(req.params.turnId)
+      .then((turn) => {
+        return stores.customerStore.find(turn.customer.id)
+          .then((customer) => {
+            const channel = customer.name.split('_').shift();
+            _callSlack(channel)(`Tu orden ${turn.id} esta de nuevo en espera: ${turn.metadata.product}`);
+          });
+      })
+      .catch(manageAPIError(res))
+      .then(_ => res.json({}));
   });
 
   // Hostess
@@ -96,7 +115,7 @@ module.exports = (stores, useCases) => {
     const useCase = new useCases.HostessServeCoffeeTurn({
       turnId: req.params.turnId,
       branchId: req.params.branchId,
-      hostessId: HOSTESS_ID,
+      hostessId: req.user.profile,
       branchStore: stores.branchStore,
       hostessStore: stores.hostessStore,
       turnCacheStore: stores.turnCacheStore,
@@ -106,11 +125,14 @@ module.exports = (stores, useCases) => {
     useCase.execute()
       .then((turn) => {
         res.send(turn);
-
-        const channel = turn.customer.name.split('_').unshift();
-        _callSlack(channel)(`Tu orden ${turn.id} esta lista`);
+        return turn;
       })
-      .catch(manageAPIError(res));
+      .catch(manageAPIError(res))
+      .then((turn) => {
+        const channel = turn.name.split('_').shift();
+        console.log(turn, channel)
+        _callSlack(channel)(`Tu orden ${turn.id} esta lista`);
+      });
   });
 
   // Hostess
@@ -118,7 +140,7 @@ module.exports = (stores, useCases) => {
     const useCase = new useCases.HostessRejectCoffeeTurn({
       turnId: req.params.turnId,
       branchId: req.params.branchId,
-      hostessId: HOSTESS_ID,
+      hostessId: req.user.profile,
       branchStore: stores.branchStore,
       hostessStore: stores.hostessStore,
       turnCacheStore: stores.turnCacheStore,
@@ -233,7 +255,7 @@ module.exports = (stores, useCases) => {
 
   function _callSlack(channel) {
     return (message) => {
-      slackWebClient.chat.postMessage({
+      slackBotClient.chat.postMessage({
         channel: channel,
         text: message,
       })
@@ -281,7 +303,7 @@ module.exports = (stores, useCases) => {
   }
 
   function manageAPIError(res) {
-    return (error) => res.status(500).send(error.message);
+    return (error) => { console.log(error); res.status(500).send(error.message);}
   }
 
   return app;

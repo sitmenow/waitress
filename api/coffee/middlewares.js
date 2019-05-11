@@ -12,9 +12,10 @@ const secret = jwks.expressJwtSecret({
 
 const auth = jwt({
   secret,
-  audience: 'https://miturno.com.mx/api/v1/',
+  aud: 'https://coffee-shop.sitmenow.com',
   issuer: 'https://sitmenow.auth0.com/',
   algorithms: ['RS256'],
+  scope: 'openid profile read:turns',
 });
 
 

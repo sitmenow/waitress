@@ -5,10 +5,21 @@ module.exports = {
   services: {
     db: {
       scheme: "mongodb",
-      useNewUrlParser: true,
       options: {
         useNewUrlParser: true,
       }
     },
+    slack: {
+      events: {
+        secret: '',
+      },
+      web: {
+        oauthToken: '',
+        botToken: '',
+      },
+    },
   },
+  hostessId: '',
+  branchId: '',
+  brandId: '',
 };

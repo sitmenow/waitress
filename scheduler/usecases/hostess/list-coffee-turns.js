@@ -37,11 +37,11 @@ class HostessListCoffeeTurns {
 
   _manageError(error) {
     if (error instanceof storeErrors.HostessModelNotFound) {
-       throw new errors.HostessNotFound();
+       throw new errors.HostessNotFound(this.hostessId);
     } else if (error instanceof storeErrors.HostessEntityNotCreated) {
       throw new Error();
     } else if (error instanceof storeErrors.BranchModelNotFound) {
-      throw new errors.BranchNotFound();
+      throw new errors.BranchNotFound(this.branchId);
     } else if (error instanceof storeErrors.BranchEntityNotCreated) {
       throw new Error();
     } else if (error instanceof storeErrors.TurnEntityNotCreated) {

@@ -11,6 +11,11 @@ class HostessStore {
   }
 
   async create(hostess) {
+    const model = this._objectToModel(hostess);
+
+    await model.save();
+
+    return model.id;
   }
 
   async find(hostessId) {
@@ -40,6 +45,22 @@ class HostessStore {
     }
 
     return hostess;
+  }
+
+  _objectToModel(hostess) {
+    let model = null;
+
+    try {
+      model = new HostessModel({
+        name: hostess.name,
+        branchId: hostess.branch.id,
+      });
+
+    } catch (error) {
+      throw new errors.HostessModelNotCreated(hostess.id, error.stack);
+    }
+
+    return model;
   }
 }
 
