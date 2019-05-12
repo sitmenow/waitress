@@ -4,17 +4,13 @@ const { expect, assert } = require('chai');
 require('../../test_helper');
 
 const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
-const storeErrors = require('../../../../scheduler/stores/errors');
+const databaseErrors = require('../../../../scheduler/database/errors');
 const CustomerDetailCoffeeBranch = require('../../../../scheduler/usecases/customer/detail-coffee-branch');
 
 
 suite('Use Case: Customer detail coffee branch', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
-
-    customerStore = createCustomerStore();
-    branchStore = createBranchStore();
-    turnCacheStore = createTurnCacheStore();
 
     customerA = createCustomer({
       id: 'customer-a-test',
@@ -53,19 +49,17 @@ suite('Use Case: Customer detail coffee branch', () => {
   });
 
   test('returns a detailed status of the given branch id', async () => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(customerStore, 'find')
+    sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
-    sandbox.stub(turnCacheStore, 'findByBranch')
+    sandbox.stub(database.turnsCache, 'findByBranch')
       .returns(Promise.resolve([turnA, turnB, turnC]));
 
     const useCase = new CustomerDetailCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
-      customerStore,
-      turnCacheStore,
-      branchStore,
+      database,
     });
 
     const expectedBranch = {
@@ -77,25 +71,23 @@ suite('Use Case: Customer detail coffee branch', () => {
 
     const output = await useCase.execute();
 
-    assert.isTrue(customerStore.find.calledWith(customerA.id));
-    assert.isTrue(branchStore.find.calledWith(branch.id));
-    assert.isTrue(turnCacheStore.findByBranch.calledWith(branch.id));
+    assert.isTrue(database.customers.find.calledWith(customerA.id));
+    assert.isTrue(database.branches.find.calledWith(branch.id));
+    assert.isTrue(database.turnsCache.findByBranch.calledWith(branch.id));
     assert.deepEqual(expectedBranch, output);
   });
 
   test('throws a branch model not found error ' +
        'when the given branch id does not exist', (done) => {
-    sandbox.stub(customerStore, 'find')
+    sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
-    sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchModelNotFound()));
+    sandbox.stub(database.branches, 'find')
+      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
     const useCase = new CustomerDetailCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
-      branchStore,
-      turnCacheStore,
-      customerStore,
+      database,
     });
 
     useCase.execute()
@@ -107,17 +99,15 @@ suite('Use Case: Customer detail coffee branch', () => {
 
   test('throws a branch use case error ' +
        'when the branch entity cannot be created', (done) => {
-    sandbox.stub(customerStore, 'find')
+    sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
-    sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.CustomerEntityNotCreated()));
+    sandbox.stub(database.branches, 'find')
+      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
 
     const useCase = new CustomerDetailCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
-      branchStore,
-      turnCacheStore,
-      customerStore,
+      database,
     });
 
     useCase.execute()
@@ -129,17 +119,15 @@ suite('Use Case: Customer detail coffee branch', () => {
 
   test('throws a customer model not found error ' +
        'when the given customer id does not exist', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(customerStore, 'find')
-      .returns(Promise.reject(new storeErrors.CustomerModelNotFound()));
+    sandbox.stub(database.customers, 'find')
+      .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
 
     const useCase = new CustomerDetailCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
-      customerStore,
-      turnCacheStore,
-      branchStore,
+      database,
     });
 
     useCase.execute()
@@ -151,17 +139,15 @@ suite('Use Case: Customer detail coffee branch', () => {
 
   test('throws a customer use case error ' +
        'when the customer entity cannot be created', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(customerStore, 'find')
-      .returns(Promise.reject(new storeErrors.CustomerEntityNotCreated()));
+    sandbox.stub(database.customers, 'find')
+      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
 
     const useCase = new CustomerDetailCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
-      customerStore,
-      turnCacheStore,
-      branchStore,
+      database,
     });
 
     useCase.execute()
@@ -173,19 +159,17 @@ suite('Use Case: Customer detail coffee branch', () => {
 
   test('throws a customer use case error ' +
        'when any of the found turn entities cannot be created', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(customerStore, 'find')
+    sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
-    sandbox.stub(turnCacheStore, 'findByBranch')
-      .returns(Promise.reject(new storeErrors.TurnEntityNotCreated()));
+    sandbox.stub(database.turnsCache, 'findByBranch')
+      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
     const useCase = new CustomerDetailCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
-      customerStore,
-      turnCacheStore,
-      branchStore,
+      database,
     });
 
     useCase.execute()

@@ -1,11 +1,8 @@
 // const adminUseCases = require('./admin');
 const AdminCreateSlackCoffeeCustomer = require('./admin/create-slack-coffee-customer');
 
-const CustomerCreateTurn = require('./customer/create-turn');
-const CustomerDetailTurn = require('./customer/detail-turn');
-
-const CustomerListGasTurns = require('./customer/list-gas-turns');
 const CustomerCreateGasTurn = require('./customer/create-gas-turn');
+const CustomerListGasTurns = require('./customer/list-gas-turns');
 const CustomerDetailGasTurn = require('./customer/detail-gas-turn');
 const CustomerDetailGasStation = require('./customer/detail-gas-station');
 
@@ -26,9 +23,6 @@ const HostessServeCoffeeTurn = require('./hostess/serve-coffee-turn');
 
 module.exports = {
   AdminCreateSlackCoffeeCustomer,
-
-  CustomerCreateTurn,
-  CustomerDetailTurn,
 
   CustomerListGasTurns,
   CustomerDetailGasTurn,

@@ -1,30 +1,19 @@
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const schedulerErrors = require('../../errors');
 const errors = require('./errors');
 
 class HostessServeGasTurn {
-  constructor({
-    turnId,
-    branchId,
-    hostessId,
-    turnStore,
-    hostessStore,
-    branchStore,
-    cacheStore,
-  }) {
+  constructor({ turnId, branchId, hostessId, database }) {
     this.turnId = turnId;
     this.branchId = branchId;
     this.hostessId = hostessId;
-    this.turnStore = turnStore;
-    this.hostessStore = hostessStore;
-    this.branchStore = branchStore;
-    this.cacheStore = cacheStore;
+    this.database = database;
   }
 
   execute() {
-    const turn = this.turnStore.find(this.turnId);
-    const hostess = this.hostessStore.find(this.hostessId);
-    const branch = this.branchStore.find(this.branchId);
+    const turn = this.database.turns.find(this.turnId);
+    const hostess = this.database.hostesses.find(this.hostessId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([turn, hostess, branch])
       .then(([turn, hostess, branch]) => this._serveGasTurn(turn, hostess, branch))
@@ -43,19 +32,19 @@ class HostessServeGasTurn {
     turn.serve();
 
     return Promise.all([
-      this.turnStore.update(turn),
-      this.cacheStore.removeGasTurn(turn.id)
+      this.database.turns.update(turn),
+      this.database.cache.removeGasTurn(turn.id)
     ]);
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.TurnModelNotFound) {
+    if (error instanceof databaseErrors.TurnModelNotFound) {
       throw new errors.TurnNotFound();
-    } else if (error instanceof storeErrors.HostessModelNotFound) {
+    } else if (error instanceof databaseErrors.HostessModelNotFound) {
       throw new errors.HostessNotFound();
-    } else if (error instanceof storeErrors.BranchModelNotFound) {
+    } else if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
-    } else if (error instanceof storeErrors.TurnModelNotUpdated) {
+    } else if (error instanceof databaseErrors.TurnModelNotUpdated) {
       throw new errors.TurnNotServed();
     } else if (error instanceof schedulerErrors.TurnNotAllowedToChangeStatus) {
       throw new errors.TurnNotServed();

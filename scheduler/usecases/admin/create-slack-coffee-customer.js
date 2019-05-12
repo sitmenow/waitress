@@ -5,28 +5,28 @@ const errors = require('./errors');
 
 class AdminCreateSlackCoffeeCustomer {
   constructor({
-    channel, username, customerStore,
+    channel, username, database,
   }) {
     this.channel = channel;
     this.username = username;
-    this.customerStore = customerStore;
+    this.database = database;
   }
 
   execute() {
     const name = `${this.username}_${this.channel}`;
     const customer = new Customer({ name });
 
-    return this.customerStore.create(customer)
-      .then(customerId => this.customerStore.find(customerId))
+    return this.database.customers.create(customer)
+      .then(customerId => this.database.customers.find(customerId))
       .catch(this._manageError);
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.CustomerModelNotFound) {
+    if (error instanceof databaseErrors.CustomerModelNotFound) {
       throw new errors.SlackCustomerNotFound(this.channel, this.username);
-    } else if (error instanceof storeErrors.CustomerEntityNotCreated) {
+    } else if (error instanceof databaseErrors.CustomerEntityNotCreated) {
       throw new errors.CustomerNotCreated(); // Unknown error
-    } else if (error instanceof storeErrors.CustomerModelNotCreated) {
+    } else if (error instanceof databaseErrors.CustomerModelNotCreated) {
       throw new errors.CustomerNotCreated();
     }
 

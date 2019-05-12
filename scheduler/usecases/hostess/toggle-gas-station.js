@@ -1,23 +1,17 @@
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const errors = require('./errors');
 
 
 class HostessToggleGasStation {
-  constructor({
-    hostessId,
-    branchId,
-    hostessStore,
-    branchStore,
-  }) {
+  constructor({ hostessId, branchId, database }) {
     this.hostessId = hostessId;
     this.branchId = branchId;
-    this.hostessStore = hostessStore;
-    this.branchStore = branchStore;
+    this.database = database;
   }
 
   execute() {
-    const hostess = this.hostessStore.find(this.hostessId);
-    const branch = this.branchStore.find(this.branchId);
+    const hostess = this.database.hostesses.find(this.hostessId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([hostess, branch])
       .then(([hostess, branch]) => this._toggleGasStation(hostess, branch))
@@ -35,13 +29,13 @@ class HostessToggleGasStation {
       branch.open();
     }
 
-    return this.branchStore.update(branch);
+    return this.database.branches.update(branch);
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.HostessNotFound) {
+    if (error instanceof databaseErrors.HostessNotFound) {
        throw new errors.HostessNotFound();
-    } else if (error instanceof storeErrors.BranchNotFound) {
+    } else if (error instanceof databaseErrors.BranchNotFound) {
       throw new errors.BranchNotFound();
     }
 

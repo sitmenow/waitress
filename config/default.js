@@ -4,7 +4,8 @@ module.exports = {
   },
   services: {
     db: {
-      scheme: "mongodb",
+      driver: 'mongoose',
+      scheme: 'mongodb',
       options: {
         useNewUrlParser: true,
       }

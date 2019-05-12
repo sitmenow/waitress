@@ -1,34 +1,24 @@
 const mongoose = require('mongoose');
 
 const errors = require('./errors');
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const Turn = require('../../turn');
 const Customer = require('../../customer');
 
 class CustomerCreateCoffeeTurn {
   constructor({
-    customerId,
-    customerCompany,
-    customerElection,
-    branchId,
-    turnStore,
-    turnCacheStore,
-    customerStore,
-    branchStore,
+    customerId, customerCompany, customerElection, branchId, database,
   }) {
     this.customerId = customerId;
     this.customerCompany = customerCompany;
     this.customerElection = customerElection;
     this.branchId = branchId;
-    this.turnStore = turnStore;
-    this.turnCacheStore = turnCacheStore;
-    this.customerStore = customerStore;
-    this.branchStore = branchStore;
+    this.database = database;
   }
 
   execute() {
-    const customer = this.customerStore.find(this.customerId);
-    const branch = this.branchStore.find(this.branchId);
+    const customer = this.database.customers.find(this.customerId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([customer, branch])
       .then(([customer, branch]) => this._createCoffeeTurn(customer, branch))
@@ -60,28 +50,28 @@ class CustomerCreateCoffeeTurn {
       },
     });
 
-    return this.turnStore.create(turn)
-      .then(turnId => this.turnStore.find(turnId))
+    return this.database.turns.create(turn)
+      .then(turnId => this.database.turns.find(turnId))
       .then(storedTurn =>
-        this.turnCacheStore.create(storedTurn)
+        this.database.turnsCache.create(storedTurn)
           .then(_ => storedTurn)
       );
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.BranchModelNotFound) {
+    if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound(this.branchId);
-    } else if (error instanceof storeErrors.BranchEntityNotCreated) {
+    } else if (error instanceof databaseErrors.BranchEntityNotCreated) {
       throw new errors.TurnNotCreated();
-    } else if (error instanceof storeErrors.CustomerModelNotFound) {
+    } else if (error instanceof databaseErrors.CustomerModelNotFound) {
       throw new errors.CustomerNotFound(this.customerId);
-    } else if (error instanceof storeErrors.CustomerEntityNotCreated) {
+    } else if (error instanceof databaseErrors.CustomerEntityNotCreated) {
       throw new errors.TurnNotCreated();
-    } else if (error instanceof storeErrors.TurnModelNotFound) {
+    } else if (error instanceof databaseErrors.TurnModelNotFound) {
       throw new errors.TurnNotCreated();
-    } else if (error instanceof storeErrors.TurnEntityNotCreated) {
+    } else if (error instanceof databaseErrors.TurnEntityNotCreated) {
       throw new errors.TurnNotCreated(); // Unknown error
-    } else if (error instanceof storeErrors.TurnModelNotCreated) {
+    } else if (error instanceof databaseErrors.TurnModelNotCreated) {
       throw new errors.TurnNotCreated(); // Unknown error if comes from turn cache
     }
 

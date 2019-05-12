@@ -4,16 +4,13 @@ const { expect, assert } = require('chai');
 require('../../test_helper');
 
 const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
-const storeErrors = require('../../../../scheduler/stores/errors');
+const databaseErrors = require('../../../../scheduler/database/errors');
 const CustomerListOwnActiveCoffeeTurns = require('../../../../scheduler/usecases/customer/list-own-active-coffee-turns');
 
 
 suite('Use Case: Customer lists own active coffee turns', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
-
-    customerStore = createCustomerStore();
-    turnCacheStore = createTurnCacheStore();
 
     customer = createCustomer({
       id: 'customer-test',
@@ -36,33 +33,31 @@ suite('Use Case: Customer lists own active coffee turns', () => {
   });
 
   test('returns the current active turns for the given customer id', async () => {
-    sandbox.stub(customerStore, 'find')
+    sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
-    sandbox.stub(turnCacheStore, 'findByCustomer')
+    sandbox.stub(database.turnsCache, 'findByCustomer')
       .returns(Promise.resolve([turn]));
 
     const useCase = new CustomerListOwnActiveCoffeeTurns({
       customerId: customer.id,
-      customerStore,
-      turnCacheStore,
+      database,
     });
 
     const output = await useCase.execute();
 
-    assert.isTrue(customerStore.find.calledWith(customer.id));
-    assert.isTrue(turnCacheStore.findByCustomer.calledWith(customer.id));
+    assert.isTrue(database.customers.find.calledWith(customer.id));
+    assert.isTrue(database.turnsCache.findByCustomer.calledWith(customer.id));
     assert.deepEqual([turn], output);
   });
 
   test('throws a customer model not found error ' +
        'when the given customer id does not exist', (done) => {
-    sandbox.stub(customerStore, 'find')
-      .returns(Promise.reject(new storeErrors.CustomerModelNotFound()));
+    sandbox.stub(database.customers, 'find')
+      .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
 
     const useCase = new CustomerListOwnActiveCoffeeTurns({
       customerId: customer.id,
-      customerStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -74,13 +69,12 @@ suite('Use Case: Customer lists own active coffee turns', () => {
 
   test('throws a customer use case error ' +
        'when the customer entity cannot be created', (done) => {
-    sandbox.stub(customerStore, 'find')
-      .returns(Promise.reject(new storeErrors.CustomerEntityNotCreated()));
+    sandbox.stub(database.customers, 'find')
+      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
 
     const useCase = new CustomerListOwnActiveCoffeeTurns({
       customerId: customer.id,
-      customerStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -92,15 +86,14 @@ suite('Use Case: Customer lists own active coffee turns', () => {
 
   test('throws a customer use case error ' +
        'when any of the found turn entities cannot be created', (done) => {
-    sandbox.stub(customerStore, 'find')
+    sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
-    sandbox.stub(turnCacheStore, 'findByCustomer')
-      .returns(Promise.reject(new storeErrors.TurnEntityNotCreated()));
+    sandbox.stub(database.turnsCache, 'findByCustomer')
+      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
     const useCase = new CustomerListOwnActiveCoffeeTurns({
       customerId: customer.id,
-      customerStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
