@@ -1,4 +1,12 @@
-class StoreError extends Error {}
+class DatabaseError extends Error {}
+
+class UnsupportedDatabaseDriver extends DatabaseError {
+  constructor(driver) {
+    super(`Database driver ${driver} is not supported`);
+  }
+}
+
+class StoreError extends DatabaseError {}
 
 class ModelNotFound extends StoreError {
   constructor(id) {
@@ -52,6 +60,9 @@ class ModelNotRemoved extends StoreError {
 class TurnCacheModelNotRemoved extends ModelNotRemoved {}
 
 module.exports = {
+  DatabaseError,
+  UnsupportedDatabaseDriver,
+
   StoreError,
 
   TurnModelNotFound,
