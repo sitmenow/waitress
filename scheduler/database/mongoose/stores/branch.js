@@ -1,8 +1,7 @@
-const Brand = require('../../brand');
-const Branch = require('../../branch');
-const BranchModel = require('../../../db/mongoose/models/branch');
-const errors = require('../errors');
-
+const Brand = require('../../../brand');
+const Branch = require('../../../branch');
+const BranchModel = require('../../../../db/mongoose/models/branch');
+const errors = require('../../errors');
 
 class BranchStore {
   async all() {

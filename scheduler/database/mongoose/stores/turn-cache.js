@@ -1,6 +1,6 @@
 const TurnStore = require('./turn');
-const TurnCacheModel = require('../../../db/mongoose/models/turn-cache');
-const errors = require('../errors');
+const TurnCacheModel = require('../../../../db/mongoose/models/turn-cache');
+const errors = require('../../errors');
 
 class TurnCacheStore extends TurnStore {
   async create(turn) {

@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const errors = require('../../../../../scheduler/stores/errors');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose CustomerStore #find()', () => {
   suiteSetup(() => {
@@ -14,8 +14,6 @@ suite('Mongoose CustomerStore #find()', () => {
   suiteTeardown(() => {});
 
   setup(() => {
-    customerStore = createCustomerStore();
-
     customerModel = createCustomerModel({
       name: 'Customer Test',
     });
@@ -35,7 +33,7 @@ suite('Mongoose CustomerStore #find()', () => {
       name: customerModel.name,
     });
 
-    const customer = await customerStore.find(customerModel.id);
+    const customer = await database.customers.find(customerModel.id);
 
     assert.deepEqual(expectedCustomer, customer);
   });
@@ -44,7 +42,7 @@ suite('Mongoose CustomerStore #find()', () => {
        'when the given customer id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    customerStore.find(nonExistentId)
+    database.customers.find(nonExistentId)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.CustomerModelNotFound);
         done();
@@ -53,10 +51,10 @@ suite('Mongoose CustomerStore #find()', () => {
 
   test('throws a customer entity not created error ' +
        'when an error occurs while casting the customer model', (done) => {
-    sandbox.stub(customerStore, '_modelToObject')
+    sandbox.stub(database.customers, '_modelToObject')
       .throws(new errors.CustomerEntityNotCreated());
 
-    customerStore.find(customerModel.id)
+    database.customers.find(customerModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.CustomerEntityNotCreated);
         done();

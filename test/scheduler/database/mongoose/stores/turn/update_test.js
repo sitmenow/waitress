@@ -4,10 +4,10 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../db/mongoose/models/turn');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnModel = require('../../../../../../db/mongoose/models/turn');
+const errors = require('../../../../../../scheduler/database/errors');
 
-suite('Mongoose TurnStore #update()', () => {
+suite('Mongoose Turn Store #update()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
 
@@ -44,8 +44,6 @@ suite('Mongoose TurnStore #update()', () => {
   });
 
   setup(() => {
-    turnStore = createTurnStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -89,7 +87,7 @@ suite('Mongoose TurnStore #update()', () => {
       metadata: { guests: 50 },
     });
 
-    await turnStore.update(updatedTurn);
+    await database.turns.update(updatedTurn);
 
     const storedTurn = await TurnModel.findById(turnModel.id);
 
@@ -116,7 +114,7 @@ suite('Mongoose TurnStore #update()', () => {
       name: 'New Turn Test',
     });
 
-    turnStore.update(updatedTurn)
+    database.turns.update(updatedTurn)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnModelNotFound);
         done();

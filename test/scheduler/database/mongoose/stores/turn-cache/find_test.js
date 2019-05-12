@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const errors = require('../../../../../scheduler/stores/errors');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnCacheStore #find()', () => {
   suiteSetup(() => {
@@ -32,8 +32,6 @@ suite('Mongoose TurnCacheStore #find()', () => {
   });
 
   setup(() => {
-    turnCacheStore = createTurnCacheStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -75,7 +73,7 @@ suite('Mongoose TurnCacheStore #find()', () => {
       branch,
     });
 
-    const turn = await turnCacheStore.find(turnCacheModel.id);
+    const turn = await database.turnsCache.find(turnCacheModel.id);
 
     assert.deepEqual(expectedTurnCache, turn);
   });
@@ -84,7 +82,7 @@ suite('Mongoose TurnCacheStore #find()', () => {
        'when the given turn cache id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    turnCacheStore.find(nonExistentId)
+    database.turnsCache.find(nonExistentId)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnCacheModelNotFound);
         done();
@@ -93,10 +91,10 @@ suite('Mongoose TurnCacheStore #find()', () => {
 
   test('throws a turn entity not created error ' +
        'when an error ocurrs while casting the turn cache model', (done) => {
-    sandbox.stub(turnCacheStore, '_modelToObject')
+    sandbox.stub(database.turnsCache, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
-    turnCacheStore.find(turnCacheModel.id)
+    database.turnsCache.find(turnCacheModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
         done();

@@ -1,7 +1,7 @@
-const Branch = require('../../branch');
-const Hostess = require('../../hostess');
-const HostessModel = require('../../../db/mongoose/models/hostess');
-const errors = require('../errors');
+const Branch = require('../../../branch');
+const Hostess = require('../../../hostess');
+const HostessModel = require('../../../../db/mongoose/models/hostess');
+const errors = require('../../errors');
 
 class HostessStore {
   async all() {

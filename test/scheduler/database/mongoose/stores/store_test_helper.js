@@ -1,25 +1,18 @@
 const config = require('config');
 
-require('../../test_helper')
+require('../../../test_helper')
 
-const database = require('../../../../scheduler/stores/mongoose');
-const BrandModel = require('../../../../db/mongoose/models/brand');
-const BranchModel = require('../../../../db/mongoose/models/branch');
-const HostessModel = require('../../../../db/mongoose/models/hostess');
-const TurnModel = require('../../../../db/mongoose/models/turn');
-const TurnCacheModel = require('../../../../db/mongoose/models/turn-cache');
-const CustomerModel = require('../../../../db/mongoose/models/customer');
-const BrandStore = require('../../../../scheduler/stores/mongoose/brand');
-const HostessStore = require('../../../../scheduler/stores/mongoose/hostess');
-const BranchStore = require('../../../../scheduler/stores/mongoose/branch');
-const CustomerStore = require('../../../../scheduler/stores/mongoose/customer');
-const TurnStore = require('../../../../scheduler/stores/mongoose/turn');
-const TurnCacheStore = require('../../../../scheduler/stores/mongoose/turn-cache');
+const MongooseDatabase = require('../../../../../scheduler/database/mongoose');
+const BrandModel = require('../../../../../db/mongoose/models/brand');
+const BranchModel = require('../../../../../db/mongoose/models/branch');
+const HostessModel = require('../../../../../db/mongoose/models/hostess');
+const TurnModel = require('../../../../../db/mongoose/models/turn');
+const TurnCacheModel = require('../../../../../db/mongoose/models/turn-cache');
+const CustomerModel = require('../../../../../db/mongoose/models/customer');
 
 
 before(() => {
-  mongoose = database(config)
-    .catch(error => console.log(`Error while connecting to database: ${error}`));
+  database = new MongooseDatabase(config.services.db);
 
   createBrandModel = brand => new BrandModel({
     id: brand.id,
@@ -72,19 +65,9 @@ before(() => {
     customerId: turn.customerId,
   });
 
-  // The following stores are the mongoose implementations
-  // Do not mix them with generic stores in parent test helper file
-  createHostessStore = () => new HostessStore();
-
-  createBranchStore = () => new BranchStore();
-
-  createCustomerStore = () => new CustomerStore();
-
-  createTurnStore = () => new TurnStore();
-
-  createTurnCacheStore = () => new TurnCacheStore();
-
-  return mongoose;
+  return database
+    .connect()
+    .catch(error => console.log(`Error while connecting to database: ${error}`));
 });
 
 beforeEach(() => {
@@ -94,7 +77,7 @@ beforeEach(() => {
 // NOTE: mocha opts file can work too!
 // Close connection
 after(() => {
-  mongoose
-    .then(_ => _.connection.close())
+  database
+    .disconnect()
     .catch(error => console.log(`Error while disconnecting from database: ${error}`));
 });

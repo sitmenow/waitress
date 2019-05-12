@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnCacheModel = require('../../../../../db/mongoose/models/turn-cache');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnCacheModel = require('../../../../../../db/mongoose/models/turn-cache');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnCacheStore #findByBranch()', () => {
   suiteSetup(() => {
@@ -31,8 +31,6 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
   });
 
   setup(() => {
-    turnCacheStore = createTurnCacheStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -101,7 +99,7 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
       branch,
     });
 
-    const turns = await turnCacheStore.findByBranch(branchModel.id);
+    const turns = await database.turnsCache.findByBranch(branchModel.id);
 
     assert.deepEqual([expectedTurnCacheA, expectedTurnCacheB], turns);
   });
@@ -110,7 +108,7 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
        'when the given branch id does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnCacheStore.findByBranch(nonExistentId);
+    const turns = await database.turnsCache.findByBranch(nonExistentId);
 
     assert.deepEqual([], turns);
   });
@@ -119,17 +117,17 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
        'when the given branch id has no turns', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnCacheStore.findByBranch(nonExistentId);
+    const turns = await database.turnsCache.findByBranch(nonExistentId);
 
     assert.deepEqual([], turns);
   });
 
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn cache model', (done) => {
-    sandbox.stub(turnCacheStore, '_modelToObject')
+    sandbox.stub(database.turnsCache, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
-    turnCacheStore.findByBranch(branchModel.id)
+    database.turnsCache.findByBranch(branchModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
         done();

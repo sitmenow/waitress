@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../db/mongoose/models/turn');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnModel = require('../../../../../../db/mongoose/models/turn');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
   suiteSetup(() => {
@@ -35,8 +35,6 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
   });
 
   setup(() => {
-    turnStore = createTurnStore();
-
     branchA = createBranch({
       id: branchModelA.id,
     });
@@ -91,7 +89,7 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
       customer,
     });
 
-    const turns = await turnStore.findByBranchAndStatus(
+    const turns = await database.turns.findByBranchAndStatus(
       branchModelA.id, turnModelA.status
     );
 
@@ -102,7 +100,7 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
        'when the given branch id does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnStore.findByBranchAndStatus(
+    const turns = await database.turns.findByBranchAndStatus(
       nonExistentId, 'waiting'
     );
 
@@ -111,7 +109,7 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
 
   test('returns an empty list ' +
        'when the given branch id has no turns for the given status', async () => {
-    const turns = await turnStore.findByBranchAndStatus(
+    const turns = await database.turns.findByBranchAndStatus(
       branchModelA.id, 'waiting'
     );
 
@@ -120,10 +118,10 @@ suite('Mongoose TurnStore #findByBranchAndStatus()', () => {
 
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn model', (done) => {
-    sandbox.stub(turnStore, '_modelToObject')
+    sandbox.stub(database.turns, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
-    turnStore.findByBranchAndStatus(branchModelA.id, turnModelA.status)
+    database.turns.findByBranchAndStatus(branchModelA.id, turnModelA.status)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
         done();

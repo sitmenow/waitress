@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const errors = require('../../../../../scheduler/stores/errors');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose BranchStore #find()', () => {
   suiteSetup(() => {
@@ -22,8 +22,6 @@ suite('Mongoose BranchStore #find()', () => {
   });
 
   setup(() => {
-    branchStore = createBranchStore();
-
     brand = createBrand({
       id: brandModel.id,
     });
@@ -57,7 +55,7 @@ suite('Mongoose BranchStore #find()', () => {
       brand,
     });
 
-    const branch = await branchStore.find(branchModel.id);
+    const branch = await database.branches.find(branchModel.id);
 
     assert.deepEqual(expectedBranch, branch);
   });
@@ -66,7 +64,7 @@ suite('Mongoose BranchStore #find()', () => {
        'when the given branch id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    branchStore.find(nonExistentId)
+    database.branches.find(nonExistentId)
       .catch((error) => {
         // NOTE: If the following expect is not fulfilled the promise
         //       will be considered as non-completed. Be careful with
@@ -78,10 +76,10 @@ suite('Mongoose BranchStore #find()', () => {
 
   test('throws a branch entity not created error ' +
        'when an error occurs while casting the branch model', (done) => {
-    sandbox.stub(branchStore, '_modelToObject')
+    sandbox.stub(database.branches, '_modelToObject')
       .throws(new errors.BranchEntityNotCreated());
 
-    branchStore.find(branchModel.id)
+    database.branches.find(branchModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.BranchEntityNotCreated);
         done();

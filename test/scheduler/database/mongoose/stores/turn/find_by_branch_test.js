@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../db/mongoose/models/turn');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnModel = require('../../../../../../db/mongoose/models/turn');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnStore #findByBranch()', () => {
   suiteSetup(() => {
@@ -31,8 +31,6 @@ suite('Mongoose TurnStore #findByBranch()', () => {
   });
 
   setup(() => {
-    turnStore = createTurnStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -99,7 +97,7 @@ suite('Mongoose TurnStore #findByBranch()', () => {
       branch,
     });
 
-    const turns = await turnStore.findByBranch(branchModel.id);
+    const turns = await database.turns.findByBranch(branchModel.id);
 
     assert.deepEqual([expectedTurnA, expectedTurnB], turns);
   });
@@ -108,7 +106,7 @@ suite('Mongoose TurnStore #findByBranch()', () => {
        'when the given branch id does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnStore.findByBranch(nonExistentId);
+    const turns = await database.turns.findByBranch(nonExistentId);
 
     assert.deepEqual([], turns);
   });
@@ -117,17 +115,17 @@ suite('Mongoose TurnStore #findByBranch()', () => {
        'when the given branch id has no turns', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnStore.findByBranch(nonExistentId);
+    const turns = await database.turns.findByBranch(nonExistentId);
 
     assert.deepEqual([], turns);
   });
 
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn model', (done) => {
-    sandbox.stub(turnStore, '_modelToObject')
+    sandbox.stub(database.turns, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
-    turnStore.findByBranch(branchModel.id)
+    database.turns.findByBranch(branchModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
         done();

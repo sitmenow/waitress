@@ -5,12 +5,7 @@ const Schedule = require('../../scheduler/schedule');
 const Hostess = require('../../scheduler/hostess');
 const Customer = require('../../scheduler/customer');
 
-const TurnStore = require('../../scheduler/stores/turn')
-const BranchStore = require('../../scheduler/stores/branch')
-const CustomerStore = require('../../scheduler/stores/customer')
-const HostessStore = require('../../scheduler/stores/hostess')
-const CacheStore = require('../../scheduler/stores/cache');
-const TurnCacheStore = require('../../scheduler/stores/turn-cache');
+const InMemoryDatabase = require('../../scheduler/database/in-memory')
 
 before(() => {
   createBranch = branch => new Branch({
@@ -50,15 +45,5 @@ before(() => {
     name: brand.name,
   });
 
-  createTurnStore = () => new TurnStore();
-
-  createHostessStore = () => new HostessStore();
-
-  createBranchStore = () => new BranchStore();
-
-  createCustomerStore = () => new CustomerStore();
-
-  createCacheStore = () => new CacheStore();
-
-  createTurnCacheStore = () => new TurnCacheStore();
+  database = new InMemoryDatabase();
 });

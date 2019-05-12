@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../db/mongoose/models/turn');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnModel = require('../../../../../../db/mongoose/models/turn');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
   suiteSetup(() => {
@@ -42,8 +42,6 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
   });
 
   setup(() => {
-    turnStore = createTurnStore();
-
     branchA = createBranch({
       id: branchModelA.id,
     });
@@ -113,7 +111,7 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
 
-    const turns = await turnStore.findWaitingByBranchAndRequestedTimeRange(
+    const turns = await database.turns.findWaitingByBranchAndRequestedTimeRange(
       branchModelB.id, start, end
     );
 
@@ -126,7 +124,7 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
 
-    const turns = await turnStore.findWaitingByBranchAndRequestedTimeRange(
+    const turns = await database.turns.findWaitingByBranchAndRequestedTimeRange(
       nonExistentId, start, end
     );
 
@@ -138,7 +136,7 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
 
-    const turns = await turnStore.findWaitingByBranchAndRequestedTimeRange(
+    const turns = await database.turns.findWaitingByBranchAndRequestedTimeRange(
       branchModelA.id, start, end
     );
 
@@ -147,13 +145,13 @@ suite('Mongoose TurnStore #findWaitingByBranchAndRequestedTimeRange()', () => {
 
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn model', (done) => {
-    sandbox.stub(turnStore, '_modelToObject')
+    sandbox.stub(database.turns, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
     const start = baseTime;
     const end = new Date(baseTime).setSeconds(baseTimeSeconds + 100)
 
-    turnStore.findWaitingByBranchAndRequestedTimeRange(
+    database.turns.findWaitingByBranchAndRequestedTimeRange(
       branchModelB.id, start, end
     ).catch((error) => {
       expect(error).to.be.instanceof(errors.TurnEntityNotCreated);

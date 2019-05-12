@@ -1,8 +1,8 @@
-const Turn = require('../../turn');
-const Branch = require('../../branch');
-const Customer = require('../../customer');
-const TurnModel = require('../../../db/mongoose/models/turn');
-const errors = require('../errors');
+const Turn = require('../../../turn');
+const Branch = require('../../../branch');
+const Customer = require('../../../customer');
+const TurnModel = require('../../../../db/mongoose/models/turn');
+const errors = require('../../errors');
 
 class TurnStore {
   async create(turn) {

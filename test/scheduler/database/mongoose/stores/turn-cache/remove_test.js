@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnCacheModel = require('../../../../../db/mongoose/models/turn-cache');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnCacheModel = require('../../../../../../db/mongoose/models/turn-cache');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnCacheStore #remove()', () => {
   suiteSetup(() => {
@@ -33,8 +33,6 @@ suite('Mongoose TurnCacheStore #remove()', () => {
   });
 
   setup(() => {
-    turnCacheStore = createTurnCacheStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -76,14 +74,14 @@ suite('Mongoose TurnCacheStore #remove()', () => {
       branch,
     });
 
-    const turn = await turnCacheStore.remove(turnCacheModel.id);
+    const turn = await database.turnsCache.remove(turnCacheModel.id);
 
     assert.deepEqual(expectedTurnCache, turn);
   });
 
   test('throws a turn cache model not found error ' +
        'when the given turn id does not exist', (done) => {
-    turnCacheStore.remove(mongoose.Types.ObjectId())
+    database.turnsCache.remove(mongoose.Types.ObjectId())
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnCacheModelNotFound);
         done();
@@ -95,7 +93,7 @@ suite('Mongoose TurnCacheStore #remove()', () => {
     sandbox.stub(TurnCacheModel, 'deleteOne')
       .returns({ ok: 0 });
 
-    turnCacheStore.remove(turnCacheModel.id)
+    database.turnsCache.remove(turnCacheModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnCacheModelNotRemoved);
         done();

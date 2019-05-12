@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnModel = require('../../../../../db/mongoose/models/turn');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnModel = require('../../../../../../db/mongoose/models/turn');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnStore #create', () => {
   suiteSetup(() => {
@@ -31,8 +31,6 @@ suite('Mongoose TurnStore #create', () => {
   });
 
   setup(() => {
-    turnStore = createTurnStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -55,7 +53,7 @@ suite('Mongoose TurnStore #create', () => {
   });
 
   test('creates a turn model with the given turn entity', async () => {
-    const turnId = await turnStore.create(turn);
+    const turnId = await database.turns.create(turn);
 
     const storedTurn = await TurnModel.findById(turnId);
 
@@ -76,23 +74,23 @@ suite('Mongoose TurnStore #create', () => {
   });
 
   test('returns the id of the created turn model', async () => {
-    const turnId = await turnStore.create(turn);
+    const turnId = await database.turns.create(turn);
 
     assert.isNotNull(turnId);
   });
 
   test('returns a valid mongoose object id', async () => {
-    const turnId = await turnStore.create(turn);
+    const turnId = await database.turns.create(turn);
 
     assert.isTrue(mongoose.Types.ObjectId.isValid(turnId));
   });
 
   test('throws a turn model not created error ' +
        'when an error occurs while casting the turn entity', (done) => {
-    sandbox.stub(turnStore, '_objectToModel')
+    sandbox.stub(database.turns, '_objectToModel')
       .throws(new errors.TurnModelNotCreated());
 
-    turnStore.create(turn)
+    database.turns.create(turn)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnModelNotCreated);
         done();

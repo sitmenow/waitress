@@ -4,7 +4,7 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const errors = require('../../../../../scheduler/stores/errors');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose HostessStore #find()', () => {
   suiteSetup(() => {
@@ -23,8 +23,6 @@ suite('Mongoose HostessStore #find()', () => {
   });
 
   setup(() => {
-    hostessStore = createHostessStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -50,7 +48,7 @@ suite('Mongoose HostessStore #find()', () => {
       branch,
     });
 
-    const hostess = await hostessStore.find(hostessModel.id);
+    const hostess = await database.hostesses.find(hostessModel.id);
 
     assert.deepEqual(expectedHostess, hostess);
   });
@@ -59,7 +57,7 @@ suite('Mongoose HostessStore #find()', () => {
        'when the given hostess id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    hostessStore.find(nonExistentId)
+    database.hostesses.find(nonExistentId)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.HostessModelNotFound);
         done();
@@ -68,10 +66,10 @@ suite('Mongoose HostessStore #find()', () => {
 
   test('throws a hostess entity not created error ' +
        'when an error ocurrs while casting the hostess model', (done) => {
-    sandbox.stub(hostessStore, '_modelToObject')
+    sandbox.stub(database.hostesses, '_modelToObject')
       .throws(new errors.HostessEntityNotCreated());
 
-    hostessStore.find(hostessModel.id)
+    database.hostesses.find(hostessModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.HostessEntityNotCreated);
         done();

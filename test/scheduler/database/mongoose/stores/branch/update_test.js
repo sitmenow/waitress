@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const BranchModel = require('../../../../../db/mongoose/models/branch');
-const errors = require('../../../../../scheduler/stores/errors');
+const BranchModel = require('../../../../../../db/mongoose/models/branch');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose BranchStore #update()', () => {
   suiteSetup(() => {
@@ -30,8 +30,6 @@ suite('Mongoose BranchStore #update()', () => {
   });
 
   setup(() => {
-    branchStore = createBranchStore();
-
     brand = createBrand({
       id: brandModel.id,
     });
@@ -68,7 +66,7 @@ suite('Mongoose BranchStore #update()', () => {
       brand: newBrand,
     });
 
-    const branch = await branchStore.update(updatedBranch);
+    const branch = await database.branches.update(updatedBranch);
 
     const storedBranch = await BranchModel.findById(branchModel.id);
 
@@ -97,7 +95,7 @@ suite('Mongoose BranchStore #update()', () => {
       name: 'New Branch Test',
     });
 
-    branchStore.update(updatedBranch)
+    database.branches.update(updatedBranch)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.BranchModelNotFound);
         done();

@@ -4,8 +4,8 @@ const { assert, expect } = require('chai');
 
 require('../store_test_helper');
 
-const TurnCacheModel = require('../../../../../db/mongoose/models/turn-cache');
-const errors = require('../../../../../scheduler/stores/errors');
+const TurnCacheModel = require('../../../../../../db/mongoose/models/turn-cache');
+const errors = require('../../../../../../scheduler/database/errors');
 
 suite('Mongoose TurnCacheStore #findByCustomer()', () => {
   suiteSetup(() => {
@@ -31,8 +31,6 @@ suite('Mongoose TurnCacheStore #findByCustomer()', () => {
   });
 
   setup(() => {
-    turnCacheStore = createTurnCacheStore();
-
     branch = createBranch({
       id: branchModel.id,
     });
@@ -101,7 +99,7 @@ suite('Mongoose TurnCacheStore #findByCustomer()', () => {
       branch,
     });
 
-    const turns = await turnCacheStore.findByCustomer(customerModel.id);
+    const turns = await database.turnsCache.findByCustomer(customerModel.id);
 
     assert.deepEqual([expectedTurnCacheA, expectedTurnCacheB], turns);
   });
@@ -110,7 +108,7 @@ suite('Mongoose TurnCacheStore #findByCustomer()', () => {
        'when the given customer id does not exist', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnCacheStore.findByCustomer(nonExistentId);
+    const turns = await database.turnsCache.findByCustomer(nonExistentId);
 
     assert.deepEqual([], turns);
   });
@@ -119,17 +117,17 @@ suite('Mongoose TurnCacheStore #findByCustomer()', () => {
        'when the given customer id has no turns', async () => {
     const nonExistentId = mongoose.Types.ObjectId();
 
-    const turns = await turnCacheStore.findByCustomer(nonExistentId);
+    const turns = await database.turnsCache.findByCustomer(nonExistentId);
 
     assert.deepEqual([], turns);
   });
 
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn cache model', (done) => {
-    sandbox.stub(turnCacheStore, '_modelToObject')
+    sandbox.stub(database.turnsCache, '_modelToObject')
       .throws(new errors.TurnEntityNotCreated());
 
-    turnCacheStore.findByCustomer(customerModel.id)
+    database.turnsCache.findByCustomer(customerModel.id)
       .catch((error) => {
         expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
         done();
