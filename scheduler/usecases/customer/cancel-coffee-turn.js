@@ -1,32 +1,21 @@
 const errors = require('./errors');
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const schedulerErrors = require('../../errors');
 const Turn = require('../../turn');
 const Customer = require('../../customer');
 
 class CustomerCancelCoffeeTurn {
-  constructor({
-    turnId,
-    customerId,
-    branchId,
-    turnStore,
-    turnCacheStore,
-    customerStore,
-    branchStore
-  }) {
+  constructor({ turnId, customerId, branchId, database }) {
     this.turnId = turnId;
     this.customerId = customerId;
     this.branchId = branchId;
-    this.turnStore = turnStore;
-    this.turnCacheStore = turnCacheStore;
-    this.customerStore = customerStore;
-    this.branchStore = branchStore;
+    this.database = database;
   }
 
   execute() {
-    const turn = this.turnStore.find(this.turnId);
-    const customer = this.customerStore.find(this.customerId);
-    const branch = this.branchStore.find(this.branchId);
+    const turn = this.database.turns.find(this.turnId);
+    const customer = this.database.customers.find(this.customerId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([turn, customer, branch])
       .then(([turn, customer, branch]) =>
@@ -46,25 +35,25 @@ class CustomerCancelCoffeeTurn {
 
     turn.cancel();
 
-    return this.turnStore.update(turn)
-      .then(_ => this.turnCacheStore.remove(turn.id))
+    return this.database.turns.update(turn)
+      .then(_ => this.database.turnsCache.remove(turn.id))
       .then(_ => turn);
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.BranchModelNotFound) {
+    if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound(this.branchId);
-    } else if (error instanceof storeErrors.BranchEntityNotCreated) {
+    } else if (error instanceof databaseErrors.BranchEntityNotCreated) {
       throw new errors.TurnNotUpdated(this.turnId);
-    } else if (error instanceof storeErrors.CustomerModelNotFound) {
+    } else if (error instanceof databaseErrors.CustomerModelNotFound) {
       throw new errors.CustomerNotFound(this.customerId);
-    } else if (error instanceof storeErrors.CustomerEntityNotCreated) {
+    } else if (error instanceof databaseErrors.CustomerEntityNotCreated) {
       throw new errors.TurnNotUpdated();
-    } else if (error instanceof storeErrors.TurnModelNotFound) {
+    } else if (error instanceof databaseErrors.TurnModelNotFound) {
       throw new errors.TurnNotFound(this.turnId);
-    } else if (error instanceof storeErrors.TurnEntityNotCreated) {
+    } else if (error instanceof databaseErrors.TurnEntityNotCreated) {
       throw new errors.TurnNotUpdated(); // Actually this is an unknown error
-    } else if (error instanceof storeErrors.TurnModelNotCreated) {
+    } else if (error instanceof databaseErrors.TurnModelNotCreated) {
       throw new errors.TurnNotUpdated();
     }
 

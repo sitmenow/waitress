@@ -4,18 +4,13 @@ const { expect, assert } = require('chai');
 require('../../test_helper');
 
 const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
-const storeErrors = require('../../../../scheduler/stores/errors');
+const databaseErrors = require('../../../../scheduler/database/errors');
 const schedulerErrors = require('../../../../scheduler/errors');
 const HostessServeCoffeeTurn = require('../../../../scheduler/usecases/hostess/serve-coffee-turn');
 
 suite('Use Case: Hostess serve coffee turn', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
-
-    turnStore = createTurnStore();
-    turnCacheStore = createTurnCacheStore();
-    branchStore = createBranchStore();
-    hostessStore = createHostessStore();
 
     branch = createBranch({
       id: 'branch-id',
@@ -40,56 +35,50 @@ suite('Use Case: Hostess serve coffee turn', () => {
   });
 
   test('returns the served coffee turn', async () => {
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(branch, 'isClosed')
       .returns(false);
-    sandbox.stub(turnStore, 'update')
+    sandbox.stub(database.turns, 'update')
       .returns(Promise.resolve(turn));
-    sandbox.stub(turnCacheStore, 'remove')
+    sandbox.stub(database.turnsCache, 'remove')
       .returns(Promise.resolve(turn));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     const output = await useCase.execute();
 
-    assert.isTrue(turnStore.find.calledWith(turn.id));
-    assert.isTrue(hostessStore.find.calledWith(hostess.id));
-    assert.isTrue(branchStore.find.calledWith(branch.id));
-    assert.isTrue(turnStore.update.calledWith(turn));
-    assert.isTrue(turnCacheStore.remove.calledWith(turn.id));
+    assert.isTrue(database.turns.find.calledWith(turn.id));
+    assert.isTrue(database.hostesses.find.calledWith(hostess.id));
+    assert.isTrue(database.branches.find.calledWith(branch.id));
+    assert.isTrue(database.turns.update.calledWith(turn));
+    assert.isTrue(database.turnsCache.remove.calledWith(turn.id));
     assert.deepEqual(turn, output);
   });
 
   test('throws a branch model not found error ' +
        'when the given branch id does not exist', (done) => {
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchModelNotFound()));
+    sandbox.stub(database.branches, 'find')
+      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -101,21 +90,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
 
   test('throws a turn not updated error ' +
        'when an error occurs while creating branch entity', (done) => {
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchEntityNotCreated()));
+    sandbox.stub(database.branches, 'find')
+      .returns(Promise.reject(new databaseErrors.BranchEntityNotCreated()));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -127,21 +113,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
 
   test('throws a hostess model not found error ' +
        'when the given hostess id does not exist', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
-      .returns(Promise.reject(new storeErrors.HostessModelNotFound()));
+    sandbox.stub(database.hostesses, 'find')
+      .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -153,21 +136,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
 
   test('throws a turn not updated error ' +
        'when an error occurs while creating hostess entity', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
-      .returns(Promise.reject(new storeErrors.HostessEntityNotCreated()));
+    sandbox.stub(database.hostesses, 'find')
+      .returns(Promise.reject(new databaseErrors.HostessEntityNotCreated()));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -179,21 +159,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
 
   test('throws a turn model not found error ' +
        'when the given turn id does not exist', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(turnStore, 'find')
-      .returns(Promise.reject(new storeErrors.TurnModelNotFound()));
+    sandbox.stub(database.turns, 'find')
+      .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -205,21 +182,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
 
   test('throws a turn not updated error ' +
        'when an error occurs while creating turn entity', (done) => {
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(turnStore, 'find')
-      .returns(Promise.reject(new storeErrors.TurnEntityNotCreated()));
+    sandbox.stub(database.turns, 'find')
+      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -237,21 +211,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
       branch: createBranch({ id: 'different-branch-id' }),
     });
 
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -270,21 +241,18 @@ suite('Use Case: Hostess serve coffee turn', () => {
       customer: turn.customer,
     });
 
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -296,11 +264,11 @@ suite('Use Case: Hostess serve coffee turn', () => {
 
   test('throws a branch is closed error ' +
        'when the given branch is not open', (done) => {
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(branch, 'isClosed')
       .returns(true);
@@ -309,10 +277,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -333,27 +298,24 @@ suite('Use Case: Hostess serve coffee turn', () => {
       customer: turn.customer,
     });
 
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(branch, 'isClosed')
       .returns(false);
-    sandbox.stub(turnStore, 'update')
+    sandbox.stub(database.turns, 'update')
       .returns(Promise.resolve(turn));
-    sandbox.stub(turnCacheStore, 'remove')
+    sandbox.stub(database.turnsCache, 'remove')
       .returns(Promise.resolve(turn));
 
     const useCase = new HostessServeCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
-      turnStore,
-      hostessStore,
-      branchStore,
-      turnCacheStore,
+      database,
     });
 
     useCase.execute()

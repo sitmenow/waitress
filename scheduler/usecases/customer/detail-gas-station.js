@@ -1,26 +1,21 @@
 const errors = require('./errors');
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 
 
 class CustomerDetailGasStation {
-  constructor({
-    branchId,
-    branchStore,
-    cacheStore,
-  }) {
+  constructor({ branchId, database }) {
     this.branchId = branchId;
-    this.branchStore = branchStore;
-    this.cacheStore = cacheStore;
+    this.database = database;
   }
 
   execute() {
-    return this.branchStore.find(this.branchId)
+    return this.database.branches.find(this.branchId)
       .then(branch => this._detailGasStation(branch))
       .catch(error => this._manageError(error));
   }
 
   async _detailGasStation(branch) {
-    const turns = await this.cacheStore.getBranchGasTurns(branch.id);
+    const turns = await this.database.cache.getBranchGasTurns(branch.id);
 
     branch.waitingTurns = turns.length;
 
@@ -28,9 +23,9 @@ class CustomerDetailGasStation {
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.BranchNotFound) {
+    if (error instanceof databaseErrors.BranchNotFound) {
       throw new errors.BranchNotFound();
-    } else if (error instanceof storeErrors.BranchNotCreated) {
+    } else if (error instanceof databaseErrors.BranchNotCreated) {
       throw new errors.BranchNotCreated();
     }
 

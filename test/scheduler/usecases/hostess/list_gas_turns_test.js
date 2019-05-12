@@ -4,18 +4,13 @@ const { expect, assert } = require('chai');
 require('../../test_helper');
 
 const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
-const storeErrors = require('../../../../scheduler/stores/errors');
+const databaseErrors = require('../../../../scheduler/database/errors');
 const HostessListGasTurns = require('../../../../scheduler/usecases/hostess/list-gas-turns');
 
 
 suite('Use Case: Hostess lists gas turns', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
-
-    cacheStore = createCacheStore();
-    branchStore = createBranchStore();
-    hostessStore = createHostessStore();
-    turnStore = createTurnStore();
 
     limit = 25;
     hostessId = 'hostess-id';
@@ -33,44 +28,38 @@ suite('Use Case: Hostess lists gas turns', () => {
   });
 
   test('hostess lists gas turns', async () => {
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
-    sandbox.stub(cacheStore, 'getBranchGasTurns')
+    sandbox.stub(database.cache, 'getBranchGasTurns')
       .returns(Promise.resolve([cacheItem]));
-    sandbox.stub(turnStore, 'find')
+    sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
 
     const useCase = new HostessListGasTurns({
       branchId,
       hostessId,
-      hostessStore,
-      branchStore,
-      cacheStore,
-      turnStore,
+      database,
       limit,
     });
 
     const output = await useCase.execute();
 
-    assert.isTrue(cacheStore.getBranchGasTurns.calledWith(branch.id, limit));
+    assert.isTrue(database.cache.getBranchGasTurns.calledWith(branch.id, limit));
     assert.deepEqual([turn], output);
   });
 
   test('hostess list gas turns for a non-existent branch', (done) => {
-    sandbox.stub(hostessStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
-    sandbox.stub(branchStore, 'find')
-      .returns(Promise.reject(new storeErrors.BranchModelNotFound()));
+    sandbox.stub(database.branches, 'find')
+      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
     const useCase = new HostessListGasTurns({
       branchId,
       hostessId,
-      hostessStore,
-      branchStore,
-      cacheStore,
-      turnStore,
+      database,
       limit,
     });
 
@@ -82,18 +71,15 @@ suite('Use Case: Hostess lists gas turns', () => {
   });
 
   test('non-existent hostess list gas turns', (done) => {
-    sandbox.stub(hostessStore, 'find')
-      .returns(Promise.reject(new storeErrors.HostessModelNotFound()));
-    sandbox.stub(branchStore, 'find')
+    sandbox.stub(database.hostesses, 'find')
+      .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
+    sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
     const useCase = new HostessListGasTurns({
       branchId,
       hostessId,
-      hostessStore,
-      branchStore,
-      cacheStore,
-      turnStore,
+      database,
       limit,
     });
 

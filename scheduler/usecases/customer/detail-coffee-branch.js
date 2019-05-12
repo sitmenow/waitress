@@ -1,20 +1,16 @@
 const errors = require('./errors');
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 
 class CustomerDetailCoffeeBranch {
-  constructor({
-    customerId, branchId, turnCacheStore, branchStore, customerStore
-  } = {}) {
+  constructor({ customerId, branchId, database } = {}) {
     this.customerId = customerId;
     this.branchId = branchId;
-    this.turnCacheStore = turnCacheStore;
-    this.branchStore = branchStore;
-    this.customerStore = customerStore;
+    this.database = database;
   }
 
   execute() {
-    const branch = this.branchStore.find(this.branchId);
-    const customer = this.customerStore.find(this.customerId);
+    const branch = this.database.branches.find(this.branchId);
+    const customer = this.database.customers.find(this.customerId);
 
     return Promise.all([branch, customer])
       .then(([branch, customer]) => this._detailBranch(branch, customer))
@@ -25,7 +21,7 @@ class CustomerDetailCoffeeBranch {
     /*
      * Branch X has N active turns and you currently have M waiting turns there!
     */
-    return this.turnCacheStore.findByBranch(branch.id)
+    return this.database.turnsCache.findByBranch(branch.id)
       .then((turns) => ({
         ...branch,
         waitingTurns: turns.length,
@@ -35,19 +31,19 @@ class CustomerDetailCoffeeBranch {
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.BranchModelNotFound) {
+    if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound(this.branchId);
     }
-    if (error instanceof storeErrors.BranchEntityNotCreated) {
+    if (error instanceof databaseErrors.BranchEntityNotCreated) {
       throw new errors.CustomerUseCaseError(); // Unknown error
     }
-    if (error instanceof storeErrors.CustomerModelNotFound) {
+    if (error instanceof databaseErrors.CustomerModelNotFound) {
       throw new errors.CustomerNotFound(this.customerId);
     }
-    if (error instanceof storeErrors.CustomerEntityNotCreated) {
+    if (error instanceof databaseErrors.CustomerEntityNotCreated) {
       throw new errors.CustomerUseCaseError(); // Unknown error
     }
-    if (error instanceof storeErrors.TurnEntityNotCreated) {
+    if (error instanceof databaseErrors.TurnEntityNotCreated) {
       throw new errors.CustomerUseCaseError(); // Unknown error
     }
 

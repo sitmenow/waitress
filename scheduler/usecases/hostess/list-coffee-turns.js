@@ -1,26 +1,17 @@
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const errors = require('./errors');
 
 class HostessListCoffeeTurns {
-  constructor({
-    branchId,
-    hostessId,
-    hostessStore,
-    branchStore,
-    turnCacheStore,
-    limit,
-  }) {
+  constructor({ branchId, hostessId, database, limit }) {
     this.branchId = branchId;
     this.hostessId = hostessId;
-    this.hostessStore = hostessStore;
-    this.branchStore = branchStore;
-    this.turnCacheStore = turnCacheStore;
+    this.database = database;
     this.limit = limit || 25;
   }
 
   execute() {
-    const hostess = this.hostessStore.find(this.hostessId);
-    const branch = this.branchStore.find(this.branchId);
+    const hostess = this.database.hostesses.find(this.hostessId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([hostess, branch])
       .then(([hostess, branch]) => this._listCoffeeTurns(hostess, branch))
@@ -32,19 +23,19 @@ class HostessListCoffeeTurns {
       throw new errors.HostessDoesNotBelongToBranch();
     }
 
-    return await this.turnCacheStore.findByBranch(branch.id);
+    return await this.database.turnsCache.findByBranch(branch.id);
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.HostessModelNotFound) {
+    if (error instanceof databaseErrors.HostessModelNotFound) {
        throw new errors.HostessNotFound(this.hostessId);
-    } else if (error instanceof storeErrors.HostessEntityNotCreated) {
+    } else if (error instanceof databaseErrors.HostessEntityNotCreated) {
       throw new Error();
-    } else if (error instanceof storeErrors.BranchModelNotFound) {
+    } else if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound(this.branchId);
-    } else if (error instanceof storeErrors.BranchEntityNotCreated) {
+    } else if (error instanceof databaseErrors.BranchEntityNotCreated) {
       throw new Error();
-    } else if (error instanceof storeErrors.TurnEntityNotCreated) {
+    } else if (error instanceof databaseErrors.TurnEntityNotCreated) {
       throw new Error();
     }
 

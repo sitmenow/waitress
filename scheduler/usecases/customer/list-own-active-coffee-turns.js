@@ -1,29 +1,26 @@
 const errors = require('./errors');
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 
 class CustomerListOwnActiveCoffeeTurns {
-  constructor({
-    customerId, customerStore, turnCacheStore,
-  } = {}) {
+  constructor({ customerId, database } = {}) {
     this.customerId = customerId;
-    this.customerStore = customerStore;
-    this.turnCacheStore = turnCacheStore;
+    this.database = database;
   }
 
   execute() {
-    return this.customerStore.find(this.customerId)
-      .then(customer => this.turnCacheStore.findByCustomer(customer.id))
+    return this.database.customers.find(this.customerId)
+      .then(customer => this.database.turnsCache.findByCustomer(customer.id))
       .catch(error => this._manageError(error));
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.CustomerModelNotFound) {
+    if (error instanceof databaseErrors.CustomerModelNotFound) {
       throw new errors.CustomerNotFound(this.customerId);
     }
-    if (error instanceof storeErrors.CustomerEntityNotCreated) {
+    if (error instanceof databaseErrors.CustomerEntityNotCreated) {
       throw new errors.CustomerUseCaseError(); // Unknown error
     }
-    if (error instanceof storeErrors.TurnEntityNotCreated) {
+    if (error instanceof databaseErrors.TurnEntityNotCreated) {
       throw new errors.CustomerUseCaseError(); // Unknown error
     }
 

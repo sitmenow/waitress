@@ -1,26 +1,18 @@
 const Turn = require('../../turn');
 const errors = require('./errors');
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 
 
 class CustomerDetailGasTurn {
-  constructor({
-    turnId,
-    branchId,
-    turnStore,
-    branchStore,
-    cacheStore,
-  }) {
+  constructor({ turnId, branchId, database}) {
     this.turnId = turnId;
     this.branchId = branchId;
-    this.turnStore = turnStore;
-    this.branchStore = branchStore;
-    this.cacheStore = cacheStore;
+    this.database = database;
   }
 
   execute() {
-    const branch = this.branchStore.find(this.branchId);
-    const turn = this.turnStore.find(this.turnId);
+    const branch = this.database.branches.find(this.branchId);
+    const turn = this.database.turns.find(this.turnId);
 
     return Promise.all([branch, turn])
       .then(([branch, turn]) => this._detailGasTurn(branch, turn))
@@ -31,7 +23,7 @@ class CustomerDetailGasTurn {
     // Doesn't care if branch is open/closed. The turn detail
     // should be available always. Maybe gas station was closed
     // to stop receiving turns
-    const turns = await this.cacheStore.getBranchGasTurns(branch.id);
+    const turns = await this.database.cache.getBranchGasTurns(branch.id);
 
     if (!turn.isServed()) {
       turn.position = turns.length
@@ -40,9 +32,9 @@ class CustomerDetailGasTurn {
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.BranchNotFound) {
+    if (error instanceof databaseErrors.BranchNotFound) {
       throw new errors.BranchNotFound();
-    } else if (error instanceof storeErrors.CustomerNotFound) {
+    } else if (error instanceof databaseErrors.CustomerNotFound) {
       throw new errors.CustomerNotFound();
     }
 

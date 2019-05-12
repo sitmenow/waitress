@@ -1,30 +1,19 @@
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const schedulerErrors = require('../../errors');
 const errors = require('./errors');
 
 class HostessServeCoffeeTurn {
-  constructor({
-    turnId,
-    branchId,
-    hostessId,
-    turnStore,
-    hostessStore,
-    branchStore,
-    turnCacheStore,
-  }) {
+  constructor({ turnId, branchId, hostessId, database }) {
     this.turnId = turnId;
     this.branchId = branchId;
     this.hostessId = hostessId;
-    this.turnStore = turnStore;
-    this.hostessStore = hostessStore;
-    this.branchStore = branchStore;
-    this.turnCacheStore = turnCacheStore;
+    this.database = database;
   }
 
   execute() {
-    const turn = this.turnStore.find(this.turnId);
-    const hostess = this.hostessStore.find(this.hostessId);
-    const branch = this.branchStore.find(this.branchId);
+    const turn = this.database.turns.find(this.turnId);
+    const hostess = this.database.hostesses.find(this.hostessId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([turn, hostess, branch])
       .then(([turn, hostess, branch]) => this._serveCoffeeTurns(turn, hostess, branch))
@@ -49,25 +38,25 @@ class HostessServeCoffeeTurn {
     // In reservations: Cancel all other active turns
     // for this customer
 
-    return this.turnStore.update(turn)
-      .then(_ => this.turnCacheStore.remove(turn.id))
+    return this.database.turns.update(turn)
+      .then(_ => this.database.turnsCache.remove(turn.id))
       .then(_ => turn);
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.TurnModelNotFound) {
+    if (error instanceof databaseErrors.TurnModelNotFound) {
       throw new errors.TurnNotFound();
-    } else if (error instanceof storeErrors.TurnEntityNotCreated) {
+    } else if (error instanceof databaseErrors.TurnEntityNotCreated) {
       throw new errors.TurnNotUpdated();
-    } else if (error instanceof storeErrors.HostessModelNotFound) {
+    } else if (error instanceof databaseErrors.HostessModelNotFound) {
       throw new errors.HostessNotFound();
-    } else if (error instanceof storeErrors.HostessEntityNotCreated) {
+    } else if (error instanceof databaseErrors.HostessEntityNotCreated) {
       throw new errors.TurnNotUpdated();
-    } else if (error instanceof storeErrors.BranchModelNotFound) {
+    } else if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
-    } else if (error instanceof storeErrors.BranchEntityNotCreated) {
+    } else if (error instanceof databaseErrors.BranchEntityNotCreated) {
       throw new errors.TurnNotUpdated();
-    } else if (error instanceof storeErrors.TurnModelNotUpdated) {
+    } else if (error instanceof databaseErrors.TurnModelNotUpdated) {
       throw new errors.TurnNotUpdated();
     }
 

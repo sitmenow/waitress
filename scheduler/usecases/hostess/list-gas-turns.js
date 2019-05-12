@@ -1,29 +1,18 @@
-const storeErrors = require('../../stores/errors');
+const databaseErrors = require('../../database/errors');
 const errors = require('./errors');
 
 
 class HostessListGasTurns {
-  constructor({
-    branchId,
-    hostessId,
-    hostessStore,
-    branchStore,
-    cacheStore,
-    turnStore,
-    limit,
-  }) {
+  constructor({ branchId, hostessId, database, limit }) {
     this.branchId = branchId;
     this.hostessId = hostessId;
-    this.hostessStore = hostessStore;
-    this.branchStore = branchStore;
-    this.cacheStore = cacheStore;
-    this.turnStore = turnStore;
+    this.database = database;
     this.limit = limit || 25;
   }
 
   execute() {
-    const hostess = this.hostessStore.find(this.hostessId);
-    const branch = this.branchStore.find(this.branchId);
+    const hostess = this.database.hostesses.find(this.hostessId);
+    const branch = this.database.branches.find(this.branchId);
 
     return Promise.all([hostess, branch])
       .then(([hostess, branch]) => this._listGasTurns(hostess, branch))
@@ -35,9 +24,9 @@ class HostessListGasTurns {
       throw new errors.HostessDoesNotBelongToBranch();
     }
 
-    const cache = await this.cacheStore.getBranchGasTurns(branch.id, this.limit);
+    const cache = await this.database.cache.getBranchGasTurns(branch.id, this.limit);
     const turns = cache.map(item =>
-      this.turnStore.find(item.id).then((turn) => {
+      this.database.turns.find(item.id).then((turn) => {
         turn.expectedArrivalTime = item.expectedArrivalTime;
         return turn;
       })
@@ -47,9 +36,9 @@ class HostessListGasTurns {
   }
 
   _manageError(error) {
-    if (error instanceof storeErrors.HostessModelNotFound) {
+    if (error instanceof databaseErrors.HostessModelNotFound) {
        throw new errors.HostessNotFound();
-    } else if (error instanceof storeErrors.BranchModelNotFound) {
+    } else if (error instanceof databaseErrors.BranchModelNotFound) {
       throw new errors.BranchNotFound();
     }
 
