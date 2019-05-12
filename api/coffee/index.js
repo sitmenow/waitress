@@ -17,7 +17,7 @@ app.use(middlewares.auth);
 
 const BRANCH_ID = config.branchId;
 
-module.exports = (stores, useCases) => {
+module.exports = (database, useCases) => {
 
   // Slack only
   // app.post('/v1/slack/coffeea', function(req, res) {
@@ -51,9 +51,7 @@ module.exports = (stores, useCases) => {
       // branchId: req.params.branchId,
       branchId: req.params.branchId,
       hostessId: req.user.profile,
-      branchStore: stores.branchStore,
-      hostessStore: stores.hostessStore,
-      turnCacheStore: stores.turnCacheStore,
+      database,
     });
 
     useCase.execute()
@@ -84,9 +82,9 @@ module.exports = (stores, useCases) => {
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/prepare', function(req, res) {
-    stores.turnStore.find(req.params.turnId)
+    database.turns.find(req.params.turnId)
       .then((turn) => {
-        return stores.customerStore.find(turn.customer.id)
+        return database.customers.find(turn.customer.id)
           .then((customer) => {
             const channel = customer.name.split('_').shift();
             _callSlack(channel)(`Tu orden ${turn.id} esta siendo preparada: ${turn.metadata.product}`);
@@ -98,9 +96,9 @@ module.exports = (stores, useCases) => {
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/unprepare', function(req, res) {
-    stores.turnStore.find(req.params.turnId)
+    database.turns.find(req.params.turnId)
       .then((turn) => {
-        return stores.customerStore.find(turn.customer.id)
+        return database.customers.find(turn.customer.id)
           .then((customer) => {
             const channel = customer.name.split('_').shift();
             _callSlack(channel)(`Tu orden ${turn.id} esta de nuevo en espera: ${turn.metadata.product}`);
@@ -116,10 +114,7 @@ module.exports = (stores, useCases) => {
       turnId: req.params.turnId,
       branchId: req.params.branchId,
       hostessId: req.user.profile,
-      branchStore: stores.branchStore,
-      hostessStore: stores.hostessStore,
-      turnCacheStore: stores.turnCacheStore,
-      turnStore: stores.turnStore,
+      database,
     });
 
     useCase.execute()
@@ -141,10 +136,7 @@ module.exports = (stores, useCases) => {
       turnId: req.params.turnId,
       branchId: req.params.branchId,
       hostessId: req.user.profile,
-      branchStore: stores.branchStore,
-      hostessStore: stores.hostessStore,
-      turnCacheStore: stores.turnCacheStore,
-      turnStore: stores.turnStore,
+      database,
     });
 
     useCase.execute()
@@ -241,7 +233,7 @@ module.exports = (stores, useCases) => {
   }
 
   function _getCustomer(userName) {
-    return stores.customerStore.findByName(userName)
+    return database.customers.findByName(userName)
       .catch(error => null);
   }
 
@@ -249,8 +241,8 @@ module.exports = (stores, useCases) => {
     const Customer = require('../../scheduler/customer');
     const customer = new Customer({ name: userName });
 
-    return stores.customerStore.create(customer)
-      .then(customerId => stores.customerStore.find(customerId));
+    return database.customers.create(customer)
+      .then(customerId => database.customers.find(customerId));
   }
 
   function _callSlack(channel) {
@@ -269,10 +261,7 @@ module.exports = (stores, useCases) => {
       customerCompany: 'TEST',
       customerElection: product,
       branchId: BRANCH_ID,
-      turnStore: stores.turnStore,
-      turnCacheStore: stores.turnCacheStore,
-      customerStore: stores.customerStore,
-      branchStore: stores.branchStore,
+      database,
     });
 
     return useCase.execute()
@@ -285,10 +274,7 @@ module.exports = (stores, useCases) => {
       turnId,
       customerId: customer.id,
       branchId: BRANCH_ID,
-      turnStore: stores.turnStore,
-      turnCacheStore: stores.turnCacheStore,
-      customerStore: stores.customerStore,
-      branchStore: stores.branchStore,
+      database,
     });
 
     return useCase.execute()
