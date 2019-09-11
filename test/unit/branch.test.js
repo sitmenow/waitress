@@ -1,9 +1,9 @@
 const { assert } = require('chai');
 const tk = require('timekeeper');
 
-require('./test_helper');
+require('./test-helper');
 
-const errors = require('../../scheduler/errors');
+const errors = require('../../lib/errors');
 
 
 suite('Branch', () => {

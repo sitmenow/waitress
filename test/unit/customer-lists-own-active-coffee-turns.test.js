@@ -1,11 +1,11 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-require('../../test_helper');
+require('./test-helper');
 
-const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
-const databaseErrors = require('../../../../scheduler/database/errors');
-const CustomerListOwnActiveCoffeeTurns = require('../../../../scheduler/usecases/customer/list-own-active-coffee-turns');
+const useCaseErrors = require('../../lib/customer-errors');
+const databaseErrors = require('../../lib/database/errors');
+const CustomerListsOwnActiveCoffeeTurns = require('../../lib/customer-lists-own-active-coffee-turns');
 
 
 suite('Use Case: Customer lists own active coffee turns', () => {
@@ -38,7 +38,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
     sandbox.stub(database.turnsCache, 'findByCustomer')
       .returns(Promise.resolve([turn]));
 
-    const useCase = new CustomerListOwnActiveCoffeeTurns({
+    const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
       database,
     });
@@ -55,7 +55,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
 
-    const useCase = new CustomerListOwnActiveCoffeeTurns({
+    const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
       database,
     });
@@ -72,7 +72,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
 
-    const useCase = new CustomerListOwnActiveCoffeeTurns({
+    const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
       database,
     });
@@ -91,7 +91,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
     sandbox.stub(database.turnsCache, 'findByCustomer')
       .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
-    const useCase = new CustomerListOwnActiveCoffeeTurns({
+    const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
       database,
     });

@@ -1,13 +1,13 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-require('../../test_helper');
+require('./test-helper');
 
-const Branch = require('../../../../scheduler/branch');
-const Turn = require('../../../../scheduler/turn');
-const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
-const databaseErrors = require('../../../../scheduler/database/errors');
-const HostessRejectGasTurn = require('../../../../scheduler/usecases/hostess/reject-gas-turn');
+const Branch = require('../../lib/branch');
+const Turn = require('../../lib/turn');
+const useCaseErrors = require('../../lib/hostess-errors');
+const databaseErrors = require('../../lib/database/errors');
+const HostessRejectsGasTurn = require('../../lib/hostess-rejects-gas-turn');
 
 suite('Use Case: Hostess rejects gas turn', () => {
   setup(() => {
@@ -51,7 +51,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
       branch,
     });
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -81,7 +81,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(newBranch));
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: newBranch.id,
       hostessId: hostess.id,
@@ -110,7 +110,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(newBranch));
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: newBranch.id,
       hostessId: hostess.id,
@@ -136,7 +136,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     turn.reject();
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -158,7 +158,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -180,7 +180,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -202,7 +202,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -228,7 +228,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.cache, 'removeGasTurn')
       .returns(true);
 
-    const useCase = new HostessRejectGasTurn({
+    const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,

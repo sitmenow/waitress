@@ -1,11 +1,11 @@
-const Turn = require('../../scheduler/turn');
-const Branch = require('../../scheduler/branch');
-const Brand = require('../../scheduler/brand');
-const Schedule = require('../../scheduler/schedule');
-const Hostess = require('../../scheduler/hostess');
-const Customer = require('../../scheduler/customer');
+const Turn = require('../../lib/turn');
+const Branch = require('../../lib/branch');
+const Brand = require('../../lib/brand');
+const Schedule = require('../../lib/schedule');
+const Hostess = require('../../lib/hostess');
+const Customer = require('../../lib/customer');
 
-const InMemoryDatabase = require('../../scheduler/database/in-memory')
+const InMemoryDatabase = require('../../lib/database/in-memory')
 
 before(() => {
   createBranch = branch => new Branch({

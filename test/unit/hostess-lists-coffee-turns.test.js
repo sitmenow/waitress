@@ -1,11 +1,11 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-require('../../test_helper');
+require('./test-helper');
 
-const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
-const databaseErrors = require('../../../../scheduler/database/errors');
-const HostessListCoffeeTurns = require('../../../../scheduler/usecases/hostess/list-coffee-turns');
+const useCaseErrors = require('../../lib/hostess-errors');
+const databaseErrors = require('../../lib/database/errors');
+const HostessListsCoffeeTurns = require('../../lib/hostess-lists-coffee-turns');
 
 suite('Use Case: Hostess lists coffee turns', () => {
   setup(() => {
@@ -37,7 +37,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
     sandbox.stub(database.turnsCache, 'findByBranch')
       .returns(Promise.resolve([turn]));
 
-    const useCase = new HostessListCoffeeTurns({
+    const useCase = new HostessListsCoffeeTurns({
       branchId: branch.id,
       hostessId: hostess.id,
       database,
@@ -58,7 +58,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
-    const useCase = new HostessListCoffeeTurns({
+    const useCase = new HostessListsCoffeeTurns({
       branchId: branch.id,
       hostessId: hostess.id,
       database,
@@ -78,7 +78,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new HostessListCoffeeTurns({
+    const useCase = new HostessListsCoffeeTurns({
       branchId: branch.id,
       hostessId: hostess.id,
       database,
@@ -102,7 +102,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new HostessListCoffeeTurns({
+    const useCase = new HostessListsCoffeeTurns({
       branchId: branch.id,
       hostessId: hostess.id,
       database,

@@ -3,11 +3,11 @@ const sinon = require('sinon');
 const mongoose = require('mongoose');
 const { expect, assert } = require('chai');
 
-require('../../test_helper');
+require('./test-helper');
 
-const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
-const databaseErrors = require('../../../../scheduler/database/errors');
-const CustomerCreateCoffeeTurn = require('../../../../scheduler/usecases/customer/create-coffee-turn');
+const useCaseErrors = require('../../lib/customer-errors');
+const databaseErrors = require('../../lib/database/errors');
+const CustomerCreatesCoffeeTurn = require('../../lib/customer-creates-coffee-turn');
 
 suite('Use Case: Customer creates coffee turn', () => {
   setup(() => {
@@ -60,7 +60,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.turns, 'find').returns(Promise.resolve(expectedTurn));
     sandbox.stub(database.turnsCache, 'create').returns(Promise.resolve(expectedTurn.id));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -84,7 +84,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -106,7 +106,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -128,7 +128,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -150,7 +150,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -174,7 +174,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(branch, 'isClosed')
       .returns(true);
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -200,7 +200,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(branch, 'isClosed')
       .returns(false);
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -224,7 +224,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(branch, 'isClosed')
       .returns(false);
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection: null,
@@ -252,7 +252,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,
@@ -280,7 +280,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
-    const useCase = new CustomerCreateCoffeeTurn({
+    const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany,
       customerElection,

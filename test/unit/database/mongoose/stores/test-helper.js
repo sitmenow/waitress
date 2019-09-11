@@ -1,8 +1,8 @@
 const config = require('config');
 
-require('../../../test_helper')
+require('../../../test-helper')
 
-const MongooseDatabase = require('../../../../../scheduler/database/mongoose');
+const MongooseDatabase = require('../../../../../lib/database/mongoose');
 const BrandModel = require('../../../../../db/mongoose/models/brand');
 const BranchModel = require('../../../../../db/mongoose/models/branch');
 const HostessModel = require('../../../../../db/mongoose/models/hostess');

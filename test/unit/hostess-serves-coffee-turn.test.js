@@ -1,12 +1,12 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-require('../../test_helper');
+require('./test-helper');
 
-const useCaseErrors = require('../../../../scheduler/usecases/hostess/errors');
-const databaseErrors = require('../../../../scheduler/database/errors');
-const schedulerErrors = require('../../../../scheduler/errors');
-const HostessServeCoffeeTurn = require('../../../../scheduler/usecases/hostess/serve-coffee-turn');
+const useCaseErrors = require('../../lib/hostess-errors');
+const databaseErrors = require('../../lib/database/errors');
+const schedulerErrors = require('../../lib/errors');
+const HostessServesCoffeeTurn = require('../../lib/hostess-serves-coffee-turn');
 
 suite('Use Case: Hostess serve coffee turn', () => {
   setup(() => {
@@ -48,7 +48,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.turnsCache, 'remove')
       .returns(Promise.resolve(turn));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -74,7 +74,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -97,7 +97,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.BranchEntityNotCreated()));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -120,7 +120,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -143,7 +143,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.reject(new databaseErrors.HostessEntityNotCreated()));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -166,7 +166,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -189,7 +189,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -218,7 +218,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -248,7 +248,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -273,7 +273,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(branch, 'isClosed')
       .returns(true);
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,
@@ -311,7 +311,7 @@ suite('Use Case: Hostess serve coffee turn', () => {
     sandbox.stub(database.turnsCache, 'remove')
       .returns(Promise.resolve(turn));
 
-    const useCase = new HostessServeCoffeeTurn({
+    const useCase = new HostessServesCoffeeTurn({
       turnId: turn.id,
       branchId: branch.id,
       hostessId: hostess.id,

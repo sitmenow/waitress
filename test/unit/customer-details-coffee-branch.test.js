@@ -1,11 +1,11 @@
 const sinon = require('sinon');
 const { expect, assert } = require('chai');
 
-require('../../test_helper');
+require('./test-helper');
 
-const useCaseErrors = require('../../../../scheduler/usecases/customer/errors');
-const databaseErrors = require('../../../../scheduler/database/errors');
-const CustomerDetailCoffeeBranch = require('../../../../scheduler/usecases/customer/detail-coffee-branch');
+const useCaseErrors = require('../../lib/customer-errors');
+const databaseErrors = require('../../lib/database/errors');
+const CustomerDetailsCoffeeBranch = require('../../lib/customer-details-coffee-branch');
 
 
 suite('Use Case: Customer detail coffee branch', () => {
@@ -56,7 +56,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.turnsCache, 'findByBranch')
       .returns(Promise.resolve([turnA, turnB, turnC]));
 
-    const useCase = new CustomerDetailCoffeeBranch({
+    const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
       database,
@@ -84,7 +84,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
 
-    const useCase = new CustomerDetailCoffeeBranch({
+    const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
       database,
@@ -104,7 +104,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
 
-    const useCase = new CustomerDetailCoffeeBranch({
+    const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
       database,
@@ -124,7 +124,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
 
-    const useCase = new CustomerDetailCoffeeBranch({
+    const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
       database,
@@ -144,7 +144,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
 
-    const useCase = new CustomerDetailCoffeeBranch({
+    const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
       database,
@@ -166,7 +166,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.turnsCache, 'findByBranch')
       .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
 
-    const useCase = new CustomerDetailCoffeeBranch({
+    const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
       branchId: branch.id,
       database,

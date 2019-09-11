@@ -2,9 +2,9 @@ const sinon = require('sinon');
 const mongoose = require('mongoose');
 const { assert, expect } = require('chai');
 
-require('../store_test_helper');
+require('../test-helper');
 
-const errors = require('../../../../../../scheduler/database/errors');
+const errors = require('../../../../../../lib/database/errors');
 
 suite('Mongoose HostessStore #find()', () => {
   suiteSetup(() => {
