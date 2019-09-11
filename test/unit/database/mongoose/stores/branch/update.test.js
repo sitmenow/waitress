@@ -5,7 +5,9 @@ const { assert, expect } = require('chai');
 require('../test-helper');
 
 const BranchModel = require('../../../../../../db/mongoose/models/branch');
-const errors = require('../../../../../../lib/database/errors');
+const {
+  BranchModelNotFound,
+  BranchEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose BranchStore #update()', () => {
   suiteSetup(() => {
@@ -97,7 +99,7 @@ suite('Mongoose BranchStore #update()', () => {
 
     database.branches.update(updatedBranch)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.BranchModelNotFound);
+        expect(error).to.be.instanceof(BranchModelNotFound);
         done();
       });
   });

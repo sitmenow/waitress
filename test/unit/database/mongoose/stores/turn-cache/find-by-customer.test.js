@@ -4,8 +4,9 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
-const TurnCacheModel = require('../../../../../../db/mongoose/models/turn-cache');
-const errors = require('../../../../../../lib/database/errors');
+const {
+  TurnCacheModelNotFound,
+  TurnEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose TurnCacheStore #findByCustomer()', () => {
   suiteSetup(() => {
@@ -125,11 +126,11 @@ suite('Mongoose TurnCacheStore #findByCustomer()', () => {
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn cache model', (done) => {
     sandbox.stub(database.turnsCache, '_modelToObject')
-      .throws(new errors.TurnEntityNotCreated());
+      .throws(new TurnEntityNotCreated());
 
     database.turnsCache.findByCustomer(customerModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
+        expect(error).to.be.instanceof(TurnEntityNotCreated);
         done();
       });
   });

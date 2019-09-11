@@ -3,12 +3,25 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/hostess-errors');
-const databaseErrors = require('../../lib/database/errors');
-const schedulerErrors = require('../../lib/errors');
+const {
+  TurnNotFound,
+  BranchNotFound,
+  HostessNotFound,
+  BranchNotAvailable,
+  CorruptedTurn,
+  CorruptedBranch,
+  CorruptedHostess,
+  TurnNotAllowedToChangeStatus } = require('../../lib/errors');
+const {
+  TurnModelNotFound,
+  BranchModelNotFound,
+  HostessModelNotFound,
+  TurnEntityNotCreated,
+  BranchEntityNotCreated,
+  HostessEntityNotCreated } = require('../../lib/database/errors');
 const HostessRejectsCoffeeTurn = require('../../lib/hostess-rejects-coffee-turn');
 
-suite('Use Case: Hostess reject coffee turn', () => {
+suite('Use Case: Hostess rejects coffee turn', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
 
@@ -72,7 +85,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new HostessRejectsCoffeeTurn({
       turnId: turn.id,
@@ -83,7 +96,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -95,7 +108,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchEntityNotCreated()));
+      .returns(Promise.reject(new BranchEntityNotCreated()));
 
     const useCase = new HostessRejectsCoffeeTurn({
       turnId: turn.id,
@@ -106,7 +119,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotUpdated);
+        expect(error).to.be.instanceof(CorruptedBranch);
         done();
       });
   });
@@ -118,7 +131,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
     sandbox.stub(database.hostesses, 'find')
-      .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
+      .returns(Promise.reject(new HostessModelNotFound()));
 
     const useCase = new HostessRejectsCoffeeTurn({
       turnId: turn.id,
@@ -129,7 +142,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.HostessNotFound);
+        expect(error).to.be.instanceof(HostessNotFound);
         done();
       });
   });
@@ -141,7 +154,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
     sandbox.stub(database.hostesses, 'find')
-      .returns(Promise.reject(new databaseErrors.HostessEntityNotCreated()));
+      .returns(Promise.reject(new HostessEntityNotCreated()));
 
     const useCase = new HostessRejectsCoffeeTurn({
       turnId: turn.id,
@@ -152,7 +165,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotUpdated);
+        expect(error).to.be.instanceof(CorruptedHostess);
         done();
       });
   });
@@ -164,7 +177,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
+      .returns(Promise.reject(new TurnModelNotFound()));
 
     const useCase = new HostessRejectsCoffeeTurn({
       turnId: turn.id,
@@ -175,7 +188,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotFound);
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });
@@ -187,7 +200,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
+      .returns(Promise.reject(new TurnEntityNotCreated()));
 
     const useCase = new HostessRejectsCoffeeTurn({
       turnId: turn.id,
@@ -198,7 +211,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotUpdated);
+        expect(error).to.be.instanceof(CorruptedTurn);
         done();
       });
   });
@@ -227,7 +240,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.HostessDoesNotBelongToBranch);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -257,7 +270,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnDoesNotBelongToBranch);
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });
@@ -282,7 +295,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(schedulerErrors.BranchIsClosed);
+        expect(error).to.be.instanceof(BranchNotAvailable);
         done();
       });
   });
@@ -320,7 +333,7 @@ suite('Use Case: Hostess reject coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(schedulerErrors.TurnNotAllowedToChangeStatus);
+        expect(error).to.be.instanceof(TurnNotAllowedToChangeStatus);
         done();
       });
   });

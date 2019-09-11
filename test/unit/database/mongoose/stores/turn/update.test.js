@@ -4,8 +4,10 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
+const {
+  TurnModelNotFound,
+  TurnEntityNotCreated } = require('../../../../../../lib/database/errors');
 const TurnModel = require('../../../../../../db/mongoose/models/turn');
-const errors = require('../../../../../../lib/database/errors');
 
 suite('Mongoose Turn Store #update()', () => {
   suiteSetup(() => {
@@ -116,7 +118,7 @@ suite('Mongoose Turn Store #update()', () => {
 
     database.turns.update(updatedTurn)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnModelNotFound);
+        expect(error).to.be.instanceof(TurnModelNotFound);
         done();
       });
   });

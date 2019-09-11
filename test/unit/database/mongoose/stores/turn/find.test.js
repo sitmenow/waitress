@@ -4,7 +4,9 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
-const errors = require('../../../../../../lib/database/errors');
+const {
+  TurnModelNotFound,
+  TurnEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose TurnStore #find()', () => {
   suiteSetup(() => {
@@ -81,7 +83,7 @@ suite('Mongoose TurnStore #find()', () => {
 
     database.turns.find(nonExistentId)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnModelNotFound);
+        expect(error).to.be.instanceof(TurnModelNotFound);
         done();
       });
   });
@@ -89,11 +91,11 @@ suite('Mongoose TurnStore #find()', () => {
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn model', (done) => {
     sandbox.stub(database.turns, '_modelToObject')
-      .throws(new errors.TurnEntityNotCreated());
+      .throws(new TurnEntityNotCreated());
 
     database.turns.find(turnModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
+        expect(error).to.be.instanceof(TurnEntityNotCreated);
         done();
       });
   });

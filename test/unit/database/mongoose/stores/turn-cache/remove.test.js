@@ -4,8 +4,11 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
+const {
+  TurnCacheModelNotFound,
+  TurnCacheModelNotRemoved,
+  TurnEntityNotCreated } = require('../../../../../../lib/database/errors');
 const TurnCacheModel = require('../../../../../../db/mongoose/models/turn-cache');
-const errors = require('../../../../../../lib/database/errors');
 
 suite('Mongoose TurnCacheStore #remove()', () => {
   suiteSetup(() => {
@@ -83,7 +86,7 @@ suite('Mongoose TurnCacheStore #remove()', () => {
        'when the given turn id does not exist', (done) => {
     database.turnsCache.remove(mongoose.Types.ObjectId())
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnCacheModelNotFound);
+        expect(error).to.be.instanceof(TurnCacheModelNotFound);
         done();
       });
   });
@@ -95,7 +98,7 @@ suite('Mongoose TurnCacheStore #remove()', () => {
 
     database.turnsCache.remove(turnCacheModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnCacheModelNotRemoved);
+        expect(error).to.be.instanceof(TurnCacheModelNotRemoved);
         done();
       });
   });

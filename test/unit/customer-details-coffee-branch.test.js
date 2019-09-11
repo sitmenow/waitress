@@ -3,12 +3,23 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/customer-errors');
-const databaseErrors = require('../../lib/database/errors');
+const {
+  TurnNotFound,
+  BranchNotFound,
+  CustomerNotFound,
+  CorruptedTurn,
+  CorruptedBranch,
+  CorruptedCustomer } = require('../../lib/errors');
+const {
+  TurnModelNotFound,
+  BranchModelNotFound,
+  CustomerModelNotFound,
+  TurnEntityNotCreated,
+  BranchEntityNotCreated,
+  CustomerEntityNotCreated } = require('../../lib/database/errors');
 const CustomerDetailsCoffeeBranch = require('../../lib/customer-details-coffee-branch');
 
-
-suite('Use Case: Customer detail coffee branch', () => {
+suite('Use Case: Customer details coffee branch', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
 
@@ -82,7 +93,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
@@ -92,7 +103,7 @@ suite('Use Case: Customer detail coffee branch', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -102,7 +113,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
+      .returns(Promise.reject(new BranchEntityNotCreated()));
 
     const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
@@ -112,7 +123,7 @@ suite('Use Case: Customer detail coffee branch', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerUseCaseError);
+        expect(error).to.be.instanceof(CorruptedBranch);
         done();
       });
   });
@@ -122,7 +133,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
+      .returns(Promise.reject(new CustomerModelNotFound()));
 
     const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
@@ -132,7 +143,7 @@ suite('Use Case: Customer detail coffee branch', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerNotFound);
+        expect(error).to.be.instanceof(CustomerNotFound);
         done();
       });
   });
@@ -142,7 +153,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
+      .returns(Promise.reject(new CustomerEntityNotCreated()));
 
     const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
@@ -152,7 +163,7 @@ suite('Use Case: Customer detail coffee branch', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerUseCaseError);
+        expect(error).to.be.instanceof(CorruptedCustomer);
         done();
       });
   });
@@ -164,7 +175,7 @@ suite('Use Case: Customer detail coffee branch', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customerA));
     sandbox.stub(database.turnsCache, 'findByBranch')
-      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
+      .returns(Promise.reject(new TurnEntityNotCreated()));
 
     const useCase = new CustomerDetailsCoffeeBranch({
       customerId: customerA.id,
@@ -174,7 +185,7 @@ suite('Use Case: Customer detail coffee branch', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerUseCaseError);
+        expect(error).to.be.instanceof(CorruptedTurn);
         done();
       });
   });

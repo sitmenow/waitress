@@ -4,7 +4,9 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
-const errors = require('../../../../../../lib/database/errors');
+const {
+  BranchModelNotFound,
+  BranchEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose BranchStore #find()', () => {
   suiteSetup(() => {
@@ -69,7 +71,7 @@ suite('Mongoose BranchStore #find()', () => {
         // NOTE: If the following expect is not fulfilled the promise
         //       will be considered as non-completed. Be careful with
         //       expected types
-        expect(error).to.be.instanceof(errors.BranchModelNotFound);
+        expect(error).to.be.instanceof(BranchModelNotFound);
         done();
       });
   });
@@ -77,11 +79,11 @@ suite('Mongoose BranchStore #find()', () => {
   test('throws a branch entity not created error ' +
        'when an error occurs while casting the branch model', (done) => {
     sandbox.stub(database.branches, '_modelToObject')
-      .throws(new errors.BranchEntityNotCreated());
+      .throws(new BranchEntityNotCreated());
 
     database.branches.find(branchModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.BranchEntityNotCreated);
+        expect(error).to.be.instanceof(BranchEntityNotCreated);
         done();
       });
   });

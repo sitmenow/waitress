@@ -4,7 +4,9 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
-const errors = require('../../../../../../lib/database/errors');
+const {
+  CustomerModelNotFound,
+  CustomerEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose CustomerStore #find()', () => {
   suiteSetup(() => {
@@ -44,7 +46,7 @@ suite('Mongoose CustomerStore #find()', () => {
 
     database.customers.find(nonExistentId)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.CustomerModelNotFound);
+        expect(error).to.be.instanceof(CustomerModelNotFound);
         done();
       });
   });
@@ -52,11 +54,11 @@ suite('Mongoose CustomerStore #find()', () => {
   test('throws a customer entity not created error ' +
        'when an error occurs while casting the customer model', (done) => {
     sandbox.stub(database.customers, '_modelToObject')
-      .throws(new errors.CustomerEntityNotCreated());
+      .throws(new CustomerEntityNotCreated());
 
     database.customers.find(customerModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.CustomerEntityNotCreated);
+        expect(error).to.be.instanceof(CustomerEntityNotCreated);
         done();
       });
   });

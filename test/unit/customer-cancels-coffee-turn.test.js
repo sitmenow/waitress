@@ -3,12 +3,25 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/customer-errors');
-const databaseErrors = require('../../lib/database/errors');
-const coreErrors = require('../../lib/errors');
-const CustomerCancelsCoffeeTurn = require('../..//lib/customer-cancels-coffee-turn');
+const {
+  TurnModelNotFound,
+  TurnEntityNotCreated,
+  BranchModelNotFound,
+  BranchEntityNotCreated,
+  CustomerModelNotFound,
+  CustomerEntityNotCreated } = require('../../lib/database/errors');
+const {
+  TurnNotFound,
+  BranchNotFound,
+  CustomerNotFound,
+  CorruptedTurn,
+  CorruptedBranch,
+  CorruptedCustomer,
+  BranchNotAvailable,
+  TurnNotAllowedToChangeStatus } = require('../../lib/errors');
+const CustomerCancelsCoffeeTurn = require('../../lib/customer-cancels-coffee-turn');
 
-suite('Use Case: Customer cancel coffee turn', () => {
+suite('Use Case: Customer cancels coffee turn', () => {
   setup(() => {
     sandbox = sinon.createSandbox();
 
@@ -78,7 +91,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
+      .returns(Promise.reject(new TurnModelNotFound()));
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -89,7 +102,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotFound);
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });
@@ -101,7 +114,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
+      .returns(Promise.reject(new TurnEntityNotCreated()));
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -112,7 +125,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotUpdated);
+        expect(error).to.be.instanceof(CorruptedTurn);
         done();
       });
   });
@@ -124,7 +137,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -135,7 +148,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -147,7 +160,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchEntityNotCreated()));
+      .returns(Promise.reject(new BranchEntityNotCreated()));
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -158,7 +171,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotUpdated);
+        expect(error).to.be.instanceof(CorruptedBranch);
         done();
       });
   });
@@ -170,7 +183,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
+      .returns(Promise.reject(new CustomerModelNotFound()));
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -181,7 +194,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerNotFound);
+        expect(error).to.be.instanceof(CustomerNotFound);
         done();
       });
   });
@@ -193,7 +206,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
+      .returns(Promise.reject(new CustomerEntityNotCreated()));
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -204,7 +217,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotUpdated);
+        expect(error).to.be.instanceof(CorruptedCustomer);
         done();
       });
   });
@@ -229,7 +242,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchIsClosed);
+        expect(error).to.be.instanceof(BranchNotAvailable);
         done();
       });
   });
@@ -245,7 +258,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
     sandbox.stub(branch, 'isClosed')
       .returns(false);
     sandbox.stub(turn, 'cancel')
-      .throws(new coreErrors.TurnNotAllowedToChangeStatus());
+      .throws(new TurnNotAllowedToChangeStatus());
 
     const useCase = new CustomerCancelsCoffeeTurn({
       turnId: turn.id,
@@ -256,7 +269,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(coreErrors.TurnNotAllowedToChangeStatus);
+        expect(error).to.be.instanceof(TurnNotAllowedToChangeStatus);
         done();
       });
   });
@@ -281,7 +294,7 @@ suite('Use Case: Customer cancel coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnDoesNotBelongToCustomer);
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });

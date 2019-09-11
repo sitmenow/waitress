@@ -3,10 +3,15 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/customer-errors');
-const databaseErrors = require('../../lib/database/errors');
+const {
+  CustomerNotFound,
+  CorruptedTurn,
+  CorruptedCustomer } = require('../../lib/errors');
+const {
+  CustomerModelNotFound,
+  TurnEntityNotCreated,
+  CustomerEntityNotCreated } = require('../../lib/database/errors');
 const CustomerListsOwnActiveCoffeeTurns = require('../../lib/customer-lists-own-active-coffee-turns');
-
 
 suite('Use Case: Customer lists own active coffee turns', () => {
   setup(() => {
@@ -53,7 +58,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
   test('throws a customer model not found error ' +
        'when the given customer id does not exist', (done) => {
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
+      .returns(Promise.reject(new CustomerModelNotFound()));
 
     const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
@@ -62,7 +67,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerNotFound);
+        expect(error).to.be.instanceof(CustomerNotFound);
         done();
       });
   });
@@ -70,7 +75,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
   test('throws a customer use case error ' +
        'when the customer entity cannot be created', (done) => {
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated()));
+      .returns(Promise.reject(new CustomerEntityNotCreated()));
 
     const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
@@ -79,7 +84,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerUseCaseError);
+        expect(error).to.be.instanceof(CorruptedCustomer);
         done();
       });
   });
@@ -89,7 +94,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
     sandbox.stub(database.turnsCache, 'findByCustomer')
-      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
+      .returns(Promise.reject(new TurnEntityNotCreated()));
 
     const useCase = new CustomerListsOwnActiveCoffeeTurns({
       customerId: customer.id,
@@ -98,7 +103,7 @@ suite('Use Case: Customer lists own active coffee turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerUseCaseError);
+        expect(error).to.be.instanceof(CorruptedTurn);
         done();
       });
   });

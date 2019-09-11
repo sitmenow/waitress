@@ -3,8 +3,10 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/hostess-errors');
-const databaseErrors = require('../../lib/database/errors');
+const { BranchNotFound, HostessNotFound } = require('../../lib/errors');
+const {
+  BranchModelNotFound,
+  HostessModelNotFound } = require('../../lib/database/errors');
 const HostessListsCoffeeTurns = require('../../lib/hostess-lists-coffee-turns');
 
 suite('Use Case: Hostess lists coffee turns', () => {
@@ -56,7 +58,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new HostessListsCoffeeTurns({
       branchId: branch.id,
@@ -66,7 +68,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -74,7 +76,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
   test('throws a hostess model not found error ' +
        'when the given hostess id does not exist', (done) => {
     sandbox.stub(database.hostesses, 'find')
-      .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
+      .returns(Promise.reject(new HostessModelNotFound()));
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
@@ -86,7 +88,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.HostessNotFound);
+        expect(error).to.be.instanceof(HostessNotFound);
         done();
       });
   });
@@ -110,7 +112,7 @@ suite('Use Case: Hostess lists coffee turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.HostessDoesNotBelongToBranch);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });

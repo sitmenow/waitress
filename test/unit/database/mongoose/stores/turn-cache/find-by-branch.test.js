@@ -4,8 +4,9 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
-const TurnCacheModel = require('../../../../../../db/mongoose/models/turn-cache');
-const errors = require('../../../../../../lib/database/errors');
+const {
+  TurnCacheModelNotFound,
+  TurnEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose TurnCacheStore #findByBranch()', () => {
   suiteSetup(() => {
@@ -31,6 +32,8 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
   });
 
   setup(() => {
+    const now = new Date();
+
     branch = createBranch({
       id: branchModel.id,
     });
@@ -42,8 +45,8 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
       id: mongoose.Types.ObjectId(),
       name: 'Turn Test A',
       status: 'served',
-      requestedTime: new Date(),
-      expectedServiceTime: new Date(),
+      requestedTime: now.setDate(now.getDate() + 10),
+      expectedServiceTime: now.setDate(now.getDate() + 100),
       customerId: customerModel.id,
       branchId: branchModel.id,
       metadata: {
@@ -54,8 +57,8 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
       id: mongoose.Types.ObjectId(),
       name: 'Turn Test B',
       status: 'waiting',
-      requestedTime: new Date(),
-      expectedServiceTime: new Date(),
+      requestedTime: now.setDate(now.getDate() + 20),
+      expectedServiceTime: now.setDate(now.getDate() + 200),
       customerId: customerModel.id,
       branchId: branchModel.id,
       metadata: {
@@ -125,11 +128,11 @@ suite('Mongoose TurnCacheStore #findByBranch()', () => {
   test('throws a turn entity not created error ' +
        'when an error occurs while casting the turn cache model', (done) => {
     sandbox.stub(database.turnsCache, '_modelToObject')
-      .throws(new errors.TurnEntityNotCreated());
+      .throws(new TurnEntityNotCreated());
 
     database.turnsCache.findByBranch(branchModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.TurnEntityNotCreated);
+        expect(error).to.be.instanceof(TurnEntityNotCreated);
         done();
       });
   });

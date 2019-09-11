@@ -3,7 +3,7 @@ const tk = require('timekeeper');
 
 require('./test-helper');
 
-const errors = require('../../lib/errors');
+const { BranchAlreadyOpen, BranchAlreadyClosed } = require('../../lib/errors');
 
 
 suite('Branch', () => {
@@ -56,7 +56,7 @@ suite('Branch', () => {
 
       assert.throws(
         () => branch.open(),
-        errors.BranchAlreadyOpen
+        BranchAlreadyOpen
       );
     });
   });
@@ -90,7 +90,7 @@ suite('Branch', () => {
 
       assert.throws(
         () => branch.close(),
-        errors.BranchAlreadyClosed
+        BranchAlreadyClosed
       );
     });
   });

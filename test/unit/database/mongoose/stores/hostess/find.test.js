@@ -4,7 +4,9 @@ const { assert, expect } = require('chai');
 
 require('../test-helper');
 
-const errors = require('../../../../../../lib/database/errors');
+const {
+  HostessModelNotFound,
+  HostessEntityNotCreated } = require('../../../../../../lib/database/errors');
 
 suite('Mongoose HostessStore #find()', () => {
   suiteSetup(() => {
@@ -59,7 +61,7 @@ suite('Mongoose HostessStore #find()', () => {
 
     database.hostesses.find(nonExistentId)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.HostessModelNotFound);
+        expect(error).to.be.instanceof(HostessModelNotFound);
         done();
       });
   });
@@ -67,11 +69,11 @@ suite('Mongoose HostessStore #find()', () => {
   test('throws a hostess entity not created error ' +
        'when an error ocurrs while casting the hostess model', (done) => {
     sandbox.stub(database.hostesses, '_modelToObject')
-      .throws(new errors.HostessEntityNotCreated());
+      .throws(new HostessEntityNotCreated());
 
     database.hostesses.find(hostessModel.id)
       .catch((error) => {
-        expect(error).to.be.instanceof(errors.HostessEntityNotCreated);
+        expect(error).to.be.instanceof(HostessEntityNotCreated);
         done();
       });
   });

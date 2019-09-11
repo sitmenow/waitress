@@ -3,10 +3,11 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/hostess-errors');
-const databaseErrors = require('../../lib/database/errors');
+const { HostessNotFound, BranchNotFound } = require('../../lib/errors');
+const {
+  BranchModelNotFound,
+  HostessModelNotFound } = require('../../lib/database/errors');
 const HostessListsGasTurns = require('../../lib/hostess-lists-gas-turns');
-
 
 suite('Use Case: Hostess lists gas turns', () => {
   setup(() => {
@@ -54,7 +55,7 @@ suite('Use Case: Hostess lists gas turns', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new HostessListsGasTurns({
       branchId,
@@ -65,14 +66,14 @@ suite('Use Case: Hostess lists gas turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
 
   test('non-existent hostess list gas turns', (done) => {
     sandbox.stub(database.hostesses, 'find')
-      .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
+      .returns(Promise.reject(new HostessModelNotFound()));
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
@@ -85,7 +86,7 @@ suite('Use Case: Hostess lists gas turns', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.HostessNotFound);
+        expect(error).to.be.instanceof(HostessNotFound);
         done();
       });
   });

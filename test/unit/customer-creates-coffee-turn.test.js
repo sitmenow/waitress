@@ -5,8 +5,22 @@ const { expect, assert } = require('chai');
 
 require('./test-helper');
 
-const useCaseErrors = require('../../lib/customer-errors');
-const databaseErrors = require('../../lib/database/errors');
+const {
+  TurnNotFound,
+  BranchNotFound,
+  CustomerNotFound,
+  BranchNotAvailable,
+  CorruptedTurn,
+  CorruptedBranch,
+  CorruptedCustomer,
+  InvalidTurn } = require('../../lib/errors');
+const {
+  TurnModelNotFound,
+  BranchModelNotFound,
+  CustomerModelNotFound,
+  TurnEntityNotCreated,
+  BranchEntityNotCreated,
+  CustomerEntityNotCreated } = require('../../lib/database/errors');
 const CustomerCreatesCoffeeTurn = require('../../lib/customer-creates-coffee-turn');
 
 suite('Use Case: Customer creates coffee turn', () => {
@@ -82,7 +96,7 @@ suite('Use Case: Customer creates coffee turn', () => {
        'when the given branch id does not exist', (done) => {
     sandbox.stub(database.customers, 'find').returns(Promise.resolve(customer));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
@@ -94,7 +108,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -102,7 +116,7 @@ suite('Use Case: Customer creates coffee turn', () => {
   test('throws a turn not created error ' +
        'when an error ocurrs while creating branch entity', (done) => {
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchEntityNotCreated));
+      .returns(Promise.reject(new BranchEntityNotCreated()));
     sandbox.stub(database.customers, 'find')
       .returns(Promise.resolve(customer));
 
@@ -116,7 +130,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotCreated);
+        expect(error).to.be.instanceof(CorruptedBranch);
         done();
       });
   });
@@ -126,7 +140,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerModelNotFound()));
+      .returns(Promise.reject(new CustomerModelNotFound()));
 
     const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
@@ -138,7 +152,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.CustomerNotFound);
+        expect(error).to.be.instanceof(CustomerNotFound);
         done();
       });
   });
@@ -146,7 +160,7 @@ suite('Use Case: Customer creates coffee turn', () => {
   test('throws a turn not created error ' +
        'when an error ocurrs while creating customer entity', (done) => {
     sandbox.stub(database.customers, 'find')
-      .returns(Promise.reject(new databaseErrors.CustomerEntityNotCreated));
+      .returns(Promise.reject(new CustomerEntityNotCreated()));
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
@@ -160,7 +174,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotCreated);
+        expect(error).to.be.instanceof(CorruptedCustomer);
         done();
       });
   });
@@ -184,7 +198,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchIsClosed);
+        expect(error).to.be.instanceof(BranchNotAvailable);
         done();
       });
   });
@@ -210,7 +224,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.InvalidCustomerName);
+        expect(error).to.be.instanceof(InvalidTurn);
         done();
       });
   });
@@ -234,12 +248,12 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.InvalidCustomerElection);
+        expect(error).to.be.instanceof(InvalidTurn);
         done();
       });
   });
 
-  test('throws a turn not created error ' +
+  test('throws a turn model not found error ' +
        'when the turn model id given to reconstruct the turn does not exist', (done) => {
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
@@ -250,7 +264,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.turns, 'create')
       .returns(Promise.resolve('turn-id'));
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
+      .returns(Promise.reject(new TurnModelNotFound()));
 
     const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
@@ -262,7 +276,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotCreated);
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });
@@ -278,7 +292,7 @@ suite('Use Case: Customer creates coffee turn', () => {
     sandbox.stub(database.turns, 'create')
       .returns(Promise.resolve('turn-id'));
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnEntityNotCreated()));
+      .returns(Promise.reject(new TurnEntityNotCreated()));
 
     const useCase = new CustomerCreatesCoffeeTurn({
       customerId: customer.id,
@@ -290,7 +304,7 @@ suite('Use Case: Customer creates coffee turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotCreated);
+        expect(error).to.be.instanceof(CorruptedTurn);
         done();
       });
   });

@@ -5,8 +5,15 @@ require('./test-helper');
 
 const Branch = require('../../lib/branch');
 const Turn = require('../../lib/turn');
-const useCaseErrors = require('../../lib/hostess-errors');
-const databaseErrors = require('../../lib/database/errors');
+const {
+  TurnNotFound,
+  BranchNotFound,
+  HostessNotFound,
+  TurnNotAllowedToChangeStatus } = require('../../lib/errors');
+const {
+  TurnModelNotFound,
+  BranchModelNotFound,
+  HostessModelNotFound } = require('../../lib/database/errors');
 const HostessRejectsGasTurn = require('../../lib/hostess-rejects-gas-turn');
 
 suite('Use Case: Hostess rejects gas turn', () => {
@@ -90,9 +97,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(
-          useCaseErrors.TurnDoesNotBelongToBranch
-        );
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });
@@ -119,9 +124,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(
-          useCaseErrors.HostessDoesNotBelongToBranch
-        );
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -145,14 +148,14 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotRejected);
+        expect(error).to.be.instanceof(TurnNotAllowedToChangeStatus);
         done();
       });
   });
 
   test('hostess rejects non-existent gas turn', (done) => {
     sandbox.stub(database.turns, 'find')
-      .returns(Promise.reject(new databaseErrors.TurnModelNotFound()));
+      .returns(Promise.reject(new TurnModelNotFound()));
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.branches, 'find')
@@ -167,7 +170,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotFound);
+        expect(error).to.be.instanceof(TurnNotFound);
         done();
       });
   });
@@ -178,7 +181,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.hostesses, 'find')
       .returns(Promise.resolve(hostess));
     sandbox.stub(database.branches, 'find')
-      .returns(Promise.reject(new databaseErrors.BranchModelNotFound()));
+      .returns(Promise.reject(new BranchModelNotFound()));
 
     const useCase = new HostessRejectsGasTurn({
       turnId: turn.id,
@@ -189,7 +192,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.BranchNotFound);
+        expect(error).to.be.instanceof(BranchNotFound);
         done();
       });
   });
@@ -198,7 +201,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
     sandbox.stub(database.turns, 'find')
       .returns(Promise.resolve(turn));
     sandbox.stub(database.hostesses, 'find')
-      .returns(Promise.reject(new databaseErrors.HostessModelNotFound()));
+      .returns(Promise.reject(new HostessModelNotFound()));
     sandbox.stub(database.branches, 'find')
       .returns(Promise.resolve(branch));
 
@@ -211,33 +214,7 @@ suite('Use Case: Hostess rejects gas turn', () => {
 
     useCase.execute()
       .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.HostessNotFound);
-        done();
-      });
-  });
-
-  test('hostess rejects gas turn but turn store cannot update turn', (done) => {
-    sandbox.stub(database.turns, 'find')
-      .returns(Promise.resolve(turn));
-    sandbox.stub(database.hostesses, 'find')
-      .returns(Promise.resolve(hostess));
-    sandbox.stub(database.branches, 'find')
-      .returns(Promise.resolve(branch));
-    sandbox.stub(database.turns, 'update')
-      .returns(Promise.reject(new databaseErrors.TurnModelNotUpdated()));
-    sandbox.stub(database.cache, 'removeGasTurn')
-      .returns(true);
-
-    const useCase = new HostessRejectsGasTurn({
-      turnId: turn.id,
-      branchId: branch.id,
-      hostessId: hostess.id,
-      database,
-    });
-
-    useCase.execute()
-      .catch((error) => {
-        expect(error).to.be.instanceof(useCaseErrors.TurnNotRejected);
+        expect(error).to.be.instanceof(HostessNotFound);
         done();
       });
   });
