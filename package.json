@@ -6,9 +6,9 @@
   "scripts": {
     "start": "NODE_ENV=production node index.js",
     "start-dev": "NODE_ENV=develop node index.js",
-    "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd 'test/**/*_test.js'",
+    "test-unit": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd 'test/unit/**/*.test.js'",
     "test-path": "NODE_ENV=test ./node_modules/mocha/bin/mocha --reporter spec -u tdd -- ",
-    "test-coverage": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/_mocha -u tdd 'test/**/*_test.js'"
+    "test-unit-coverage": "NODE_ENV=test ./node_modules/.bin/nyc ./node_modules/.bin/_mocha -u tdd 'test/unit/**/*_test.js'"
   },
   "repository": "git@github.com:sitmenow/waitress.git",
   "author": "hello@sitmenow.com",
