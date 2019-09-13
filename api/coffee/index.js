@@ -47,7 +47,7 @@ module.exports = (database, useCases) => {
 
   // Admin | Hostess ... Maybe customer but that will affect the endpoint above
   app.get('/v1/brands/:brandId/branches/:branchId/turns', function(req, res) {
-    const useCase = new useCases.HostessListCoffeeTurns({
+    const useCase = new useCases.HostessListsCoffeeTurns({
       // branchId: req.params.branchId,
       branchId: req.params.branchId,
       hostessId: req.user.profile,
@@ -110,7 +110,7 @@ module.exports = (database, useCases) => {
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/serve', function(req, res) {
-    const useCase = new useCases.HostessServeCoffeeTurn({
+    const useCase = new useCases.HostessServesCoffeeTurn({
       turnId: req.params.turnId,
       branchId: req.params.branchId,
       hostessId: req.user.profile,
@@ -132,7 +132,7 @@ module.exports = (database, useCases) => {
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/reject', function(req, res) {
-    const useCase = new useCases.HostessRejectCoffeeTurn({
+    const useCase = new useCases.HostessRejectsCoffeeTurn({
       turnId: req.params.turnId,
       branchId: req.params.branchId,
       hostessId: req.user.profile,
@@ -256,7 +256,7 @@ module.exports = (database, useCases) => {
   }
 
   function order(customer, product) {
-    const useCase = new useCases.CustomerCreateCoffeeTurn({
+    const useCase = new useCases.CustomerCreatesCoffeeTurn({
       customerId: customer.id,
       customerCompany: 'TEST',
       customerElection: product,
@@ -270,7 +270,7 @@ module.exports = (database, useCases) => {
   }
 
   function cancel(customer, turnId) {
-    const useCase = new useCases.CustomerCancelCoffeeTurn({
+    const useCase = new useCases.CustomerCancelsCoffeeTurn({
       turnId,
       customerId: customer.id,
       branchId: BRANCH_ID,
