@@ -53,3 +53,5 @@ To create objects manually, remember to use the right node environment. Example:
 ```bash
 $ NODE_ENV=develop node <filename>.js
 ```
+
+Ponme a hacer algo HDTPM
