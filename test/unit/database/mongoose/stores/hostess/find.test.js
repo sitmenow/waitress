@@ -12,26 +12,39 @@ suite('Mongoose HostessStore #find()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
 
+    userModel = createUserModel({
+      id: 'user-id',
+      name: 'User Test',
+    });
     branchModel = createBranchModel({
       name: 'BranchTest',
       coordinates: [324, 23],
     });
 
-    return branchModel.save();
+    return Promise.all([
+      branchModel.save(),
+      userModel.save(),
+    ]);
   });
 
   suiteTeardown(() => {
-    return branchModel.delete();
+    return Promise.all([
+      branchModel.delete(),
+      userModel.delete(),
+    ]);
   });
 
   setup(() => {
+    user = createUser({
+      id: userModel.id,
+    });
     branch = createBranch({
       id: branchModel.id,
     });
 
     hostessModel = createHostessModel({
-      name: 'Hostess Test',
       branchId: branchModel.id,
+      userId: userModel.id,
     });
 
     return hostessModel.save();
@@ -46,13 +59,13 @@ suite('Mongoose HostessStore #find()', () => {
   test('finds the hostess for the requested id', async () => {
     const expectedHostess = createHostess({
       id: hostessModel.id,
-      name: hostessModel.name,
       branch,
+      user,
     });
 
     const hostess = await database.hostesses.find(hostessModel.id);
 
-    assert.deepEqual(expectedHostess, hostess);
+    expect(hostess).deep.equal(expectedHostess);
   });
 
   test('throws a hostess model not found error ' +

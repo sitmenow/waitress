@@ -9,6 +9,7 @@ const HostessModel = require('../../../../../db/mongoose/models/hostess');
 const TurnModel = require('../../../../../db/mongoose/models/turn');
 const TurnCacheModel = require('../../../../../db/mongoose/models/turn-cache');
 const CustomerModel = require('../../../../../db/mongoose/models/customer');
+const UserModel = require('../../../../../db/mongoose/models/user');
 
 
 before(() => {
@@ -32,15 +33,22 @@ before(() => {
     brandId: branch.brandId,
   });
 
+  createUserModel = user => new UserModel({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    picture: user.picture,
+  });
+
   createHostessModel = hostess => new HostessModel({
     id: hostess.id,
-    name: hostess.name,
     branchId: hostess.branchId,
+    userId: hostess.userId,
   });
 
   createCustomerModel = customer => new CustomerModel({
     id: customer.id,
-    name: customer.name,
+    userId: customer.userId,
   });
 
   createTurnModel = turn => new TurnModel({

@@ -11,13 +11,25 @@ const {
 suite('Mongoose CustomerStore #find()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
+
+    userModel = createUserModel({
+      id: 'user-id',
+      name: 'User Test',
+    });
+
+    return userModel.save();
   });
 
-  suiteTeardown(() => {});
+  suiteTeardown(() => {
+    return userModel.delete();
+  });
 
   setup(() => {
+    user = createUser({
+      id: userModel.id,
+    });
     customerModel = createCustomerModel({
-      name: 'Customer Test',
+      userId: user.id,
     });
 
     return customerModel.save();
@@ -32,12 +44,12 @@ suite('Mongoose CustomerStore #find()', () => {
   test('finds the customer for the requested id', async () => {
     const expectedCustomer = createCustomer({
       id: customerModel.id,
-      name: customerModel.name,
+      user,
     });
 
     const customer = await database.customers.find(customerModel.id);
 
-    assert.deepEqual(expectedCustomer, customer);
+    expect(customer).deep.equal(expectedCustomer);
   });
 
   test('throws a customer model not found error ' +
