@@ -1,8 +1,8 @@
 // require('dotenv').config()
 const config = require('config');
 
-const db = require('./scheduler/database');
-const useCases = require('./scheduler/usecases');
+const db = require('./lib/database');
+const useCases = require('./lib');
 const api = require('./api/coffee');
 
 const database = db.create(config.services.db);
