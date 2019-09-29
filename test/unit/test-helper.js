@@ -4,6 +4,7 @@ const Brand = require('../../lib/brand');
 const Schedule = require('../../lib/schedule');
 const Hostess = require('../../lib/hostess');
 const Customer = require('../../lib/customer');
+const User = require('../../lib/user');
 
 const InMemoryDatabase = require('../../lib/database/in-memory')
 
@@ -18,9 +19,16 @@ before(() => {
     brand: branch.brand,
   });
 
+  createUser = user => new User({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    picture: user.picture,
+  });
+
   createCustomer = customer => new Customer({
     id: customer.id,
-    name: customer.name,
+    user: customer.user,
   });
 
   createTurn = turn => new Turn({
@@ -36,8 +44,8 @@ before(() => {
 
   createHostess = hostess => new Hostess({
     id: hostess.id,
-    name: hostess.name,
     branch: hostess.branch,
+    user: hostess.user,
   });
 
   createBrand = brand => new Brand({
