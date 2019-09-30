@@ -8,7 +8,7 @@ const {
   HostessModelNotFound,
   HostessEntityNotCreated } = require('../../../../../../lib/database/errors');
 
-suite('Mongoose HostessStore #find()', () => {
+suite('Mongoose HostessStore #findByUserId()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
 
@@ -56,20 +56,20 @@ suite('Mongoose HostessStore #find()', () => {
     return hostessModel.delete();
   });
 
-  test('finds the hostess for the requested id', async () => {
+  test('finds the hostess for the requested user id', async () => {
     const expectedHostess = createHostess({
       id: hostessModel.id,
       branch,
       user,
     });
 
-    const hostess = await database.hostesses.find(hostessModel.id);
+    const hostess = await database.hostesses.findByUserId(userModel.id);
 
     expect(hostess).deep.equal(expectedHostess);
   });
 
   test('throws a hostess model not found error ' +
-       'when the given hostess id does not exist', (done) => {
+       'when the given user id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     database.hostesses.find(nonExistentId)
@@ -80,7 +80,7 @@ suite('Mongoose HostessStore #find()', () => {
   });
 
   test('throws a hostess entity not created error ' +
-       'when an error ocurrs while casting the hostess model', (done) => {
+       'when an error occurs while casting the hostess model', (done) => {
     sandbox.stub(database.hostesses, '_modelToObject')
       .throws(new HostessEntityNotCreated());
 

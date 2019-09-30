@@ -34,7 +34,7 @@ before(() => {
   });
 
   createUserModel = user => new UserModel({
-    id: user.id,
+    _id: user._id,
     name: user.name,
     email: user.email,
     picture: user.picture,
