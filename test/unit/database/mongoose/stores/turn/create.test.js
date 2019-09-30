@@ -52,6 +52,8 @@ suite('Mongoose TurnStore #create', () => {
 
   teardown(() => {
     sandbox.restore();
+
+    return TurnModel.deleteMany({});
   });
 
   test('creates a turn model with the given turn entity', async () => {

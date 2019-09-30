@@ -8,7 +8,7 @@ const {
   CustomerModelNotFound,
   CustomerEntityNotCreated } = require('../../../../../../lib/database/errors');
 
-suite('Mongoose CustomerStore #find()', () => {
+suite('Mongoose CustomerStore #findByUserId()', () => {
   suiteSetup(() => {
     sandbox = sinon.createSandbox();
 
@@ -29,7 +29,7 @@ suite('Mongoose CustomerStore #find()', () => {
       id: userModel.id,
     });
     customerModel = createCustomerModel({
-      userId: user.id,
+      userId: userModel.id,
     });
 
     return customerModel.save();
@@ -41,19 +41,19 @@ suite('Mongoose CustomerStore #find()', () => {
     return customerModel.delete();
   });
 
-  test('finds the customer for the requested id', async () => {
+  test('finds the customer for the requested user id', async () => {
     const expectedCustomer = createCustomer({
       id: customerModel.id,
       user,
     });
 
-    const customer = await database.customers.find(customerModel.id);
+    const customer = await database.customers.findByUserId(userModel.id);
 
     expect(customer).deep.equal(expectedCustomer);
   });
 
   test('throws a customer model not found error ' +
-       'when the given customer id does not exist', (done) => {
+       'when the given user id does not exist', (done) => {
     const nonExistentId = mongoose.Types.ObjectId();
 
     database.customers.find(nonExistentId)
