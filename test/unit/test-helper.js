@@ -4,6 +4,7 @@ const Brand = require('../../lib/brand');
 const Schedule = require('../../lib/schedule');
 const Hostess = require('../../lib/hostess');
 const Customer = require('../../lib/customer');
+const Admin = require('../../lib/admin');
 const User = require('../../lib/user');
 
 const InMemoryDatabase = require('../../lib/database/in-memory')
@@ -24,6 +25,11 @@ before(() => {
     name: user.name,
     email: user.email,
     picture: user.picture,
+  });
+
+  createAdmin = admin => new Admin({
+    id: admin.id,
+    user: admin.user,
   });
 
   createCustomer = customer => new Customer({
