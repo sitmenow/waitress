@@ -17,7 +17,11 @@ const schema = new mongoose.Schema({
       required: true,
     },
   },
-  brandId: mongoose.ObjectId,
+  brand: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Brand',
+  },
+  picture: String,
 });
 
 module.exports = mongoose.model('Branch', schema);

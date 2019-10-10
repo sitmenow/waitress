@@ -1,0 +1,52 @@
+
+    const turns = [
+      {
+        id: 'a2242d74-174d-4e41-976b-6456423a2ffa',
+        name: 'Emmanuel Diaz',
+        company: 'Scalable Press',
+        product: 'Latte caliente deslactosada',
+        requestedTime: new Date(),
+        status: 'pending',
+      },
+      {
+        id: 'fb52256a-5d61-48e5-bd86-70f6e45779e8',
+        name: 'Abraham Lopez',
+        company: '100 Ladrillos',
+        product: 'Expresso cortado doble',
+        requestedTime: new Date(),
+        status: 'pending',
+      },
+      {
+        id: 'fb52256a-5d61-48e5-bd86-70f6e45779e0',
+        name: 'David Aguinaga',
+        company: 'Envato',
+        product: 'Chai frio deslactosada',
+        requestedTime: new Date(),
+        status: 'pending',
+      },
+      {
+        id: 'fb52256a-5d61-48e5-bd86-70f6e45779e1',
+        name: 'Armando Rodriguez',
+        company: 'Envato',
+        product: 'Chocolate caliente',
+        requestedTime: new Date(),
+        status: 'pending',
+      },
+      {
+        id: 'fb52256a-5d61-48e5-bd86-70f6e45779e6',
+        name: 'Raul Lopez Lopez',
+        company: '100 Ladrillos',
+        product: 'Americano doble',
+        requestedTime: new Date(),
+        status: 'pending',
+      },
+      {
+        id: 'fb52256a-5d61-48e5-bd86-70f6e45779a6',
+        name: 'Alejandro Valenzuela',
+        company: 'Billpocket',
+        product: 'Tizana menta + phur fria',
+        requestedTime: new Date(),
+        status: 'pending',
+        color: 'red',
+      },
+    ];

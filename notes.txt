@@ -64,3 +64,45 @@ GET /sign-in
 GET /
    si hay registro -> /
    no hay registr -> gasolineras
+
+
+
+
+ALL USERS ARE CUSTOMERS
+
+Missing Use Cases:
+ - User signs up
+ - User creates organization -> becomes admin
+ - (Pending) User invites new user to organization
+ - User invites existing user to organization
+ - Admin updates user role
+ - User accepts invitation to organization
+ - Customer lists branches
+ - Customer lists all of his turns in order (of all brands)
+   - Notifications for each turn or status
+
+ - User switch role!!!
+   - See everything as customer
+   - See a dashboard with his brands/branches
+
+ - (Front end) User list branches
+ - (Front end) User lists own turns in branch
+   - Link to see branch info
+   - Info about current turns in branch
+   - List of own turns in order
+ - (Front end) User switches role
+   - Customer switches to admin
+   - Customer switches to hostess
+   - Admin switches to customer
+   - Admin switches to hostess
+
+
+
+
+
+
+
+
+UI -> Auth0
+      Auth0 -> Logged user
+               Logged user -> Backend

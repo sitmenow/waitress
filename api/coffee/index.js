@@ -1,28 +1,168 @@
 const express = require('express');
 const config = require('config');
-const { createEventAdapter } = require('@slack/events-api');
-const { WebClient } = require('@slack/web-api');
 
 const middlewares = require('./middlewares');
+const { UserNotFound } = require('../../lib/errors')
+
 
 const app = express();
-const slackEvents = createEventAdapter(config.services.slack.events.secret);
-const slackWebClient = new WebClient(config.services.slack.web.oauthToken);
-const slackBotClient = new WebClient(config.services.slack.web.botToken);
 
 app.use(middlewares.cors);
-app.use('/v1/slack/coffee', slackEvents.expressMiddleware());
 app.use(express.json());
 app.use(middlewares.auth);
 
-const BRANCH_ID = config.branchId;
 
 module.exports = (database, useCases) => {
 
-  // Slack only
-  // app.post('/v1/slack/coffeea', function(req, res) {
-  //   res.send({ challenge: req.body.challenge });
-  // });
+  // Create User
+  app.post('/v1/users', function(req, res){
+    const useCase = new useCases.CoffeeUserSignsUp({
+      userId: req.user.sub,
+      username: req.body.name,
+      email: req.body.email,
+      picture: req.body.picture,
+      database,
+    });
+
+    return useCase.execute()
+      .then((user) => {
+        res.status(201);
+        res.json({
+          // Serialization
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          picture: user.picture,
+        });
+      })
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message })
+      });
+  });
+
+  app.use(middlewares.user(database));
+
+  // Get user
+  //  - Admins can get any user
+  //  - Normal users can only see their own info
+  app.get('/v1/users/:userId', function(req, res) {
+    const useCase = new useCases.CoffeeUserDetailsUser({
+      userId: req.user.id,
+      requestedUserId: req.params.userId,
+      database,
+    });
+
+    return useCase.execute()
+      .then(user => res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+      }))
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
+      });
+  });
+
+  // Get user roles
+  //  - Admins can get any user roles
+  //  - Normal users can only see their own roles
+  app.get('/v1/users/:userId/roles', function(req, res) {
+    const useCase = new useCases.CoffeeUserListsUserRoles({
+      userId: req.user.id,
+      requestedUserId: req.params.userId,
+      database,
+    });
+
+    return useCase.execute()
+      .then(roles => res.json(roles.map((role) => ({
+          id: role.id,
+          type: role.constructor.name.toLowerCase(),
+        })),
+      ))
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
+      })
+  });
+
+  // Customer | Admin
+  // Get user active turns
+  //  - Admin can get any user turns
+  //  - Normal users can only see their own active turns
+  app.get('/v1/users/:userId/turns', function(req, res) {
+    if (req.params.userId != req.user.id) {
+      const error = new UserNotFound(req.params.userId);
+      res.status(404);
+      res.json({ message: error.message });
+      return;
+    }
+
+    const useCase = new useCases.CustomerListsActiveCoffeeTurns({
+      userId: req.user.id,
+      database,
+    });
+
+    return useCase.execute()
+      .then((turns) => {
+        res.json(turns.map(turn => ({
+          id: turn.id,
+          name: turn.name,
+          status: turn.status,
+          requestedTime: turn.requestedTime,
+          metadata: turn.metadata,
+          branch: {
+            id: turn.branch.id,
+          },
+          customer: {
+            id: turn.customer.id,
+          },
+        })));
+      })
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
+      });
+  });
+
+  // Get branches
+  //  - Customer get all near branches
+  //  - Admin get all branches
+  //  - Owner get all branches under his/her brands
+  //  - Barista get all branches he/her works at
+  app.get('/v1/branches', function(req, res) {
+    const useCase = new useCases.CustomerListsBranches({
+      userId: req.user.id,
+      radius: null,
+      database,
+    });
+
+    return useCase.execute()
+      .then(branches =>
+        res.json(
+          branches.map(branch => ({
+            id: branch.id,
+            name: branch.name,
+            picture: branch.picture,
+            coordinates: branch.coordinates,
+            // lastOpeningTime:
+            // lastClosingTime:
+            // isOpen:
+            brand: {
+              id: branch.brand.id,
+              name: branch.brand.name,
+              picture: branch.brand.picture,
+            },
+          }))
+        )
+      )
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
+      });
+  });
 
   // Customer | Admin
   app.get('/v1/brands', function(req, res) {
@@ -48,21 +188,80 @@ module.exports = (database, useCases) => {
   // Admin | Hostess ... Maybe customer but that will affect the endpoint above
   app.get('/v1/brands/:brandId/branches/:branchId/turns', function(req, res) {
     const useCase = new useCases.HostessListsCoffeeTurns({
-      // branchId: req.params.branchId,
       branchId: req.params.branchId,
-      hostessId: req.user.profile,
+      userId: req.user.id,
       database,
     });
 
-    useCase.execute()
-      .then((turns) => {
-        turns = turns.map((turn) => {
-          turn.name = turn.name.split('_').pop();
-          return turn;
+    return useCase.execute()
+      .then(turns =>
+        res.send(
+          turns.map(turn => ({
+            id: turn.id,
+            name: turn.name,
+            status: turn.status,
+            requestedTime: turn.requestedTime,
+            metadata: turn.metadata,
+            branch: {
+              id: turn.branch.id,
+            },
+            customer: {
+              id: turn.customer.id,
+            },
+          }))
+        )
+      )
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
+      });
+  });
+
+  // Customer | Hostess
+  app.post('/v1/brands/:brandId/branches/:branchId/turns', function(req, res) {
+    let useCase;
+    const role = req.params.role;
+
+    switch (role) {
+    case 'barista':
+      useCase = new useCases.HostessCreatesCoffeeTurn({
+        branchId: req.params.branchId,
+        product: req.params.product,
+        name: req.params.name,
+        database,
+      });
+      break;
+    default:
+      useCase = new useCases.CustomerCreatesCoffeeTurn({
+        userId: req.user.id,
+        branchId: req.params.branchId,
+        product: req.body.product,
+        name: req.body.name,
+        database,
+      });
+    }
+
+    return useCase.execute()
+      .then((turn) => {
+        res.status(201);
+        res.json({
+          id: turn.id,
+          name: turn.name,
+          status: turn.status,
+          requestedTime: turn.requestedTime,
+          metadata: turn.metadata,
+          branch: {
+            id: turn.branch.id,
+          },
+          customer: {
+            id: turn.customer.id,
+          },
         });
-        res.send(turns);
       })
-      .catch(manageAPIError(res));
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
+      });
   });
 
   // Customer | Hostess
@@ -71,41 +270,18 @@ module.exports = (database, useCases) => {
   });
 
   // Customer | Hostess
-  app.post('/v1/brands/:brandId/branches/:branchId/turns', function(req, res) {
-    res.send();
-  });
-
-  // Customer | Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/cancel', function(req, res) {
-    res.send();
+    res.json({});
   });
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/prepare', function(req, res) {
-    database.turns.find(req.params.turnId)
-      .then((turn) => {
-        return database.customers.find(turn.customer.id)
-          .then((customer) => {
-            const channel = customer.name.split('_').shift();
-            _callSlack(channel)(`Tu orden ${turn.id} esta siendo preparada: ${turn.metadata.product}`);
-          });
-      })
-      .catch(manageAPIError(res))
-      .then(_ => res.json({}));
+    res.json({});
   });
 
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/unprepare', function(req, res) {
-    database.turns.find(req.params.turnId)
-      .then((turn) => {
-        return database.customers.find(turn.customer.id)
-          .then((customer) => {
-            const channel = customer.name.split('_').shift();
-            _callSlack(channel)(`Tu orden ${turn.id} esta de nuevo en espera: ${turn.metadata.product}`);
-          });
-      })
-      .catch(manageAPIError(res))
-      .then(_ => res.json({}));
+    res.json({});
   });
 
   // Hostess
@@ -113,20 +289,29 @@ module.exports = (database, useCases) => {
     const useCase = new useCases.HostessServesCoffeeTurn({
       turnId: req.params.turnId,
       branchId: req.params.branchId,
-      hostessId: req.user.profile,
+      userId: req.user.id,
       database,
     });
 
-    useCase.execute()
+    return useCase.execute()
       .then((turn) => {
-        res.send(turn);
-        return turn;
+        res.json({
+          id: turn.id,
+          name: turn.name,
+          status: turn.status,
+          requestedTime: turn.requestedTime,
+          metadata: turn.metadata,
+          branch: {
+            id: turn.branch.id,
+          },
+          customer: {
+            id: turn.customer.id,
+          },
+        });
       })
-      .catch(manageAPIError(res))
-      .then((turn) => {
-        const channel = turn.name.split('_').shift();
-        console.log(turn, channel)
-        _callSlack(channel)(`Tu orden ${turn.id} esta lista`);
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
       });
   });
 
@@ -135,162 +320,31 @@ module.exports = (database, useCases) => {
     const useCase = new useCases.HostessRejectsCoffeeTurn({
       turnId: req.params.turnId,
       branchId: req.params.branchId,
-      hostessId: req.user.profile,
+      userId: req.user.id,
       database,
     });
 
-    useCase.execute()
+    return useCase.execute()
       .then((turn) => {
-        res.send(turn);
-
-        const channel = turn.customer.name.split('_').unshift();
-        _callSlack(channel)(`Tu orden ${turn.id} fue cancelada: ${turn.metadata.product}`);
+        res.json({
+          id: turn.id,
+          name: turn.name,
+          status: turn.status,
+          requestedTime: turn.requestedTime,
+          metadata: turn.metadata,
+          branch: {
+            id: turn.branch.id,
+          },
+          customer: {
+            id: turn.customer.id,
+          },
+        });
       })
-      .catch(manageAPIError(res));
-  });
-
-
-  // Handle errors (see `errorCodes` export)
-  slackEvents.on('error', console.error);
-
-  slackEvents.on('message', async (event) => {
-    /*
-    {
-      client_msg_id: '6E68B278-8E30-45DE-990C-683DB6505566',
-      type: 'message',
-      text: 'Turno mutuo terraza latte caliente deslactosada',
-      user: 'U9CMVGLN4',
-      ts: '1556169652.002800',
-      channel: 'DGGG19QAJ',
-      event_ts: '1556169652.002800',
-      channel_type: 'im'
-    }
-    */
-
-    console.log(event)
-    if (event.bot_id) return;
-
-    const sentence = event.text.toLowerCase().split(' ');
-
-    if (sentence.length < 4) return _callSlack(event.channel)('Seas mamooooon!');
-
-    // order | cancel
-    const command = sentence.shift();
-
-    // mutuo
-    const brandName = sentence.shift();
-
-    // terraza | lobby
-    const branchName = sentence.shift();
-
-    if (sentence.length > 6) return _callSlack(event.channel)('Seas mamooooon!');
-    // Whatever..
-    const product = sentence.join(' ').trim();
-
-    // slackWebClient.auth.test()
-    //   .catch(error => console.log(error))
-
-    let slackUser;
-
-    try {
-      slackUser = await slackWebClient.users.profile.get({
-        user: event.user,
+      .catch((error) => {
+        res.status(500);
+        res.json({ message: error.message });
       });
-    } catch(error) {
-      console.log(error);
-      return;
-    }
-
-    let message;
-    const callSlack = _callSlack(event.channel);
-
-    const userName = `${event.channel}_${slackUser.profile.real_name_normalized}`;
-    // Look for customer, if not exists create it
-    const customer = await _getCustomer(userName) || await _createCustomer(userName);
-
-    if (command === 'order') {
-      message = await order(customer, product); // Avoid multiple orders in a same branch
-    } else if (command == 'cancel') {
-      message = await cancel(customer, product); // Cancel last order in branch
-    } else if (command == 'detail-branch') {
-      message = detailBranch(customer);
-    } else if (command == 'list-branches') {
-      message = listBranches();
-    } else {
-      return;
-    }
-
-    return callSlack(message);
   });
-
-
-  function _getBrand(brandName) {
-    return { }
-  }
-
-  function _getBranch(branchName) {
-    return { name: branchName };
-  }
-
-  function _getCustomer(userName) {
-    return database.customers.findByName(userName)
-      .catch(error => null);
-  }
-
-  function _createCustomer(userName) {
-    const Customer = require('../../scheduler/customer');
-    const customer = new Customer({ name: userName });
-
-    return database.customers.create(customer)
-      .then(customerId => database.customers.find(customerId));
-  }
-
-  function _callSlack(channel) {
-    return (message) => {
-      slackBotClient.chat.postMessage({
-        channel: channel,
-        text: message,
-      })
-      .catch(error => console.log(error));
-    }
-  }
-
-  function order(customer, product) {
-    const useCase = new useCases.CustomerCreatesCoffeeTurn({
-      customerId: customer.id,
-      customerCompany: 'TEST',
-      customerElection: product,
-      branchId: BRANCH_ID,
-      database,
-    });
-
-    return useCase.execute()
-      .then(turn => `Orden creada: ${turn.id}`)
-      .catch(error => error.message);
-  }
-
-  function cancel(customer, turnId) {
-    const useCase = new useCases.CustomerCancelsCoffeeTurn({
-      turnId,
-      customerId: customer.id,
-      branchId: BRANCH_ID,
-      database,
-    });
-
-    return useCase.execute()
-      .then(turn => `Orden cancelada: ${turn.id}`)
-      .catch(error => error.message);
-  }
-
-  function detailBranch(customer, brand, branch) {
-  }
-
-  function listBranches(brand) {
-  }
-
-  function manageAPIError(res) {
-    return (error) => { console.log(error); res.status(500).send(error.message);}
-  }
 
   return app;
 };
