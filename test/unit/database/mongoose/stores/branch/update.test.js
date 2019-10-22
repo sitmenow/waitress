@@ -20,15 +20,17 @@ suite('Mongoose BranchStore #update()', () => {
       name: 'New Brand Test',
     });
 
-    return Promise.all(
-      [brandModel.save(), newBrandModel.save()]
-    );
+    return Promise.all([
+      brandModel.save(),
+      newBrandModel.save(),
+    ]);
   });
 
   suiteTeardown(() => {
-    return Promise.all(
-      [brandModel.delete(), newBrandModel.delete()]
-    );
+    return Promise.all([
+      brandModel.delete(),
+      newBrandModel.delete(),
+    ]);
   });
 
   setup(() => {
@@ -45,7 +47,7 @@ suite('Mongoose BranchStore #update()', () => {
       lastOpeningTime: new Date(),
       lastClosingTime: null,
       coordinates: [104, -123],
-      brandId: brandModel.id,
+      brand: brandModel.id,
     });
 
     return branchModel.save();
@@ -72,10 +74,12 @@ suite('Mongoose BranchStore #update()', () => {
 
     const storedBranch = await BranchModel.findById(branchModel.id);
 
+    // Be careful when managing storedBranch, since it is a model
+    // including a reference at 'brand' property
     assert.equal(updatedBranch.id, storedBranch.id);
     assert.equal(updatedBranch.name, storedBranch.name);
     assert.equal(updatedBranch.address, storedBranch.address);
-    assert.equal(updatedBranch.brand.id, storedBranch.brandId);
+    assert.equal(updatedBranch.brand.id, storedBranch.brand.toString());
     assert.deepEqual(
       updatedBranch.coordinates,
       storedBranch.location.coordinates

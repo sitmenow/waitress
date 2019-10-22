@@ -30,7 +30,7 @@ before(() => {
     },
     lastOpeningTime: branch.lastOpeningTime,
     lastClosingTime: branch.lastClosingTime,
-    brandId: branch.brandId,
+    brand: branch.brand,
   });
 
   createUserModel = user => new UserModel({
