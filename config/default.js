@@ -10,17 +10,5 @@ module.exports = {
         useNewUrlParser: true,
       }
     },
-    slack: {
-      events: {
-        secret: '',
-      },
-      web: {
-        oauthToken: '',
-        botToken: '',
-      },
-    },
   },
-  hostessId: '',
-  branchId: '',
-  brandId: '',
 };

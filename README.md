@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/sitmenow/waitress/tree/master.svg?style=svg)](https://circleci.com/gh/sitmenow/waitress/tree/master)
 
 # Waitress
-Sit Me Now application service.
+Sit Me Now backend service.
 
 
 ## Setup
@@ -25,27 +25,23 @@ $ brew install mongodb
 $ brew services start mongodb
 ```
 
-#### Database
+### Database
 
 ### Config files
+There is one configuration file for each expected environment: develop, staging, test and production.
 
 
-## Test
+## Tests
+
+### Unit tests
 ```bash
-$ npm test
-$ npm --silent run test-path path/to/file
-```
-
-NOTE: Tests for stores need to be executed all at the same time. Otherwise,
-the command will fail.
-
-```bash
-$ npm --silent run test-pah test/scheduler/stores/mongoose/
+$ yarn test-unit
+$ yarn --silent run test-path path/to/file
 ```
 
 ## Run
 ```bash
-$ npm run start
+$ yarn run start
 ```
 
 ## Seed
