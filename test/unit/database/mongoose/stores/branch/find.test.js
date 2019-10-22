@@ -25,7 +25,8 @@ suite('Mongoose BranchStore #find()', () => {
 
   setup(() => {
     brand = createBrand({
-      id: brandModel.id,
+      id: brandModel.id.toString(),
+      name: brandModel.name,
     });
 
     branchModel = createBranchModel({
@@ -34,7 +35,7 @@ suite('Mongoose BranchStore #find()', () => {
       lastOpeningTime: new Date(),
       lastClosingTime: null,
       coordinates: [104, -123],
-      brandId: brandModel.id,
+      brand: brandModel.id,
     });
 
     return branchModel.save();
@@ -48,7 +49,7 @@ suite('Mongoose BranchStore #find()', () => {
 
   test('finds the branch for the requested id', async () => {
     const expectedBranch = createBranch({
-      id: branchModel.id,
+      id: branchModel.id.toString(),
       name: branchModel.name,
       address: branchModel.address,
       lastOpeningTime: branchModel.lastOpeningTime,
