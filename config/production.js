@@ -1,10 +1,9 @@
 module.exports = {
   api: {
+    port: 80,
     origin: [
-      'clients.miturno.com.mx',
-      'hostess.miturno.com.mx',
-      'smn.grevych.com',
-      'smn-barista.netlify.com',
+      'https://drinqueue.com',
+      'https://drinqueue.netlify.com',
     ],
   },
   services: {
