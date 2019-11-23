@@ -6,6 +6,20 @@ const { UserNotFound } = require('../../lib/errors')
 
 
 const app = express();
+const expressWs = require('express-ws')(app);
+
+let webSockets = {};
+// Web Sockets
+app.ws('/ws/:userId', function(ws, req) {
+  webSockets[req.params.userId] = ws;
+
+  ws.on('message', function(msg) {
+    console.log(msg);
+    ws.send(msg);
+  });
+
+  console.log(webSockets);
+});
 
 app.use(middlewares.cors);
 app.use(express.json());
@@ -13,7 +27,6 @@ app.use(middlewares.auth);
 
 
 module.exports = (database, useCases) => {
-
   // Create User
   app.post('/v1/users', function(req, res){
     const useCase = new useCases.CoffeeUserSignsUp({
@@ -236,6 +249,7 @@ module.exports = (database, useCases) => {
         userId: req.user.id,
         branchId: req.params.branchId,
         product: req.body.product,
+        company: req.body.company,
         name: req.body.name,
         database,
       });
@@ -304,6 +318,16 @@ module.exports = (database, useCases) => {
   // Hostess
   app.put('/v1/brands/:brandId/branches/:branchId/turns/:turnId/prepare', function(req, res) {
     res.json({});
+    database.turns.find(req.params.turnId)
+      .then((turn) => {
+        console.log(turn);
+        database.customers.find(turn.customer.id)
+          .then((customer) => {
+            const ws = webSockets[customer.user.id];
+            console.log(ws);
+            if (ws) { ws.send('preparing'); }
+          })
+      })
   });
 
   // Hostess

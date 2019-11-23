@@ -19,7 +19,7 @@ const auth = jwt({
   aud: 'https://api.drinqueue.com',
   issuer: 'https://drinqueue.auth0.com/',
   algorithms: ['RS256'],
-  scope: 'openid profile',
+  scope: 'openid email profile',
 });
 
 const user = (database) =>
